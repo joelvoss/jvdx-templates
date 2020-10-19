@@ -1,0 +1,28 @@
+{
+  "name": "template-node-lib",
+  "version": "1.0.0",
+  "author": "Your Name <your.name@mail.com>",
+  "license": "MIT",
+  "source": "src/index.js",
+  "main": "dist/node-lib.js",
+  "scripts": {
+    "start": "./Taskfile.sh",
+    "test": "./Taskfile.sh test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@jvdx/core": "^0.1.0"
+  },
+  "prettier": "@jvdx/prettier-config",
+  "prettierIgnore": [
+    "tests/",
+    "dist/"
+  ],
+  "eslintConfig": {
+    "extends": "@jvdx/eslint-config"
+  },
+  "eslintIgnore": [
+    "tests/",
+    "dist/"
+  ]
+}
