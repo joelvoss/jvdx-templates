@@ -9,10 +9,8 @@ Short description of this library.
 ## Installation
 
 ```bash
-# Using npm
 $ npm i template-node-lib
-
-# Using yarn
+# or
 $ yarn add template-node-lib
 ```
 
@@ -21,10 +19,8 @@ $ yarn add template-node-lib
 (1) Install dependencies
 
 ```bash
-# Using npx
 $ npm i
-
-# Using yarn
+# or
 $ yarn
 ```
 
