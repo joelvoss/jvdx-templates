@@ -17,7 +17,7 @@ start() {
 }
 
 build() {
-  jvdx build -c dist -f cjs $*
+  jvdx build --clean --format=cjs --target=node $*
 }
 
 format() {
