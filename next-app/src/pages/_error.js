@@ -1,24 +1,19 @@
-import * as React from 'react';
-import Head from 'next/head';
+import { Meta } from '../shared/meta';
 
 export default function Error({ statusCode }) {
 	return (
-		<div className="bg-white">
-			<Head>
-				<title>{statusCode}</title>
-				<link rel="icon" href="/favicon.ico" />
-			</Head>
+		<>
+			<Meta title="404" />
 
-			<main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="lg:text-center">
-					<h1 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-						{statusCode
-							? `An error ${statusCode} occurred on server`
-							: 'An error occurred on client'}
-					</h1>
-				</div>
+			<main className="max-w-screen-xl mx-auto px-4">
+				<span className="block my-2" />
+				<h1 className="text-center text-3xl font-bold text-gray-900">
+					{statusCode
+						? `An error ${statusCode} occurred on server`
+						: 'An error occurred on client'}
+				</h1>
 			</main>
-		</div>
+		</>
 	);
 }
 

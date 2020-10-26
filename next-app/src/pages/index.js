@@ -1,12 +1,12 @@
 import * as React from 'react';
-import Head from 'next/head';
+import { Meta } from '../shared/meta';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export async function getStaticProps() {
 	const { name } = require('../../package.json');
 
-	const res = await fetch('https://api.github.com/users/joelvoss');
+	const res = await fetch('https://api.github.com/repos/joelvoss/jvdx-core');
 	const json = await res.json();
 
 	if (res.status !== 200) {
@@ -16,7 +16,14 @@ export async function getStaticProps() {
 
 	return {
 		props: {
-			data: { ...json, pkgName: name },
+			data: {
+				name: json.name,
+				url: json.html_url,
+				description: json.description,
+				stargazers_count: json.stargazers_count,
+				watchers_count: json.watchers_count,
+				pkgName: name,
+			},
 		},
 		revalidate: 1,
 	};
@@ -26,25 +33,23 @@ export async function getStaticProps() {
 
 export default function HomePage({ data }) {
 	return (
-		<div className="bg-white">
-			<Head>
-				<title>{data.pkgName}</title>
-				<link rel="icon" href="/favicon.ico" />
-			</Head>
+		<>
+			<Meta title={data.pkgName} />
 
-			<main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="lg:text-center">
-					<h3 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-						{data.pkgName}
-					</h3>
-					<p className="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
-						Userdata on <a href={data.html_url}>{data.html_url}</a>:
-					</p>
-				</div>
+			<main className="max-w-screen-xl mx-auto px-4">
+				<span className="block my-2" />
 
-				<code className="block m-4 p-4 rounded text-xs bg-gray-100">
+				<h3 className="text-center text-3xl font-bold text-gray-900">
+					{data.pkgName}
+				</h3>
+
+				<span className="block my-2" />
+
+				<code className="block bg-gray-100 p-4 rounded text-xs">
 					<pre>{JSON.stringify(data, null, 2)}</pre>
 				</code>
+
+				<span className="block my-2" />
 
 				<p className="text-center">
 					<strong>Explanation:</strong> This page is statically generated with
@@ -61,6 +66,6 @@ export default function HomePage({ data }) {
 					.
 				</p>
 			</main>
-		</div>
+		</>
 	);
 }

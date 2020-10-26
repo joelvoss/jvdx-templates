@@ -1,21 +1,16 @@
-import Head from 'next/head';
-import * as React from 'react';
+import { Meta } from '../shared/meta';
 
 export default function Custom404() {
 	return (
-		<div className="bg-white">
-			<Head>
-				<title>404</title>
-				<link rel="icon" href="/favicon.ico" />
-			</Head>
+		<>
+			<Meta title="404" />
 
-			<main className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div className="lg:text-center">
-					<h1 className="mt-2 text-3xl font-bold text-gray-900 sm:text-4xl">
-						404 - Page Not Found
-					</h1>
-				</div>
+			<main className="max-w-screen-xl mx-auto px-4">
+				<span className="block my-2" />
+				<h1 className="text-center text-3xl font-bold text-gray-900">
+					404 - Page Not Found
+				</h1>
 			</main>
-		</div>
+		</>
 	);
 }
