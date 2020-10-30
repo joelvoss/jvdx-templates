@@ -4,8 +4,8 @@ This repository contains a few starter templates that you can initialize with th
 help of [`degit`](https://github.com/Rich-Harris/degit).
 
   - [@jvdx/templates/node-lib](./node-lib)
-  - @jvdx/templates/react-lib
-  - @jvdx/templates/react-app
+  - [@jvdx/templates/next-app](./next-app)
+  - [@jvdx/templates/google-cloud-function](./google-cloud-function)
 
 ## Installation & Usage
 
