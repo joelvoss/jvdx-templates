@@ -1,0 +1,31 @@
+{
+  "name": "template-google-cloud-function",
+  "version": "1.0.0",
+  "author": "Your Name <your.name@mail.com>",
+  "license": "MIT",
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "./Taskfile.sh start",
+    "test": "./Taskfile.sh test"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^1.7.1"
+  },
+  "devDependencies": {
+    "@jvdx/core": "^0.3.0",
+    "uuid": "^8.3.1"
+  },
+  "prettier": "@jvdx/prettier-config",
+  "prettierIgnore": [
+    "tests/",
+    "dist/"
+  ],
+  "eslintConfig": {
+    "extends": "@jvdx/eslint-config"
+  },
+  "eslintIgnore": [
+    "tests/",
+    "dist/"
+  ]
+}
