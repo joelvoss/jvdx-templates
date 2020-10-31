@@ -14,7 +14,7 @@
     "react-dom": "17.0.1"
   },
   "devDependencies": {
-    "@jvdx/core": "^0.4.0",
+    "@jvdx/core": "^0.5.0",
     "postcss-flexbugs-fixes": "^4.2.1",
     "postcss-preset-env": "^6.7.0",
     "tailwindcss": "^1.9.6"
