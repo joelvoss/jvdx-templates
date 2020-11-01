@@ -1484,14 +1484,14 @@
     babel-plugin-macros "^2.8.0"
     babel-plugin-transform-async-to-promises "^0.8.15"
 
-"@jvdx/core@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-0.5.0.tgz#f38ef384f3a926413651d3cbea9e28bb42fb44a7"
-  integrity sha512-T+Hd/qqLDqZlpkXEGAtxzB38SI0USQhORT6Zb+VcLz0YnXjZfD+P2A/hUeEycuE9b2iyEhMf4b2hzjOHBCYOmw==
+"@jvdx/core@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-0.6.0.tgz#0923c7639532b888f878b668d70324b817fe2979"
+  integrity sha512-vdeEpBM0X8sfpVxEt/KTGLzGHOfTkPPlnIbjx/zRZolX4SebJOarUJHgG9T2icvl9tXSYTTWQUC2vWU8H+vhXQ==
   dependencies:
     "@babel/core" "7.12.3"
     "@jvdx/babel-preset" "0.6.0"
-    "@jvdx/eslint-config" "2.0.0"
+    "@jvdx/eslint-config" "2.1.0"
     "@jvdx/prettier-config" "0.3.3"
     "@rollup/plugin-alias" "3.1.1"
     "@rollup/plugin-babel" "5.2.1"
@@ -1517,7 +1517,7 @@
     prettier "2.1.2"
     pretty-bytes "5.4.1"
     rimraf "3.0.2"
-    rollup "2.32.1"
+    rollup "2.33.0"
     rollup-plugin-bundle-size "1.0.3"
     rollup-plugin-es3 "1.1.0"
     rollup-plugin-postcss "3.1.8"
@@ -1528,10 +1528,10 @@
     ts-jest "26.4.3"
     typescript "4.0.5"
 
-"@jvdx/eslint-config@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@jvdx/eslint-config/-/eslint-config-2.0.0.tgz#e312e700b1654c8657f7fbb3649fb05ee4f02ee7"
-  integrity sha512-K/Mm1jowwBU8G7uFBIsZ8IePjeJuWtQboegD/Fsskgi9slmalriF+Z6RoOb7fwQ1kg8npj11aJqQZfrb2h/tyw==
+"@jvdx/eslint-config@2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@jvdx/eslint-config/-/eslint-config-2.1.0.tgz#7a3b93d6a13e285a31fac2b8932b365e6119a8d2"
+  integrity sha512-UJno//bHHbMVnMC696Te2Mut2GHcM351eMjNSqT7qYEf8cMfY2GBbgq2opx7VUqPrUsQj+HAYQMWHMCsnzp8RA==
   dependencies:
     "@typescript-eslint/eslint-plugin" "^4.6.0"
     "@typescript-eslint/parser" "^4.6.0"
@@ -8718,10 +8718,10 @@ rollup-pluginutils@^2.8.2:
   dependencies:
     estree-walker "^0.6.1"
 
-rollup@2.32.1:
-  version "2.32.1"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.32.1.tgz#625a92c54f5b4d28ada12d618641491d4dbb548c"
-  integrity sha512-Op2vWTpvK7t6/Qnm1TTh7VjEZZkN8RWgf0DHbkKzQBwNf748YhXbozHVefqpPp/Fuyk/PQPAnYsBxAEtlMvpUw==
+rollup@2.33.0:
+  version "2.33.0"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.33.0.tgz#dc105b312e2817f996d0b6a192b7033f607ef08d"
+  integrity sha512-7jFrmKgQj1GOWlC8rExHaPcv2SQnWMv1BFUyH/xWS5w80h6132wBUWp/qTvQkAbnlqGvi13T6iP2kHo9Sb2HxA==
   optionalDependencies:
     fsevents "~2.1.2"
 
