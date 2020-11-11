@@ -10,7 +10,7 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
 ## Installation & Usage
 
 ```bash
-$ npx degit @jvdx/templates/<template-name> my-package
+$ npx degit joelvoss/jvdx-templates/<template-name> my-package
 $ cd my-package
 
 # Using npm
