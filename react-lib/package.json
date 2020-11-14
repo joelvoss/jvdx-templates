@@ -1,0 +1,41 @@
+{
+  "name": "react-lib",
+  "version": "1.0.0",
+  "author": "Your Name <your.name@mail.com>",
+  "license": "MIT",
+  "source": "src/index.js",
+  "main": "dist/react-lib.js",
+  "module": "dist/react-lib.es.js",
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "./Taskfile.sh test",
+    "prepublishOnly": "./Taskfile.sh build"
+  },
+  "devDependencies": {
+    "@jvdx/core": "^0.7.0",
+    "@testing-library/jest-dom": "^5.11.6",
+    "@testing-library/react": "^11.1.2",
+    "parcel": "^1.12.4",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8",
+    "react-dom": ">=16.8"
+  },
+  "prettier": "@jvdx/prettier-config",
+  "prettierIgnore": [
+    "tests/",
+    "dist/"
+  ],
+  "eslintConfig": {
+    "extends": "@jvdx/eslint-config"
+  },
+  "eslintIgnore": [
+    "tests/",
+    "dist/"
+  ]
+}
