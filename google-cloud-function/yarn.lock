@@ -1162,10 +1162,10 @@
     babel-plugin-macros "^3.0.1"
     babel-plugin-transform-async-to-promises "^0.8.15"
 
-"@jvdx/core@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-2.1.2.tgz#16ce46772962aa6a86265c4feb2d5cfb9168df2d"
-  integrity sha512-zEAtEBqAFQpaSxXWEBnTXmpJlyDe/MPkjgeBDR7jIFJPZeFZfb19RUNGS4jbeA3tr4uUEa4HB/VUn8D+zUbAeg==
+"@jvdx/core@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-2.2.0.tgz#7c0436cef59e2c75beea606b1c3bd6849076a494"
+  integrity sha512-r89o+pJYQQTpKhK8FkFNe6poSVqABjbWb6tPoqy0A+uTgfVb5jaj3NxglFWKfhkjncp9tqz5XQcrw9RD0Zd+Pg==
   dependencies:
     "@babel/core" "7.12.10"
     "@jvdx/babel-preset" "1.0.3"
@@ -1395,9 +1395,9 @@
     "@types/istanbul-lib-report" "*"
 
 "@types/jest@26.x":
-  version "26.0.19"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-26.0.19.tgz#e6fa1e3def5842ec85045bd5210e9bb8289de790"
-  integrity sha512-jqHoirTG61fee6v6rwbnEuKhpSKih0tuhqeFbCmMmErhtu3BYlOZaXWjffgOstMM4S/3iQD31lI5bGLTrs97yQ==
+  version "26.0.20"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-26.0.20.tgz#cd2f2702ecf69e86b586e1f5223a60e454056307"
+  integrity sha512-9zi2Y+5USJRxd0FsahERhBwlcvFh6D2GLQnY2FH2BzK8J9s9omvNHIbvABwIluXa0fD8XVKMLTO0aOEuUfACAA==
   dependencies:
     jest-diff "^26.0.0"
     pretty-format "^26.0.0"
