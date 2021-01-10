@@ -1,0 +1,12 @@
+# ignore everything by default
+*
+
+# allow files explicitly
+!dist/**
+!package.json
+!package-lock.json
+!yarn.lock
+!Taskfile.sh
+
+# explicitly allow current dir. `gcloud deploy` fails without it.
+!.
