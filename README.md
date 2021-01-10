@@ -7,6 +7,7 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
   - [joelvoss/jvdx-templates/react-lib](./react-lib)
   - [joelvoss/jvdx-templates/next-app](./next-app)
   - [joelvoss/jvdx-templates/google-cloud-function](./google-cloud-function)
+  - [joelvoss/jvdx-templates/node-rest-api](./node-rest-api)
 
 ## Installation & Usage
 
