@@ -16,11 +16,11 @@
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
     "express": "4.17.1",
-    "helmet": "4.3.1",
+    "helmet": "4.4.1",
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.2.2",
+    "@jvdx/core": "^2.2.3",
     "got": "^11.8.1",
     "test-listen": "^1.1.0"
   },
