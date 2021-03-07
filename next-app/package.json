@@ -9,14 +9,14 @@
     "test": "./Taskfile.sh test"
   },
   "dependencies": {
-    "next": "10.0.7",
+    "next": "10.0.8",
     "react": "17.0.1",
     "react-dom": "17.0.1"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.2.4",
-    "autoprefixer": "^10.2.4",
-    "postcss": "^8.2.6",
+    "@jvdx/core": "^2.2.5",
+    "autoprefixer": "^10.2.5",
+    "postcss": "^8.2.7",
     "tailwindcss": "^2.0.3"
   },
   "prettier": "@jvdx/prettier-config",
