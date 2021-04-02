@@ -1,6 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
-import bodyParser from 'body-parser';
+import { json as bodyParserJson } from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
 import { loadEnvConfig } from './helper/env';
@@ -28,7 +28,7 @@ app.use(
 );
 app.use(compression());
 app.use(helmet());
-app.use(bodyParser.json());
+app.use(bodyParserJson());
 app.use(cacheControl());
 
 // Route configurations
