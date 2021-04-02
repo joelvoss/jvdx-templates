@@ -50,8 +50,8 @@ export function processEnv(loadedEnvFiles, dir, defaults) {
 }
 
 export function loadEnvConfig(dir = './', dev = true, defaults = {}) {
-	// NOTE(joel): Don't reload env if we already have since this breaks escaped
-	// environment values e.g. \$ENV_FILE_KEY
+	// NOTE(joel): Don't reload env if we already have one since this breaks
+	// escaped environment values e.g. \$ENV_FILE_KEY
 	if (combinedEnv) return;
 
 	const isTest = process.env.NODE_ENV === 'test';
