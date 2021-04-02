@@ -3,7 +3,7 @@ import { Meta } from '../shared/meta';
 export default function Error({ statusCode }) {
 	return (
 		<>
-			<Meta title="404" />
+			<Meta title={statusCode} />
 
 			<main className="max-w-screen-xl mx-auto px-4">
 				<span className="block my-2" />
