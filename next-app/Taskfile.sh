@@ -40,7 +40,7 @@ validate() {
 }
 
 clean() {
-  jvdx clean $*
+  jvdx clean dist .next node_modules $* 
 }
 
 default() {
