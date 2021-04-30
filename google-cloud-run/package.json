@@ -1,20 +1,30 @@
 {
-  "name": "template-google-cloud-function",
+  "name": "template-google-cloud-run",
   "version": "1.0.0",
   "author": "Your Name <your.name@mail.com>",
   "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": "14"
+  },
   "source": "src/index.js",
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "exports": "./dist/index.esm.js",
   "scripts": {
     "start": "./Taskfile.sh start",
     "test": "./Taskfile.sh test"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^1.7.1"
+    "compression": "1.7.4",
+    "cors": "2.8.5",
+    "dotenv": "8.2.0",
+    "dotenv-expand": "5.1.0",
+    "express": "4.17.1",
+    "helmet": "4.5.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.2.8",
-    "uuid": "^8.3.2"
+    "@jvdx/core": "^2.2.10"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [

@@ -1,26 +1,48 @@
-// Choose one of the following function signatures depending on the trigger
-// type of your cloud function.
+import express, { json } from 'express';
+import helmet from 'helmet';
+import compression from 'compression';
+import cors from 'cors';
+import { loadEnvConfig } from './helper/env';
+import { trace, info } from './helper/console';
+import { cacheControl } from './helper/cache-control';
 
-export async function handleHTTPTrigger(req, res) {
-	res.send(`Hello World!`);
-}
+// Load environment variables
+loadEnvConfig('./', process.env.NODE_ENV !== 'production', {
+	PORT: 3000,
+});
 
-export async function handleStorageTrigger(file, context) {
-	/* eslint-disable no-console */
-	console.log(file, context);
-	console.log(`  Event: ${context.eventId}`);
-	console.log(`  Event Type: ${context.eventType}`);
-	console.log(`  Bucket: ${file.bucket}`);
-	console.log(`  File: ${file.name}`);
-	console.log(`  Metageneration: ${file.metageneration}`);
-	console.log(`  Created: ${file.timeCreated}`);
-	console.log(`  Updated: ${file.updated}`);
-	/* eslint-enable */
-}
+// Routes
+import { router as books } from './routes/books';
 
-export async function handlePubSubTrigger(message, context) {
-	const name = Buffer.from(message.data, 'base64').toString();
+export const app = express();
 
-	// eslint-disable-next-line no-console
-	console.log(`Hello, ${name}!`);
+// Middlewares
+app.use(
+	cors({
+		origin: true, // Reflect request origin
+		methods: ['GET', 'OPTIONS', 'PUT', 'POST', 'DELETE'],
+		preflightContinue: false,
+		optionsSuccessStatus: 204,
+	}),
+);
+app.use(trace({ projectId: 'jvoss-base-prod' }));
+app.use(compression());
+app.use(helmet());
+app.use(json());
+app.use(cacheControl());
+
+// Route configurations
+app.get(`/`, (_, res) => res.status(200).json());
+
+// NOTE(joel): Handle App-Engine /_ah/start, /_ah/stop, /_ah/health routes
+app.get(`/_ah/**`, (_, res) => res.status(200).json());
+
+// Custom routes
+app.use(`/books`, books);
+
+// Start server (except when we're testing)
+if (process.env.NODE_ENV !== 'test') {
+	app.listen(process.env.PORT, () => {
+		info(`Running server on port ${process.env.PORT}`);
+	});
 }

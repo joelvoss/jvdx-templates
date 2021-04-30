@@ -1,5 +1,5 @@
 # Use the official lightweight Node.js 10 image.
-FROM node:12-slim
+FROM node:14-slim
 
 # Create and change to the app directory.
 WORKDIR /usr/src/app
@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 # Copy application dependency manifests to the container image.
 # Copying this separately prevents re-running the dependency install process
 # on every build
-COPY package.json yarn.lock Taskfile.sh ./
+COPY package.json package-lock.json yarn.lock Taskfile.sh ./
 
 # Install production dependencies.
 RUN yarn --frozen-lockfile
@@ -21,4 +21,4 @@ COPY ./dist ./dist
 USER node
 
 # Run the web service on container startup.
-CMD [ "node", "./dist/index.js" ]
+CMD [ "./Taskfile.sh", "start" ]

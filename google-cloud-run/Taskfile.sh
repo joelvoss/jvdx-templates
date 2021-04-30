@@ -13,24 +13,11 @@ fi
 # START tasks
 
 start() {
-  node dist/index.js
-}
-
-start-ff-http() {
-  functions-framework \
-    --source=dist \
-    --target=handleHTTPTrigger
-}
-
-start-ff-event() {
-  functions-framework \
-    --source=dist \
-    --target=handleStorageTrigger \
-    --signature-type=event
+  node dist/index.esm.js
 }
 
 build() {
-  jvdx build --clean --format=cjs --target=node --no-sourcemap $*
+  jvdx build --clean --format=esm,cjs --target=node --no-sourcemap $*
 }
 
 format() {
@@ -56,21 +43,63 @@ clean() {
 }
 
 default() {
+  build
   start
+}
+
+docker_build() {
+  if [[ -z "${BUILD_PROJECT}" ]]; then
+    echo "Missing environment varible BUILD_PROJECT"
+    exit 1;
+  fi
+
+  build
+
+  BUILD_NAME=$(jq -r ".name" package.json)
+  BUILD_VERSION=$(jq -r ".version" package.json | tr "." "-")
+
+  BUILD_TAG=eu.gcr.io/${BUILD_PROJECT}/${BUILD_NAME}:${BUILD_VERSION}
+
+  docker build --tag ${BUILD_TAG}
+
+  local _ret=$1
+  if [[ $_ret != "" ]]; then
+    _ret=${BUILD_TAG}
+  fi
+}
+
+docker_push() {
+  if [[ -z "${BUILD_PROJECT}" ]]; then
+    echo "Missing environment varible BUILD_PROJECT"
+    exit 1;
+  fi
+
+  BUILD_TAG=
+  docker_build ${BUILD_TAG}
+
+  gcloud config set project ${BUILD_PROJECT} --quiet
+  gcloud auth configure-docker eu.gcr.io --quiet
+
+  docker push ${BUILD_TAG}
+
+  local _ret=$1
+  if [[ $_ret != "" ]]; then
+    _ret=${BUILD_TAG}
+  fi
+}
+
+docker_run() {
+  BUILD_TAG=
+  docker_build ${BUILD_TAG}
+
+  docker run -it --rm ${BUILD_TAG}
 }
 
 deploy() {
   build
 
-  PROJECT=
-  NAME=
-  VERSION=
-  IMAGE_TAG=eu.gcr.io/${PROJECT}/${NAME}:${VERSION}
-  
-  gcloud auth configure-docker --quiet
-  docker build --tag ${IMAGE_TAG} .
-
-  # docker push ${IMAGE_TAG}
+  BUILD_TAG=
+  docker_push ${BUILD_TAG}
 
   # gcloud run deploy ${NAME} \
   #   --image ${IMAGE_TAG} \

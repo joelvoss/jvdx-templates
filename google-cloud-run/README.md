@@ -1,10 +1,10 @@
-# template-node-lib
+# template-google-cloud-run
 
 Short description of this library.
 
 ## Requirements
 
-  - Node v12+
+  - Node v14+
   - gcloud SDK
 
 ## Development
@@ -23,13 +23,10 @@ $ yarn
 $ ./Taskfile.sh validate
 ```
 
-(3) Test your function locally using the
-[`@google-cloud/functions-framework`][functions-framework].
+(3) Test your function locally
 
 ```bash
-$ ./Taskfile.sh start-ff-http
-# or
-$ ./Taskfile.sh start-ff-event
+$ ./Taskfile.sh
 ```
 
 > See [`./Taskfile.sh`](./Taskfile.sh) for more tasks to help you develop.
@@ -42,23 +39,21 @@ $ ./Taskfile.sh start-ff-event
 $ gcloud auth login
 ```
 
-(2) Build and deploy
+(2) Build and push docker container into Google Container Registry
 
 ```bash
-$ ./Taskfile.sh build
-
-$ gcloud functions deploy <NAME> \
-    --region=<REGION> \
-    --project=<PROJECT_ID> \
-    # Trigger type: --trigger-http, --trigger-bucket=TRIGGER_BUCKET, --trigger-topic=TRIGGER_TOPIC
-    --trigger-http \
-    --runtime=nodejs12 \
-    --entry-point=<REQ_HANDLER_NAME> \
-    --memory=<MEMORY> \
-    --max-instances=<INSTANCE_COUNT>
+$ ./Taskfile.sh docker_push
 ```
 
-> See [the official documentation][gcloud-deploy] for all available options. 
+(3) Deploy Cloud Run container
+
+```bash
+$ ./Taskfile.sh deploy
+```
+
+> See [`./Taskfile.sh`](./Taskfile.sh) for more tasks to help you develop and
+> [the official documentation][gcloud-deploy] for all available cloud run
+> deployment options.
 
 ---
 
