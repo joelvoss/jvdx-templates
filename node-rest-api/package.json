@@ -20,7 +20,7 @@
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.3.0",
+    "@jvdx/core": "^2.3.1",
     "got": "^11.8.2",
     "test-listen": "^1.1.0"
   },
