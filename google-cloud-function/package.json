@@ -13,7 +13,7 @@
     "@google-cloud/functions-framework": "^1.8.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.3.5",
+    "@jvdx/core": "^2.3.6",
     "uuid": "^8.3.2"
   },
   "prettier": "@jvdx/prettier-config",
