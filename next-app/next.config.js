@@ -1,7 +1,8 @@
 module.exports = {
 	distDir: 'dist',
 	poweredByHeader: false,
-	future: {
-		webpack5: true,
+	webpack5: true,
+	eslint: {
+		ignoreDuringBuilds: true,
 	},
 };
