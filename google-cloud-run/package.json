@@ -24,7 +24,7 @@
     "helmet": "4.6.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.3.6"
+    "@jvdx/core": "^2.3.7"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [
