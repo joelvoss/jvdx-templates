@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/layouts/*": ["src/layouts/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/shared/*": ["src/shared/*"],
+      "@/lib/*": ["src/lib/*"]
+    }
+  }
+}

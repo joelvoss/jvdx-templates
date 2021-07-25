@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { Meta } from '../shared/meta';
+import { Meta } from '@/shared/meta';
+import { getLayout as getSiteLayout } from '@/layouts/site';
+import * as styles from './index.module.css';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,39 +35,31 @@ export async function getStaticProps() {
 
 export default function HomePage({ data }) {
 	return (
-		<>
+		<section>
 			<Meta title={data.pkgName} />
 
-			<main className="max-w-screen-xl mx-auto px-4">
-				<span className="block my-2" />
+			<code className={styles.code}>
+				<pre>{JSON.stringify(data, null, 2)}</pre>
+			</code>
 
-				<h3 className="text-center text-3xl font-bold text-gray-900">
-					{data.pkgName}
-				</h3>
+			<span className={styles.spacer} />
 
-				<span className="block my-2" />
-
-				<code className="block bg-gray-100 p-4 rounded text-xs">
-					<pre>{JSON.stringify(data, null, 2)}</pre>
-				</code>
-
-				<span className="block my-2" />
-
-				<p className="text-center">
-					<strong>Explanation:</strong> This page is statically generated with
-					Next.js by fetching data from GitHub.
-				</p>
-				<p className="text-center">
-					Importantly, this page is being re-generated using{' '}
-					<a
-						href="https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration"
-						className="underline hover:text-gray-500 transition duration-75 ease-in-out"
-					>
-						Incremental Static Regeneration
-					</a>
-					.
-				</p>
-			</main>
-		</>
+			<p className={styles.p}>
+				<strong>Explanation:</strong> This page is statically generated with
+				Next.js by fetching data from GitHub.
+			</p>
+			<p className={styles.p}>
+				Importantly, this page is being re-generated using{' '}
+				<a
+					href="https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration"
+					className={styles.a}
+				>
+					Incremental Static Regeneration
+				</a>
+				.
+			</p>
+		</section>
 	);
 }
+
+HomePage.getLayout = getSiteLayout;

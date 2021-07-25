@@ -1,19 +1,29 @@
-import { Meta } from '../shared/meta';
+import Link from 'next/link';
+import { getLayout as getSiteLayout } from '@/layouts/site';
+import { Meta } from '@/shared/meta';
+import * as styles from './_error.module.css';
 
 export default function Error({ statusCode }) {
 	return (
-		<>
-			<Meta title={statusCode} />
+		<section className={styles.section}>
+			<Meta title={`${statusCode} | Error`} />
 
-			<main className="max-w-screen-xl mx-auto px-4">
-				<span className="block my-2" />
-				<h1 className="text-center text-3xl font-bold text-gray-900">
-					{statusCode
-						? `An error ${statusCode} occurred on server`
-						: 'An error occurred on client'}
+			<div className={styles.container}>
+				<h1 className={styles.h1}>
+					<b>{statusCode}</b> | Error
 				</h1>
-			</main>
-		</>
+				<p className={styles.p}>
+					{statusCode ? (
+						<i>A {statusCode} error occurred on the server.</i>
+					) : (
+						<i>An unknown error occurred on the client.</i>
+					)}
+				</p>
+				<Link href="/">
+					<a className={styles.link}>← Back to Home</a>
+				</Link>
+			</div>
+		</section>
 	);
 }
 
@@ -21,3 +31,5 @@ Error.getInitialProps = ({ res, err }) => {
 	const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
 	return { statusCode };
 };
+
+Error.getLayout = getSiteLayout;

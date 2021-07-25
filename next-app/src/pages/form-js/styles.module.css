@@ -1,0 +1,60 @@
+.fieldset {
+	display: block;
+	padding: 0;
+	margin: 0;
+	margin-top: 1rem;
+}
+
+.label {
+	font-weight: bold;
+}
+
+.input {
+	display: block;
+	width: 100%;
+	margin-top: 0.5rem;
+	padding: 0.75rem 1rem;
+	border-width: 1px;
+	border-radius: var(--radius400);
+	background-color: var(--grey0);
+}
+
+.submit {
+	display: inline-block;
+	margin: 0;
+	margin-top: 1rem;
+	padding: 0.75rem 1rem;
+	background-color: var(--blue400);
+	border-radius: var(--radius400);
+	color: var(--grey0);
+	box-shadow: var(--box-shadow400);
+	transition: background-color 75ms ease-out;
+}
+.submit:hover {
+	background-color: var(--blue600);
+}
+
+.code {
+	margin-top: 1rem;
+	display: block;
+	background-color: var(--grey100);
+	border-radius: var(--radius400);
+	padding: 1rem;
+}
+.code pre {
+	margin: 0;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(359deg);
+	}
+	to {
+		transform: rotate(0deg);
+	}
+}
+
+.spinner {
+	display: inline-block;
+	animation: spin 1s infinite linear;
+}
