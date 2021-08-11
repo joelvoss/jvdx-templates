@@ -1251,10 +1251,10 @@
     babel-plugin-macros "^3.1.0"
     babel-plugin-transform-async-to-promises "^0.8.15"
 
-"@jvdx/core@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-2.5.0.tgz#4e94efa901b1419a6458f14f7d9d86e655023a1f"
-  integrity sha512-dXKb2EpnmTiJL2QmO5G1XtzEVfSj44v02pH/GY6ck+ydoFpVeJfzNysmN4IG4zJe0GRaEgDY2WKNct0QkxwPkg==
+"@jvdx/core@^2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@jvdx/core/-/core-2.5.1.tgz#3b71f170b90fa68452aa0e78d75a045dcf185db3"
+  integrity sha512-fmht3rYzFSnWanDoFV7rr6smYN3FMkgaK8fTbsATAXLEEzKCgQbzZr+u90dD6FtNkYBiI/IGrctxl9Inbs9Xrw==
   dependencies:
     "@babel/core" "7.15.0"
     "@jvdx/babel-preset" "1.2.4"
