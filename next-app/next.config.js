@@ -7,6 +7,7 @@ module.exports = {
 	},
 	experimental: {
 		turboMode: true,
+		esmExternals: true,
 	},
 	eslint: {
 		ignoreDuringBuilds: true,
