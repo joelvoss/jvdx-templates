@@ -17,7 +17,7 @@
     "request-lit": "^1.1.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.6.1"
+    "@jvdx/core": "^2.6.2"
   },
   "browserslist": [
     ">0.3%",
