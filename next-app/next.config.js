@@ -1,13 +1,12 @@
 module.exports = {
 	distDir: 'dist',
 	reactStrictMode: true,
-	webpack5: true,
 	future: {
 		strictPostcssConfiguration: true,
 	},
 	experimental: {
-		turboMode: true,
 		esmExternals: true,
+		concurrentFeatures: true,
 	},
 	eslint: {
 		ignoreDuringBuilds: true,
