@@ -1,3 +1,6 @@
+/**
+ * @type {import('next').NextConfig}
+ */
 module.exports = {
 	distDir: 'dist',
 	reactStrictMode: true,
@@ -6,7 +9,6 @@ module.exports = {
 	},
 	experimental: {
 		esmExternals: true,
-		concurrentFeatures: true,
 	},
 	eslint: {
 		ignoreDuringBuilds: true,

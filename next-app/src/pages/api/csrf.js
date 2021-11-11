@@ -1,15 +1,23 @@
 import cors from 'cors';
 import { csrf } from '@/lib/csrf';
+import { allowedMethods } from '@/lib/allowed-methods';
 import { initMiddleware } from '@/lib/init-middleware';
+import { getMethod } from '@/lib/get-method';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const ALLOWED_METHODS = ['OPTIONS', 'GET'];
 
+////////////////////////////////////////////////////////////////////////////////
+
+const allowedMethodsMiddleware = initMiddleware(
+	allowedMethods({ methods: ALLOWED_METHODS }),
+);
+
 const corsMiddleware = initMiddleware(
 	cors({
 		origin: true /* Reflect request origin */,
-		methods: ['OPTIONS', 'GET'],
+		methods: ALLOWED_METHODS,
 		preflightContinue: false,
 		optionsSuccessStatus: 204,
 	}),
@@ -27,28 +35,21 @@ const csrfMiddleware = initMiddleware(
  * @param {Response} res
  */
 export default async function handler(req, res) {
-	// NOTE(joel): Run middlewares first.
+	await allowedMethodsMiddleware(req, res);
 	await corsMiddleware(req, res);
 	await csrfMiddleware(req, res);
 
-	const _method = req.method && req.method.toUpperCase();
+	const method = getMethod(req);
 
-	if (_method && !ALLOWED_METHODS.includes(_method)) {
-		res.setHeader('Allow', ALLOWED_METHODS);
-		res.status(405).json({
-			code: 'METHOD_NOT_ALLOWED',
-			error: `Method "${_method}" not allowed`,
-		});
-	}
-
-	if (_method === 'GET') {
+	if (method === 'GET') {
 		return handleGET(req, res);
 	}
 }
 
 /**
- * GET /csrf
- * Returns the CSRF token.
+ * GET - /{parent=csrf}
+ * Returns a CSRF token. Used client side to retrieve a CSRF token if it cannot
+ * be seeded through SSR.
  * @param {Request} req
  * @param {Response} res
  */

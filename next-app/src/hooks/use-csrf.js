@@ -1,6 +1,16 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { memoize } from 'memoize-lit';
+import { request } from 'request-lit';
+import { isEqual } from '@/lib/is-equal';
 import { error } from '@/lib/logger';
-import { getCsrf } from '@/lib/get-csrf';
+import { getHost } from '@/lib/get-host';
+
+////////////////////////////////////////////////////////////////////////////////
+
+// NOTE(joel): Memoize the `request.get` function for one second to dedupe
+// parallel requests and act as a simple "cache" for serial requests happening
+// within this timeframe.
+const makeRequest = memoize(request.get, { maxAge: 1000, isEqual });
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,21 +49,25 @@ export function useCsrf(defaultCsrf) {
 	const setCsrf = useContext(CsrfSetterContext);
 
 	useEffect(() => {
-		(async () => {
-			if (csrf.token == null) {
-				if (defaultCsrf != null) {
-					setCsrf(defaultCsrf);
-					return;
-				}
+		if (csrf.token == null) {
+			fetchToken();
+		}
 
-				try {
-					const newCsrf = await getCsrf();
-					setCsrf(newCsrf);
-				} catch (err) {
-					error(`CLIENT_FETCH_CSRF_ERROR`, err);
-				}
+		async function fetchToken() {
+			if (defaultCsrf != null) {
+				setCsrf(defaultCsrf);
+				return;
 			}
-		})();
+
+			try {
+				const { origin } = getHost();
+				const { data } = await makeRequest('/api/csrf', { baseURL: origin });
+				const newCsrf = data?.token;
+				setCsrf(newCsrf);
+			} catch (err) {
+				error(`CLIENT_FETCH_CSRF_ERROR`, err);
+			}
+		}
 	}, [csrf.token, defaultCsrf, setCsrf]);
 
 	return csrf;

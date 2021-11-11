@@ -5,6 +5,19 @@ Short description of this library.
 ## Requirements
 
   - Node v12+
+  - Docker
+  - jq
+
+## Prerequisites
+
+(1) Make sure all requirements are met.
+
+(2) Create a `.env.local` file at the root of this repository with at least
+    the following content:
+
+```text
+PORT=3000
+```
 
 ## Development
 

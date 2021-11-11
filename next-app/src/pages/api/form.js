@@ -1,10 +1,18 @@
 import cors from 'cors';
-import { initMiddleware } from '@/lib/init-middleware';
 import { csrf } from '@/lib/csrf';
+import { allowedMethods } from '@/lib/allowed-methods';
+import { initMiddleware } from '@/lib/init-middleware';
+import { getMethod } from '@/lib/get-method';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 const ALLOWED_METHODS = ['OPTIONS', 'GET', 'POST'];
+
+////////////////////////////////////////////////////////////////////////////////
+
+const allowedMethodsMiddleware = initMiddleware(
+	allowedMethods({ methods: ALLOWED_METHODS }),
+);
 
 const corsMiddleware = initMiddleware(
 	cors({
@@ -22,6 +30,7 @@ const csrfMiddleware = initMiddleware(
 ////////////////////////////////////////////////////////////////////////////////
 
 // NOTE(joel): In-memory 'database' used to store example data.
+// This is obviously not production ready!
 let tmpData = {};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -32,44 +41,42 @@ let tmpData = {};
  * @param {Response} res
  */
 export default async function handler(req, res) {
-	// NOTE(joel): Run middlewares first.
+	await allowedMethodsMiddleware(req, res);
 	await corsMiddleware(req, res);
 	await csrfMiddleware(req, res);
 
-	const _method = req.method && req.method.toUpperCase();
+	const method = getMethod(req);
 
-	if (_method && !ALLOWED_METHODS.includes(_method)) {
-		res.setHeader('Allow', ALLOWED_METHODS);
-		res.status(405).json({
-			code: 'METHOD_NOT_ALLOWED',
-			error: `Method "${_method}" not allowed`,
-		});
-	}
-
-	if (_method === 'GET') {
+	if (method === 'GET') {
 		return handleGET(req, res);
 	}
 
-	if (_method === 'POST') {
+	if (method === 'POST') {
 		return handlePOST(req, res);
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 /**
- * GET /form
- * Returns the CSRF token.
+ * GET - /{parent=form}
+ * Returns the `tmpData`.
  * @param {Request} req
  * @param {Response} res
+ * @returns {Object}
  */
 function handleGET(req, res) {
 	return res.status(200).json(tmpData);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 /**
- * POST /form
- * Returns the CSRF token.
+ * POST - /{parent=form}
+ * Adds new data to `tmpData` and returns it.
  * @param {Request} req
  * @param {Response} res
+ * @returns {Object}
  */
 async function handlePOST(req, res) {
 	const { csrf } = req;

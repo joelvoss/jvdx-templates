@@ -25,7 +25,7 @@ export function csrf(options = {}) {
 	return (req, res, done) => {
 		const reqOrigin = req.headers.origin;
 		const csrfTokenFromHeader = req.headers['x-xsrf-token'];
-		const csrfTokenFromBody = req.body.__csrf;
+		const csrfTokenFromBody = req.body?.__csrf;
 		req.csrf = { token: null, verified: false };
 
 		// NOTE(joel): This follows the cors option signature, see

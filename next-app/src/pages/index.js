@@ -33,7 +33,7 @@ export async function getStaticProps() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default function HomePage({ data }) {
+export default function HomePage({ data = {} }) {
 	return (
 		<section>
 			<Meta title={data.pkgName} />

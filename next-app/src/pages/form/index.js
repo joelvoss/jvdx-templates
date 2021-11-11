@@ -1,25 +1,33 @@
 import * as React from 'react';
 import { request } from 'request-lit';
 import { getHost } from '@/lib/get-host';
-import { getCsrf } from '@/lib/get-csrf';
 import { getLayout as getSiteLayout } from '@/layouts/site';
 import { Meta } from '@/shared/meta';
 import * as styles from './styles.module.css';
+import { initMiddleware } from '@/lib/init-middleware';
+import { csrf } from '@/lib/csrf';
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export async function getServerSideProps({ req }) {
-	const csrf = await getCsrf({ req });
+const csrfMiddleware = initMiddleware(
+	csrf({ origin: true /* Reflect request origin */ }),
+);
+
+////////////////////////////////////////////////////////////////////////////////
+
+export async function getServerSideProps({ req, res }) {
+	await csrfMiddleware(req, res);
+
 	const { origin } = getHost(req);
 	let { data } = await request.get(`/api/form`, { baseURL: origin });
 	return {
-		props: { data, csrf },
+		props: { data, csrf: req.csrf?.token },
 	};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export default function FormPage({ data, csrf }) {
+export default function FormPage({ data, csrf = '' }) {
 	return (
 		<>
 			<Meta title="Form" />
