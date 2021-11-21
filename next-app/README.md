@@ -81,12 +81,11 @@ destination project.
 Consult the [offical Artifact Registry documentation][artifact-registry]
 for details.
 
-### Manually (locally)
+### Manually
 
 > ⚠️ **NOTICE** \
 > This is an escape hatch. \
-> Please use the automated deployment process outlined under
-> [Automatically (CI/CD)](#Automatically-CI/CD) down below.
+> Please use the automated deployment process, e.g. Github Actions.
 
 (1) Authenticate with GCP
 
