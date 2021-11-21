@@ -17,7 +17,13 @@
     "request-lit": "^1.1.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.7.1"
+    "@jvdx/core": "^2.8.2",
+    "@testing-library/jest-dom": "^5.15.0",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "identity-obj-proxy": "^3.0.0",
+    "msw": "^0.35.0",
+    "whatwg-fetch": "^3.6.2"
   },
   "browserslist": [
     ">0.3%",
@@ -27,14 +33,12 @@
   ],
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [
-    "tests/",
     "dist/"
   ],
   "eslintConfig": {
     "extends": "@jvdx/eslint-config"
   },
   "eslintIgnore": [
-    "tests/",
     "dist/"
   ]
 }

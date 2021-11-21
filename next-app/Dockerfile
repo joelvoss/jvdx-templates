@@ -5,7 +5,7 @@ FROM node:14-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # //////////////////////////////////////////////////////////////////////////////
 # BUILDER STAGE
@@ -35,13 +35,15 @@ ENV NODE_ENV production
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/.env.local ./.env.local
 COPY --from=builder /app/Taskfile.sh ./Taskfile.sh
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=runner:nodejs /app/dist ./dist
 
 USER runner
+
+EXPOSE 3000
+ENV PORT 3000
 
 ENV NEXT_TELEMETRY_DISABLED 1
 

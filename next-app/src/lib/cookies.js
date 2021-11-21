@@ -1,11 +1,23 @@
 /**
+ * @typedef {Object} CookieOptions
+ * @prop {Function} encode
+ * @prop {number} maxAge
+ * @prop {string} domain
+ * @prop {string} path
+ * @prop {Date|string} expires
+ * @prop {boolean} httpOnly
+ * @prop {boolean} secure
+ * @prop {true|'lax'|'strict'|'none'} sameSite
+ */
+
+/**
  * setCookie sets a cookie server side.
  * Credit to https://github.com/jshttp/cookie/blob/master/index.js and
  * https://github.com/zeit/next.js/blob/master/examples/api-routes-middleware/utils/cookies.js
  * @param {Response} res
  * @param {string} name
  * @param {any} value
- * @param {Object} [options={}]
+ * @param {CookieOptions} [options={}]
  */
 export function setCookie(res, name, value, options = {}) {
 	const stringValue =
@@ -28,16 +40,16 @@ export function setCookie(res, name, value, options = {}) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// eslint-disable-next-line no-control-regex
+const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
+
 /**
  * serialize creates a serialized cookie string.
  * @param {string} name
  * @param {string} val
- * @param {Object} [options={}]
+ * @param {CookieOptions} [options={}]
  */
 function serialize(name, val, options = {}) {
-	// eslint-disable-next-line no-control-regex
-	const fieldContentRegExp = /^[\u0009\u0020-\u007e\u0080-\u00ff]+$/;
-
 	const enc = options.encode || encodeURIComponent;
 
 	if (typeof enc !== 'function') {

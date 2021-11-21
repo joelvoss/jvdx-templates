@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Meta> renders proper HTML 1`] = `
+<head>
+  <meta
+    charset="utf-8"
+    data-reactroot=""
+  />
+  <meta
+    content="width=device-width"
+    data-reactroot=""
+    name="viewport"
+  />
+  <link
+    data-reactroot=""
+    href="/apple-touch-icon.png"
+    rel="apple-touch-icon"
+    sizes="180x180"
+  />
+  <link
+    data-reactroot=""
+    href="/favicon-32x32.png"
+    rel="icon"
+    sizes="32x32"
+    type="image/png"
+  />
+  <link
+    data-reactroot=""
+    href="/favicon-16x16.png"
+    rel="icon"
+    sizes="16x16"
+    type="image/png"
+  />
+  <link
+    data-reactroot=""
+    href="/site.webmanifest"
+    rel="manifest"
+  />
+  <meta
+    content="#555"
+    data-reactroot=""
+    name="theme-color"
+  />
+  <meta
+    content="template-next-app"
+    data-reactroot=""
+    name="twitter:title"
+  />
+  <meta
+    content="Next.js Template Application"
+    data-reactroot=""
+    name="twitter:description"
+  />
+  <meta
+    content="/android-chrome-512x512.png"
+    data-reactroot=""
+    name="twitter:image"
+  />
+  <meta
+    content="template-next-app"
+    data-reactroot=""
+    property="og:title"
+  />
+  <meta
+    content="Next.js Template Application"
+    data-reactroot=""
+    property="og:description"
+  />
+  <meta
+    content="/android-chrome-512x512.png"
+    data-reactroot=""
+    property="og:image"
+  />
+  <meta
+    content="https://github.com/joelvoss/jvdx-core"
+    data-reactroot=""
+    property="og:url"
+  />
+  <title
+    data-reactroot=""
+  >
+    template-next-app
+  </title>
+  <meta
+    content="Next.js Template Application"
+    data-reactroot=""
+    name="description"
+  />
+  <meta
+    content="@jvdx/core, Next.js, Template"
+    data-reactroot=""
+    name="keywords"
+  />
+  <meta
+    content="Joel Voss"
+    data-reactroot=""
+    name="author"
+  />
+</head>
+`;

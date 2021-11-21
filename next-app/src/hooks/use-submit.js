@@ -50,7 +50,8 @@ export function useSubmit(cb, options = {}) {
 			let form = target.form;
 
 			if (form == null) {
-				throw new Error(`Cannot submit a <button> without a <form>`);
+				console.error(`Cannot submit a <button> without a <form>`);
+				return;
 			}
 
 			// NOTE(joel): A submit button or input may override attributes of <form>
@@ -63,10 +64,11 @@ export function useSubmit(cb, options = {}) {
 			}
 		} else {
 			if (isHtmlElement(target)) {
-				throw new Error(
+				console.error(
 					`Cannot submit element that is not <form>, <button>, or ` +
 						`<input type="submit|image">`,
 				);
+				return;
 			}
 
 			method = options.method || 'GET';
@@ -90,14 +92,15 @@ export function useSubmit(cb, options = {}) {
 		}
 
 		const { origin } = getHost();
-		let url = new URL(action, origin);
+		const url = new URL(action, origin);
 
 		if (method.toUpperCase() === 'GET') {
 			for (let [name, value] of formData) {
 				if (typeof value === 'string') {
 					url.searchParams.set(name, value);
 				} else {
-					throw new Error(`Cannot submit binary form data using GET`);
+					console.error(`Cannot submit binary form data using GET`);
+					return;
 				}
 			}
 		}

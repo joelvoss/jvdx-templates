@@ -22,7 +22,7 @@ export async function getServerSideProps({ req }) {
 
 export default function FormWithJSPage({ data }) {
 	// NOTE(joel): In this example we're getting the CSRF token client side.
-	const { csrf } = useCsrf();
+	const { token: csrf } = useCsrf();
 
 	// NOTE(joel): This example intercepts the form's `onSubmit` action and
 	// performs the POST request client side with JavaScript. This allows us to

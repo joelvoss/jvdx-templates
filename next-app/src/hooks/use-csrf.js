@@ -25,11 +25,11 @@ export const CsrfSetterContext = createContext();
  * @param {{ children: JSX.Element|JSX.Element[], csrf: string }}
  */
 export function CsrfProvider({ children, csrf: defaultCsrf }) {
-	const [csrf, setCsrf] = useState(defaultCsrf);
+	const [token, tokenSet] = useState(defaultCsrf);
 	return (
-		<CsrfSetterContext.Provider value={setCsrf}>
+		<CsrfSetterContext.Provider value={tokenSet}>
 			<CsrfValueContext.Provider
-				value={{ csrf, isLoading: Boolean(csrf == null) }}
+				value={{ token, isLoading: Boolean(token == null) }}
 			>
 				{children}
 			</CsrfValueContext.Provider>
@@ -48,8 +48,14 @@ export function useCsrf(defaultCsrf) {
 	const csrf = useContext(CsrfValueContext);
 	const setCsrf = useContext(CsrfSetterContext);
 
+	if (csrf == null || setCsrf == null) {
+		throw new TypeError(
+			`No context found. Please wrap components using 'useCsrf' in a '<CsrfProvider>'.`,
+		);
+	}
+
 	useEffect(() => {
-		if (csrf.token == null) {
+		if (csrf?.token == null) {
 			fetchToken();
 		}
 
@@ -68,7 +74,7 @@ export function useCsrf(defaultCsrf) {
 				error(`CLIENT_FETCH_CSRF_ERROR`, err);
 			}
 		}
-	}, [csrf.token, defaultCsrf, setCsrf]);
+	}, [csrf?.token, defaultCsrf, setCsrf]);
 
 	return csrf;
 }

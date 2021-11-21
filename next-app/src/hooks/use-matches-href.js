@@ -24,9 +24,9 @@ function match(path, url, strict = false) {
 	const expression = path instanceof RegExp ? path : pathToRegExp(path);
 	const match = expression.exec(url) || false;
 
-	// Matches in strict mode: match string should equal to input (url)
+	// NOTE(joel): Matches in strict mode: match string should equal to input
 	// Otherwise loose matches will be considered truthy:
-	// match('/messages/:id', '/messages/123/users') // true
+	// match('/messages/:id', '/messages/123/users') // -> true
 	const matches = strict
 		? path instanceof RegExp
 			? !!match
@@ -49,22 +49,22 @@ function match(path, url, strict = false) {
  */
 function pathToRegExp(path) {
 	const pattern = path
-		// Escape literal dots
+		// NOTE(joel): Escape literal dots
 		.replace(/\./g, '\\.')
-		// Escape literal slashes
+		// NOTE(joel): Escape literal slashes
 		.replace(/\//g, '/')
-		// Escape literal question marks
+		// NOTE(joel): Escape literal question marks
 		.replace(/\?/g, '\\?')
-		// Ignore trailing slashes
+		// NOTE(joel): Ignore trailing slashes
 		.replace(/\/+$/, '')
-		// Replace wildcard with any zero-to-any character sequence
+		// NOTE(joel): Replace wildcard with any zero-to-any character sequence
 		.replace(/\*+/g, '.*')
-		// Replace parameters with named capturing groups
+		// NOTE(joel): Replace parameters with named capturing groups
 		.replace(
 			/:([^\d|^/][a-zA-Z0-9_]*(?=(?:\/|\\.)|$))/g,
 			(_, paramName) => `(?<${paramName}>[^/]+?)`,
 		)
-		// Allow optional trailing slash
+		// NOTE(joel): Allow optional trailing slash
 		.concat('(\\/|$)');
 
 	return new RegExp(pattern, 'gi');

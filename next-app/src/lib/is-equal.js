@@ -1,7 +1,7 @@
 /**
  * isEqual checks if two sets of arguments are the same after stringifying.
- * @param {any} newArgs
- * @param {any} lastArgs
+ * @param {array} newArgs
+ * @param {array} lastArgs
  * @returns {boolean}
  */
 export function isEqual(newArgs, lastArgs) {
