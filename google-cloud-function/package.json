@@ -10,10 +10,10 @@
     "test": "./Taskfile.sh test"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^1.9.0"
+    "@google-cloud/functions-framework": "^2.0.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.7.0",
+    "@jvdx/core": "^2.8.3",
     "uuid": "^8.3.2"
   },
   "prettier": "@jvdx/prettier-config",
