@@ -1,26 +1,31 @@
 import Link from 'next/link';
 import { getLayout as getSiteLayout } from '@/layouts/site';
 import { Meta } from '@/shared/meta';
+import { useI18n } from '@/hooks/use-i18n';
 import * as styles from './styles.module.css';
 
-export default function Custom404() {
-	return (
-		<section className={styles.section}>
-			<Meta title="404 | Page Not Found" />
+/**
+ * Pre-rendered 404 page
+ * @see https://nextjs.org/docs/advanced-features/custom-error-page
+ */
+export default function NotFoundPage() {
+	const t = useI18n(s => s.translate);
 
-			<div className={styles.container}>
-				<h1 className={styles.h1}>
-					<b>404</b> | Page Not Found
-				</h1>
-				<p className={styles.p}>
-					<i>The page you are looking for can’t be found.</i>
-				</p>
-				<Link href="/">
-					<a className={styles.link}>← Back to Home</a>
-				</Link>
-			</div>
-		</section>
+	return (
+		<>
+			<Meta title={t('404.title')} />
+
+			<section className={styles.section}>
+				<div className={styles.container}>
+					<h1 className={styles.heading}>{t('404.heading')}</h1>
+					<p className={styles.body}>{t('404.description')}</p>
+					<Link href="/" passHref>
+						<a className={styles.link}>{t('404.link')}</a>
+					</Link>
+				</div>
+			</section>
+		</>
 	);
 }
 
-Custom404.getLayout = getSiteLayout;
+NotFoundPage.getLayout = getSiteLayout;

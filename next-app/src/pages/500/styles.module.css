@@ -11,17 +11,19 @@
 	padding: 1rem;
 }
 
-.h1 {
+.heading {
 	display: block;
 	text-align: center;
 	font-size: 1rem;
 	margin: 0;
+	font-weight: bold;
 }
 
-.p {
+.body {
 	display: block;
 	margin: 0;
 	margin-top: 1rem;
+	max-width: 48rem;
 }
 
 .link {

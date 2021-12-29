@@ -1,50 +1,24 @@
-import cors from 'cors';
-import { csrf } from '@/lib/csrf';
-import { allowedMethods } from '@/lib/allowed-methods';
-import { initMiddleware } from '@/lib/init-middleware';
 import { getMethod } from '@/lib/get-method';
-
-////////////////////////////////////////////////////////////////////////////////
-
-const ALLOWED_METHODS = ['OPTIONS', 'GET'];
-
-////////////////////////////////////////////////////////////////////////////////
-
-const allowedMethodsMiddleware = initMiddleware(
-	allowedMethods({ methods: ALLOWED_METHODS }),
-);
-
-const corsMiddleware = initMiddleware(
-	cors({
-		origin: true /* Reflect request origin */,
-		methods: ALLOWED_METHODS,
-		preflightContinue: false,
-		optionsSuccessStatus: 204,
-	}),
-);
-
-const csrfMiddleware = initMiddleware(
-	csrf({ origin: true /* Reflect request origin */ }),
-);
+import { withApiMiddlewares } from '@/lib/with-api-middlewares';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * OPTIONS | GET - /{parent=csrf}
  * Main request handler for all incoming request.
  * @param {Request} req
  * @param {Response} res
  */
-export default async function handler(req, res) {
-	await allowedMethodsMiddleware(req, res);
-	await corsMiddleware(req, res);
-	await csrfMiddleware(req, res);
+export default withApiMiddlewares(
+	(req, res) => {
+		const method = getMethod(req);
 
-	const method = getMethod(req);
-
-	if (method === 'GET') {
-		return handleGET(req, res);
-	}
-}
+		if (method === 'GET') {
+			return handleGET(req, res);
+		}
+	},
+	{ allowedMethods: ['OPTIONS', 'GET'] },
+);
 
 /**
  * GET - /{parent=csrf}

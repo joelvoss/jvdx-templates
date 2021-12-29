@@ -1,13 +1,10 @@
-// eslint-disable-next-line no-console
-const stdout = console.log.bind(console);
-const stderr = console.error.bind(console);
-
 /**
  * info logs an info message to the console
  * @param {string} msg
  */
 export function info(...msg) {
-	stdout(`info - `, ...msg);
+	// eslint-disable-next-line no-console
+	console.log(`info - `, ...msg);
 }
 
 /**
@@ -15,5 +12,6 @@ export function info(...msg) {
  * @param {string} msg
  */
 export function error(...msg) {
-	stderr(`err - `, ...msg);
+	// eslint-disable-next-line no-console
+	console.error(`err - `, ...msg);
 }

@@ -12,6 +12,7 @@ module.exports = {
 		'^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
 		'^@/shared/(.*)$': '<rootDir>/src/shared/$1',
 		'^@/lib/(.*)$': '<rootDir>/src/lib/$1',
+		'^@/locales/(.*)$': '<rootDir>/src/locales/$1',
 	},
 	setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
 	testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/'],

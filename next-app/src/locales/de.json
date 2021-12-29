@@ -1,0 +1,46 @@
+{
+	"global": {
+		"app-title": "template-next-app",
+		"nav": {
+			"home": "Home",
+			"form": "Form (w/o JS)",
+			"form-js": "Form (with JS)"
+		}
+	},
+	"500": {
+		"title": "500 | template-next-app",
+		"heading": "Unknown server error",
+		"description": "We are sorry, the page you requested is temporarily unavailable. It could be that you have accessed an incorrect or outdated URL. Please check it again. Or try to find the desired page via our home page.",
+		"link": "← Home page"
+	},
+	"404": {
+		"title": "404 | template-next-app",
+		"heading": "Sorry, the page you are looking for was not found",
+		"description": "We are sorry, the page you requested does not exist or is temporarily unavailable. It could be that you have accessed an incorrect or outdated URL. Please check it again. Or try to find the desired page via our home page.",
+		"link": "← Home page"
+	},
+	"home": {
+		"title": "Home | template-next-app",
+		"desc": [
+			"Explanation:",
+			"This page is statically generated with Next.js by fetching data from GitHub.",
+			"Importantly, this page is being re-generated using",
+			"Incremental Static Regeneration"
+		]
+	},
+	"form": {
+		"title": "Form (w/o JS) | template-next-app",
+		"label-text-input": "Text input",
+		"submit-button": "Submit",
+		"csrf": "CSRF: {{csrf}}",
+		"data": "Data: {{data}}"
+	},
+	"form-js": {
+		"title": "Form (with JS) | template-next-app",
+		"label-text-input": "Text input",
+		"submit-button": "Submit",
+		"csrf": "CSRF: {{csrf}}",
+		"data": "Data: {{data}}",
+		"spinner": "🌀"
+	}
+}

@@ -1,26 +1,27 @@
 import { useState } from 'react';
 import { request } from 'request-lit';
 import { error } from '@/lib/logger';
-import { getHost } from '@/lib/get-host';
-import { getLayout as getSiteLayout } from '@/layouts/site';
-import { Meta } from '@/shared/meta';
+import { withSSRMiddlewares } from '@/lib/with-ssr-middlewares';
 import { useCsrf } from '@/hooks/use-csrf';
 import { useSubmit } from '@/hooks/use-submit';
+import { getLayout as getSiteLayout } from '@/layouts/site';
+import { Meta } from '@/shared/meta';
 import * as styles from './styles.module.css';
+import { useI18n } from '@/hooks/use-i18n';
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export async function getServerSideProps({ req }) {
-	const { origin } = getHost(req);
-	let { data } = await request.get(`/api/form`, { baseURL: origin });
-	return {
-		props: { data },
-	};
-}
+export const getServerSideProps = withSSRMiddlewares(async ({ req }) => {
+	let { data } = await request.get(`/api/form`, { baseURL: req.baseURL });
+
+	return { props: { data } };
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export default function FormWithJSPage({ data }) {
+	const t = useI18n(s => s.translate);
+
 	// NOTE(joel): In this example we're getting the CSRF token client side.
 	const { token: csrf } = useCsrf();
 
@@ -48,26 +49,26 @@ export default function FormWithJSPage({ data }) {
 
 	return (
 		<>
-			<Meta title="Form" />
+			<Meta title={t(`form-js.title`)} />
 
 			<form method="POST" action="/api/form" onSubmit={submit}>
 				<fieldset className={styles.fieldset}>
 					<label htmlFor="text-input" className={styles.label}>
-						Text input
+						{t(`form-js.label-text-input`)}
 					</label>
 					<Input type="text" name="text-input" />
 				</fieldset>
 
 				<button className={styles.submit} type="submit">
-					Submit
+					{t(`form-js.submit-button`)}
 				</button>
 			</form>
 
 			<code className={styles.code}>
-				<pre>CSRF: {JSON.stringify(csrf, null, 2)}</pre>
+				<pre>{t(`form-js.csrf`, { csrf: JSON.stringify(csrf, null, 2) })}</pre>
 			</code>
 			<code className={styles.code}>
-				<pre>Data: {JSON.stringify(data, null, 2)}</pre>
+				<pre>{t(`form-js.data`, { data: JSON.stringify(data, null, 2) })}</pre>
 			</code>
 
 			{status === 'loading' ? <Spinner /> : null}
@@ -86,5 +87,6 @@ function Input({ name, ...rest }) {
 ////////////////////////////////////////////////////////////////////////////////
 
 function Spinner() {
-	return <span className={styles.spinner}>🌀</span>;
+	const t = useI18n(s => s.translate);
+	return <span className={styles.spinner}>{t(`form-js.spinner`)}</span>;
 }

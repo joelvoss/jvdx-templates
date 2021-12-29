@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Meta } from '@/shared/meta';
 import { getLayout as getSiteLayout } from '@/layouts/site';
 import * as styles from './index.module.css';
+import { useI18n } from '@/hooks/use-i18n';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,9 +35,11 @@ export async function getStaticProps() {
 ////////////////////////////////////////////////////////////////////////////////
 
 export default function HomePage({ data = {} }) {
+	const t = useI18n(s => s.translate);
+
 	return (
 		<section>
-			<Meta title={data.pkgName} />
+			<Meta title={t(`home.title`)} />
 
 			<code className={styles.code}>
 				<pre>{JSON.stringify(data, null, 2)}</pre>
@@ -45,18 +48,16 @@ export default function HomePage({ data = {} }) {
 			<span className={styles.spacer} />
 
 			<p className={styles.p}>
-				<strong>Explanation:</strong> This page is statically generated with
-				Next.js by fetching data from GitHub.
+				<strong>{t(`home.desc.0`)}</strong> {t(`home.desc.1`)}
 			</p>
 			<p className={styles.p}>
-				Importantly, this page is being re-generated using{' '}
+				{t(`home.desc.2`)}{' '}
 				<a
 					href="https://nextjs.org/docs/basic-features/data-fetching#incremental-static-regeneration"
 					className={styles.a}
 				>
-					Incremental Static Regeneration
+					{t(`home.desc.3`)}
 				</a>
-				.
 			</p>
 		</section>
 	);
