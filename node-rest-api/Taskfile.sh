@@ -13,11 +13,11 @@ fi
 # START tasks
 
 start() {
-  node dist/node-rest-api.js
+  node dist/index.esm.js
 }
 
 build() {
-  jvdx build --clean --format=cjs --target=node --no-sourcemap $*
+  jvdx build --clean --format=esm --target=node --no-sourcemap $*
 }
 
 format() {
@@ -29,7 +29,7 @@ lint() {
 }
 
 test() {
-  jvdx test --testPathPattern=/tests $*
+  jvdx test --testPathPattern=/tests --config=jest.config.json $*
 }
 
 validate() {
