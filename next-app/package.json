@@ -19,7 +19,7 @@
     "zustand": "^3.6.8"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.9.2",
+    "@jvdx/core": "^2.9.3",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
