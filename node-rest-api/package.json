@@ -18,15 +18,15 @@
   "dependencies": {
     "compression": "1.7.4",
     "cors": "2.8.5",
-    "dotenv": "10.0.0",
-    "dotenv-expand": "5.1.0",
+    "dotenv": "14.2.0",
+    "dotenv-expand": "6.0.1",
     "express": "4.17.2",
     "helmet": "5.0.1",
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.9.3",
-    "got": "^12.0.0",
+    "@jvdx/core": "^2.10.0",
+    "got": "^12.0.1",
     "test-listen": "^1.1.0"
   },
   "prettier": "@jvdx/prettier-config",
