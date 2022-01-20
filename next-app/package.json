@@ -10,21 +10,21 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "immer": "^9.0.7",
+    "immer": "^9.0.12",
     "memoize-lit": "^1.3.4",
-    "next": "12.0.7",
+    "next": "12.0.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "request-lit": "^1.2.1",
-    "zustand": "^3.6.8"
+    "request-lit": "^1.2.2",
+    "zustand": "^3.6.9"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.9.3",
+    "@jvdx/core": "^2.10.0",
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
     "identity-obj-proxy": "^3.0.0",
-    "msw": "^0.36.3",
+    "msw": "^0.36.5",
     "whatwg-fetch": "^3.6.2"
   },
   "browserslist": [
