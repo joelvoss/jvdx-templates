@@ -29,7 +29,7 @@ lint() {
 }
 
 test() {
-  jvdx test --testPathPattern=/tests --config=jest.config.json $*
+  jvdx test --testPathPattern=/tests $*
 }
 
 validate() {

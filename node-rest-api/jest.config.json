@@ -1,6 +1,0 @@
-{
-	"preset": "@jvdx/jest-preset",
-	"transformIgnorePatterns": [
-		"node_modules/(?!(got|p-cancelable|@szmarczak|lowercase-keys)/)"
-	]
-}
