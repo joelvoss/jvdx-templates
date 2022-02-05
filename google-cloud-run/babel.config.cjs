@@ -4,7 +4,7 @@ module.exports = {
 			'@jvdx/babel-preset',
 			{
 				'preset-env': {
-					targets: { node: 14 },
+					targets: { node: 16 },
 				},
 			},
 		],
