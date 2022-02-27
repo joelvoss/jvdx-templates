@@ -20,11 +20,11 @@
     "cors": "2.8.5",
     "dotenv": "16.0.0",
     "dotenv-expand": "8.0.1",
-    "express": "4.17.2",
+    "express": "4.17.3",
     "helmet": "5.0.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.11.0"
+    "@jvdx/core": "^2.12.0"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [
