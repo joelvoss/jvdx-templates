@@ -35,7 +35,7 @@ describe('csrf', () => {
 			});
 
 			expect(setHeader).toBeCalledWith('Set-Cookie', [
-				'XSRF-TOKEN=74657374%7C01df32396e63e90f0f3a1c57bfc9e677b2ef80111b188efced758e15be34e097; Path=/; HttpOnly; SameSite=Lax',
+				'XSRF-TOKEN=74657374%7Ced938d57e84ead01cc7b23fff5aa24ff4f3884465ae96a88f5ab26895f6cd474; Path=/; HttpOnly; SameSite=Lax',
 			]);
 			expect(done).toBeCalledTimes(1);
 		});
@@ -50,7 +50,7 @@ describe('csrf', () => {
 				},
 				cookies: {
 					'XSRF-TOKEN':
-						'74657374|01df32396e63e90f0f3a1c57bfc9e677b2ef80111b188efced758e15be34e097',
+						'74657374|ed938d57e84ead01cc7b23fff5aa24ff4f3884465ae96a88f5ab26895f6cd474',
 				},
 			};
 			const setHeader = jest.fn();
@@ -86,7 +86,7 @@ describe('csrf', () => {
 			});
 
 			expect(setHeader).toBeCalledWith('Set-Cookie', [
-				'__Host-XSRF-TOKEN=74657374%7Cc59266560faff9ee01fd99a32cff83a29983d8ea8fdb55777bd409a71f5e8be7; Path=/; HttpOnly; Secure; SameSite=Lax',
+				'__Host-XSRF-TOKEN=74657374%7Cab3791af2237e52b0e4b0f9e9bf24a3a5f78cb0fedf8f9055c519a00f6bf40b3; Path=/; HttpOnly; Secure; SameSite=Lax',
 			]);
 			expect(done).toBeCalledTimes(1);
 		});
@@ -108,7 +108,7 @@ describe('csrf', () => {
 			});
 
 			expect(setHeader).toBeCalledWith('Set-Cookie', [
-				'test-prefix=74657374%7C01df32396e63e90f0f3a1c57bfc9e677b2ef80111b188efced758e15be34e097; Path=/; HttpOnly; SameSite=Lax',
+				'test-prefix=74657374%7Ced938d57e84ead01cc7b23fff5aa24ff4f3884465ae96a88f5ab26895f6cd474; Path=/; HttpOnly; SameSite=Lax',
 			]);
 			expect(done).toBeCalledTimes(1);
 		});
