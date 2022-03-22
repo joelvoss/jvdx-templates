@@ -4,8 +4,9 @@ Short description of this library.
 
 ## Requirements
 
-  - Node v12+
-  - gcloud SDK
+- [Node v16+][install-node]
+- [gcloud SDK][install-gcloud]
+- [jq][install-jq]
 
 ## Development
 
@@ -27,9 +28,11 @@ $ ./Taskfile.sh validate
 [`@google-cloud/functions-framework`][functions-framework].
 
 ```bash
-$ ./Taskfile.sh start-ff-http
-# or
-$ ./Taskfile.sh start-ff-event
+# Serve your function on localhost:8080
+$ ./Taskfile.sh dev <event-type> <exported-function-name>
+
+# Call your function from another shell
+$ ./Taskfile.sh publish <event-type>
 ```
 
 > See [`./Taskfile.sh`](./Taskfile.sh) for more tasks to help you develop.
@@ -45,24 +48,20 @@ $ gcloud auth login
 (2) Build and deploy
 
 ```bash
-$ ./Taskfile.sh build
-
-$ gcloud functions deploy <NAME> \
-    --region=<REGION> \
-    --project=<PROJECT_ID> \
-    # Trigger type: --trigger-http, --trigger-bucket=TRIGGER_BUCKET, --trigger-topic=TRIGGER_TOPIC
-    --trigger-http \
-    --runtime=nodejs12 \
-    --entry-point=<REQ_HANDLER_NAME> \
-    --memory=<MEMORY> \
-    --max-instances=<INSTANCE_COUNT>
+$ ./Taskfile.sh deploy <environment>
 ```
 
-> See [the official documentation][gcloud-deploy] for all available options. 
+> See [`./Taskfile.sh`](./Taskfile.sh) for the possible environments. You can
+> modify the `gcloud functions deploy` call inside the `./Taskfile.sh` to serve
+> your needs. Consult [the official documentation][gcloud-deploy] for all
+> available options. 
 
 ---
 
 _This project was set up by @jvdx/core_
 
 [functions-framework]: https://github.com/GoogleCloudPlatform/functions-framework-nodejs
+[install-node]: https://github.com/nvm-sh/nvm
+[install-gcloud]: https://cloud.google.com/sdk/docs/install
+[install-jq]: https://stedolan.github.io/jq/
 [gcloud-deploy]: https://cloud.google.com/sdk/gcloud/reference/functions/deploy
