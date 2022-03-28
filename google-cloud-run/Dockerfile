@@ -1,24 +1,47 @@
-# Use the official lightweight Node.js 10 image.
-FROM node:16-slim
+# //////////////////////////////////////////////////////////////////////////////
+# DEPENDENCY STAGE
 
-# Create and change to the app directory.
-WORKDIR /usr/src/app
+FROM node:16-alpine AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Copy application dependency manifests to the container image.
-# Copying this separately prevents re-running the dependency install process
-# on every build
-COPY package.json package-lock.json yarn.lock Taskfile.sh ./
+# //////////////////////////////////////////////////////////////////////////////
+# BUILDER STAGE
 
-# Install production dependencies.
-RUN yarn --frozen-lockfile
+FROM node:16-alpine AS builder
+# Alpine does not come with a bash shell
+RUN apk add --no-cache --upgrade bash
+WORKDIR /app
 
-# Copy application code
-RUN mkdir ./dist
-COPY ./dist ./dist
+COPY . .
+COPY --from=deps /app/node_modules ./node_modules
 
-# Use special node user, so our app won't run as root.
-# To install dependencies we needed root priveleges.
-USER node
+RUN ./Taskfile.sh build
 
-# Run the web service on container startup.
+# //////////////////////////////////////////////////////////////////////////////
+# RUNNER STAGE
+
+FROM node:16-alpine as runner
+# Alpine does not come with a bash shell
+RUN apk add --no-cache --upgrade bash
+WORKDIR /app
+
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S runner -u 1001
+
+ENV NODE_ENV production
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/Taskfile.sh ./Taskfile.sh
+COPY --from=builder /app/dist ./dist
+
+USER runner
+
+EXPOSE 3000
+ENV PORT 3000
+
 CMD [ "./Taskfile.sh", "start" ]

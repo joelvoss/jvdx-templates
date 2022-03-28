@@ -2,43 +2,50 @@ import express, { json } from 'express';
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';
-import { loadEnvConfig } from './helper/env';
-import { trace, info } from './helper/console';
-import { cacheControl } from './helper/cache-control';
+import { loadEnvConfig } from '@/helper/env';
+import { trace, info } from '@/helper/console';
+import { cacheControl } from '@/helper/cache-control';
+import { enableFetchPolyfill } from '@/helper/node-fetch-polyfill';
+
+// Polyfill fetch
+enableFetchPolyfill();
 
 // Load environment variables
 loadEnvConfig('./', process.env.NODE_ENV !== 'production', {
-	PORT: 3000,
+	PORT: process.env.PORT || 3000,
 });
 
-// Routes
-import { router as books } from './routes/books';
+// Import custom route implementations
+import { router as helloWorld } from './routes/hello-world';
 
 export const app = express();
 
-// Middlewares
+// Use middlewares
 app.use(
 	cors({
 		origin: true, // Reflect request origin
-		methods: ['GET', 'OPTIONS', 'PUT', 'POST', 'DELETE'],
+		methods: ['GET', 'OPTIONS'],
 		preflightContinue: false,
 		optionsSuccessStatus: 204,
 	}),
 );
-app.use(trace({ projectId: 'jvoss-base-prod' }));
+
+if (process.env.GOOGLE_PROJECT != undefined) {
+	app.use(trace({ projectId: process.env.GOOGLE_PROJECT }));
+}
 app.use(compression());
 app.use(helmet());
 app.use(json());
 app.use(cacheControl());
 
-// Route configurations
+// Fallback route
 app.get(`/`, (_, res) => res.status(200).json());
 
-// NOTE(joel): Handle App-Engine /_ah/start, /_ah/stop, /_ah/health routes
+// GCP health-check routes
 app.get(`/_ah/**`, (_, res) => res.status(200).json());
 
 // Custom routes
-app.use(`/books`, books);
+app.use(`/hello-world`, helloWorld);
 
 // Start server (except when we're testing)
 if (process.env.NODE_ENV !== 'test') {

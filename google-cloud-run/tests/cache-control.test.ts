@@ -1,8 +1,11 @@
 import { cacheControl } from '../src/helper/cache-control';
 
+import type { Request, Response, NextFunction } from 'express';
+
 describe('cacheControl', () => {
-	let mockRes = {},
-		mockNext;
+	let mockReq = {} as Request;
+	let mockRes = {} as Response;
+	let mockNext: NextFunction;
 
 	beforeEach(() => {
 		mockRes.set = jest.fn();
@@ -14,7 +17,7 @@ describe('cacheControl', () => {
 	});
 
 	it(`should generate a private Cache-Control header in non-production environments`, () => {
-		cacheControl()(null, mockRes, mockNext);
+		cacheControl()(mockReq, mockRes, mockNext);
 		expect(mockNext).toBeCalledTimes(1);
 		expect(mockRes.set).toBeCalledWith(
 			'Cache-Control',
@@ -29,7 +32,7 @@ describe('cacheControl', () => {
 			NODE_ENV: 'production',
 		});
 
-		cacheControl()(null, mockRes, mockNext);
+		cacheControl()(mockReq, mockRes, mockNext);
 		expect(mockNext).toBeCalledTimes(1);
 		expect(mockRes.set).toBeCalledWith(
 			'Cache-Control',
@@ -46,7 +49,7 @@ describe('cacheControl', () => {
 			NODE_ENV: 'production',
 		});
 
-		cacheControl({ maxAge: 10, sMaxAge: 20 })(null, mockRes, mockNext);
+		cacheControl({ maxAge: 10, sMaxAge: 20 })(mockReq, mockRes, mockNext);
 		expect(mockNext).toBeCalledTimes(1);
 		expect(mockRes.set).toBeCalledWith(
 			'Cache-Control',
@@ -63,7 +66,7 @@ describe('cacheControl', () => {
 			NODE_ENV: 'production',
 		});
 
-		cacheControl(false)(null, mockRes, mockNext);
+		cacheControl({ enabled: false })(mockReq, mockRes, mockNext);
 		expect(mockNext).toBeCalledTimes(1);
 		expect(mockRes.set).toBeCalledWith(
 			'Cache-Control',
