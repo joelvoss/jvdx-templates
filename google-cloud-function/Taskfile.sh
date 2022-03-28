@@ -87,12 +87,17 @@ lint() {
   jvdx lint $*
 }
 
+typecheck() {
+  jvdx typecheck $*
+}
+
 test() {
   jvdx test --testPathPattern=/tests $*
 }
 
 validate() {
   lint $*
+  typecheck $*
   test $*
 }
 
