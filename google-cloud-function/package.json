@@ -6,9 +6,6 @@
   "source": "src/index.ts",
   "main": "dist/template-google-cloud-function.esm.js",
   "type": "module",
-  "engines": {
-    "node": "16"
-  },
   "scripts": {
     "start": "./Taskfile.sh start",
     "test": "./Taskfile.sh test"
