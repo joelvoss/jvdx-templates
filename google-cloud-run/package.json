@@ -4,9 +4,6 @@
   "author": "Your Name <your.name@mail.com>",
   "license": "MIT",
   "type": "module",
-  "engines": {
-    "node": "16"
-  },
   "source": "src/index.ts",
   "module": "dist/template-google-cloud-run.esm.js",
   "scripts": {
