@@ -4,7 +4,7 @@ Short description of this library.
 
 ## Requirements
 
-  - Node v12+
+- [Node v16+][install-node]
 
 ## Installation
 
@@ -36,3 +36,5 @@ $ ./Taskfile.sh validate
 ---
 
 _This project was set up by @jvdx/core_
+
+[install-node]: https://github.com/nvm-sh/nvm

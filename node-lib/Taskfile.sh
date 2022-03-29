@@ -4,20 +4,20 @@ set -e
 PATH=./node_modules/.bin:$PATH
 
 # Export environment variables from `.env`
-if [ -f .env ]
+if [ -f .env.local ]
 then
-  export $(cat .env | sed 's/#.*//g' | xargs)
+  export $(cat .env.local | sed 's/#.*//g' | xargs)
 fi
 
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
 start() {
-  node dist/node-lib.js
+  node dist/template-node-lib.module.js
 }
 
 build() {
-  jvdx build --clean --format=cjs --target=node $*
+  jvdx build --clean -f cjs,esm --no-sourcemap $*
 }
 
 format() {
@@ -28,13 +28,17 @@ lint() {
   jvdx lint $*
 }
 
+typecheck() {
+  jvdx typecheck $*
+}
+
 test() {
   jvdx test --testPathPattern=/tests $*
 }
 
 validate() {
-  format $*
   lint $*
+  typecheck $*
   test $*
 }
 

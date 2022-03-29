@@ -3,16 +3,28 @@
   "version": "1.0.0",
   "author": "Your Name <your.name@mail.com>",
   "license": "MIT",
-  "source": "src/index.js",
-  "main": "dist/node-lib.js",
+  "type": "module",
+  "source": "src/index.ts",
+  "main": "dist/template-node-lib.cjs",
+  "module": "dist/template-node-lib.module.js",
+  "exports": {
+    "require": "./dist/template-node-lib.cjs",
+    "import": "./dist/template-node-lib.module.js"
+  },
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE"
+  ],
   "scripts": {
-    "start": "./Taskfile.sh",
+    "start": "./Taskfile.sh start",
     "test": "./Taskfile.sh test",
     "prepublishOnly": "./Taskfile.sh build"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@jvdx/core": "^2.12.0"
+    "@jvdx/core": "^2.15.0",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^17.0.23"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [
@@ -20,7 +32,10 @@
     "dist/"
   ],
   "eslintConfig": {
-    "extends": "@jvdx/eslint-config"
+    "extends": "@jvdx/eslint-config",
+    "rules": {
+      "no-duplicate-imports": 0
+    }
   },
   "eslintIgnore": [
     "tests/",
