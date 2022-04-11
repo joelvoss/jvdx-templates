@@ -1,6 +1,6 @@
 # //////////////////////////////////////////////////////////////////////////////
 # DEPENDENCY STAGE
-FROM node:14-alpine AS deps
+FROM node:16-alpine AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
@@ -9,7 +9,7 @@ RUN npm ci
 
 # //////////////////////////////////////////////////////////////////////////////
 # BUILDER STAGE
-FROM node:14-alpine AS builder
+FROM node:16-alpine AS builder
 # Alpine does not come with a bash shell
 RUN apk add --no-cache --upgrade bash
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN ./Taskfile.sh build
 
 # //////////////////////////////////////////////////////////////////////////////
 # RUNNER STAGE
-FROM node:14-alpine AS runner
+FROM node:16-alpine AS runner
 # Alpine does not come with a bash shell
 RUN apk add --no-cache --upgrade bash
 WORKDIR /app

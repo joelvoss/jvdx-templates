@@ -3,13 +3,9 @@
  */
 module.exports = {
 	distDir: 'dist',
+	cleanDistDir: true,
 	reactStrictMode: true,
-	future: {
-		strictPostcssConfiguration: true,
-	},
-	experimental: {
-		esmExternals: true,
-	},
+	swcMinify: true,
 	eslint: {
 		ignoreDuringBuilds: true,
 	},

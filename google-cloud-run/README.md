@@ -4,8 +4,10 @@ Short description of this library.
 
 ## Requirements
 
-  - Node v14+
-  - gcloud SDK
+- [Node v16+][install-node]
+- [gcloud SDK][install-gcloud]
+- [Docker][install-docker]
+- [jq][install-jq]
 
 ## Development
 
@@ -59,5 +61,8 @@ $ ./Taskfile.sh deploy
 
 _This project was set up by @jvdx/core_
 
-[functions-framework]: https://github.com/GoogleCloudPlatform/functions-framework-nodejs
-[gcloud-deploy]: https://cloud.google.com/sdk/gcloud/reference/functions/deploy
+[install-node]: https://github.com/nvm-sh/nvm
+[install-gcloud]: https://cloud.google.com/sdk/docs/install
+[install-docker]: https://docs.docker.com/get-docker/
+[install-jq]: https://stedolan.github.io/jq/
+[gcloud-deploy]: https://cloud.google.com/sdk/gcloud/reference/run/deploy

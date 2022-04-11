@@ -1,31 +1,24 @@
-module.exports = {
-	preset: '@jvdx/jest-preset',
-	moduleNameMapper: {
-		// NOTE(joel): Handle CSS imports (with CSS modules).
-		'^.+\\.module\\.(css|sass|scss)$': 'identity-obj-proxy',
-		// NOTE(joel): Handle CSS imports (w/o CSS modules).
-		'^.+\\.(css|sass|scss)$': '<rootDir>/tests/__mocks__/style-mock.js',
+const nextJest = require('next/jest');
 
+const createJestConfig = nextJest({ dir: '.' });
+
+const customJestConfig = {
+	setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+	moduleDirectories: ['node_modules', '<rootDir>/'],
+	testEnvironment: 'jest-environment-jsdom',
+	testPathIgnorePatterns: ['./dist'],
+	watchPathIgnorePatterns: ['./dist'],
+	moduleNameMapper: {
 		// NOTE(joel): Handle module aliases. Aliases have to match those defined in
-		// `/jsconfig.json`.
+		// `<rootDir>/tsconfig.json`.
 		'^@/layouts/(.*)$': '<rootDir>/src/layouts/$1',
 		'^@/hooks/(.*)$': '<rootDir>/src/hooks/$1',
 		'^@/shared/(.*)$': '<rootDir>/src/shared/$1',
 		'^@/lib/(.*)$': '<rootDir>/src/lib/$1',
 		'^@/locales/(.*)$': '<rootDir>/src/locales/$1',
 	},
-	setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
-	testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/dist/'],
-	transform: {
-		// NOTE(joel): Use babel-jest to transpile tests with the next/babel preset.
-		// We don't want to use a `babel.config.json` file so Next.js 12 can use
-		// the rust based compiler SWC for transpilation.
-		// Transform path matcher RegExp have to match those defined in
-		// `@jvdx/jest-preset`.
-		'^.+\\.jsx?$': ['babel-jest', { presets: ['next/babel'] }],
-	},
-	transformIgnorePatterns: [
-		'/node_modules/',
-		'^.+\\.module\\.(css|sass|scss)$',
-	],
 };
+
+// NOTE(joel): createJestConfig is exported this way to ensure that next/jest
+// can load the Next.js config which is async
+module.exports = createJestConfig(customJestConfig);

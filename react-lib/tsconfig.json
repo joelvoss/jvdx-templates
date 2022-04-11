@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"lib": ["ES2020"],
+		"target": "ES2020",
+		"module": "ES2020",
+		"moduleResolution": "node",
+		// Required for Jest. Will be overwritten by the jvdx's build step.
+		"jsx": "react",
+		
+		"strict": true,
+		"esModuleInterop": true,
+		// Requirement for SWC / Babel.
+		"isolatedModules": true,
+		// To match webpack resolution.
+		"resolveJsonModule": true,
+		"allowSyntheticDefaultImports": true,
+		"allowJs": true,
+		"noImplicitAny": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"incremental": true,
+		"declaration": true,
+		"noEmit": true,
+
+		"baseUrl": "."
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Examples</title>
+	</head>
+	<body>
+		<div id="root">
+			<h1 id="pkg"></h1>
+			<h2>Examples</h2>
+			<ul id="examples"></ul>
+		</div>
+		<script type="module">
+			import pkg from '../package.json';
+
+			// NOTE(joel): Extend with your example folders.
+			const examples = ['basic'];
+
+			const pkgEl = document.getElementById('pkg');
+			const examplesEl = document.getElementById('examples');
+			pkgEl.innerHTML = `${pkg.name} <small>v${pkg.version}</small>`
+			for (const exampleName of examples) {
+				const li = document.createElement('li');
+				li.innerHTML = `<a href="/${exampleName}">${exampleName}</span>`;
+				examplesEl.appendChild(li)
+			}
+		</script>
+	</body>
+</html>
