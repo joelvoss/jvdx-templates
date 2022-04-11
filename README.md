@@ -1,6 +1,6 @@
 # @jvdx/templates
 
-This repository contains a few starter templates that you can initialize with the
+This repository contains starter templates that you can initialize with the
 help of [`degit`](https://github.com/Rich-Harris/degit).
 
   - [joelvoss/jvdx-templates/node-lib](./node-lib)
@@ -8,17 +8,16 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
   - [joelvoss/jvdx-templates/next-app](./next-app)
   - [joelvoss/jvdx-templates/google-cloud-function](./google-cloud-function)
   - [joelvoss/jvdx-templates/google-cloud-run](./google-cloud-run)
-  - [joelvoss/jvdx-templates/node-rest-api](./node-rest-api)
 
 ## Installation & Usage
 
 ```bash
+# 1) Clone repository using `degit`.
 $ npx degit joelvoss/jvdx-templates/<template-name> my-package
+
+# 2) Navigate into cloned repository.
 $ cd my-package
 
-# Using npm
+# 3) Install dependencies.
 $ npm install
-
-# Using yarn
-$ yarn
 ```
