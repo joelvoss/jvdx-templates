@@ -72,7 +72,7 @@ describe('useSubmit', () => {
 
 			render(<WithoutForm onSubmit={jest.fn()} />);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			expect(console.error).toBeCalledWith(
 				'Cannot submit a <button> without a <form>',
@@ -87,7 +87,7 @@ describe('useSubmit', () => {
 
 			render(<WithWrongElement onSubmit={jest.fn()} />);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			expect(console.error).toBeCalledWith(
 				'Cannot submit element that is not <form>, <button>, or <input type="submit|image">',
@@ -98,11 +98,11 @@ describe('useSubmit', () => {
 	});
 
 	describe('base', () => {
-		test('converts form to query parameter on GET requests', () => {
+		test('converts form to query parameter on GET requests', async () => {
 			const onSubmit = jest.fn();
 			render(<Comp value="test-value" onSubmit={onSubmit} />);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -113,11 +113,11 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 		});
 
-		test('submits POST requests', () => {
+		test('submits POST requests', async () => {
 			const onSubmit = jest.fn();
 			render(<Comp method="POST" value="test-value" onSubmit={onSubmit} />);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -128,7 +128,7 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 		});
 
-		test('handle action parameter', () => {
+		test('handle action parameter', async () => {
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -139,7 +139,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -150,7 +150,7 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 		});
 
-		test('handle action parameter with POST', () => {
+		test('handle action parameter with POST', async () => {
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -161,7 +161,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -174,7 +174,7 @@ describe('useSubmit', () => {
 	});
 
 	describe('options', () => {
-		test('options.method', () => {
+		test('options.method', async () => {
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -185,7 +185,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -196,7 +196,7 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 		});
 
-		test('options.action', () => {
+		test('options.action', async () => {
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -208,7 +208,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -221,7 +221,7 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 		});
 
-		test('options.serialize', () => {
+		test('options.serialize', async () => {
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -231,7 +231,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fdSerialized = onSubmit.mock.calls[0][1];
@@ -258,7 +258,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];
@@ -291,7 +291,7 @@ describe('useSubmit', () => {
 				/>,
 			);
 
-			userEvent.click(screen.getByText(/submit/i));
+			await userEvent.click(screen.getByText(/submit/i));
 
 			const url = onSubmit.mock.calls[0][0];
 			const fd = onSubmit.mock.calls[0][1];

@@ -11,10 +11,10 @@
     "test": "./Taskfile.sh test"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.0.0"
+    "@google-cloud/functions-framework": "^3.1.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.15.0",
+    "@jvdx/core": "^2.16.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.23",
     "cloudevents": "^6.0.1"

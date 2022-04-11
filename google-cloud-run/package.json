@@ -20,7 +20,7 @@
     "helmet": "5.0.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.15.0",
+    "@jvdx/core": "^2.16.0",
     "@types/compression": "^1.7.2",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
