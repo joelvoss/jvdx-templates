@@ -4,27 +4,16 @@ set -e
 PATH=./node_modules/.bin:$PATH
 
 # Export environment variables from `.env`
-if [ -f .env ]
+if [ -f .env.local ]
 then
-  export $(cat .env | sed 's/#.*//g' | xargs)
+  export $(cat .env.local | sed 's/#.*//g' | xargs)
 fi
 
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
 build() {
-  jvdx build --clean -f cjs,es $*
-}
-
-watch() {
-  jvdx build -f cjs,es --watch $*
-}
-
-dev() {
-  build
-  rm -rf examples/dist
-  parcel examples/**/*.html --dist-dir examples/dist
-  rm -rf .parcel-cache
+  jvdx build --clean -f modern,cjs,esm --no-sourcemap
 }
 
 format() {
@@ -35,18 +24,37 @@ lint() {
   jvdx lint $*
 }
 
+typecheck() {
+  jvdx typecheck $*
+}
+
 test() {
-  jvdx test --testPathPattern=/tests --passWithNoTests --env=jsdom $*
+  jvdx test \
+    --testPathPattern=/tests \
+    --passWithNoTests \
+    --env=jsdom \
+    --setupFilesAfterEnv=./tests/setup-tests.ts $*
 }
 
 validate() {
-  format $*
   lint $*
+  typecheck $*
   test $*
 }
 
 clean() {
-  jvdx clean node_modules dist example/dist $*
+  jvdx clean $*
+}
+
+run_examples() {
+  EXAMPLES_CACHE=.examples
+
+  parcel "examples/**/*.html" \
+    --no-source-maps \
+    --dist-dir ${EXAMPLES_CACHE}/.dist \
+    --cache-dir ${EXAMPLES_CACHE}/.cache
+
+  rm -rf ${EXAMPLES_CACHE}
 }
 
 default() {

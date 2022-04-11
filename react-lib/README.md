@@ -4,8 +4,8 @@ Short description of this library.
 
 ## Requirements
 
-  - React v16.8+
-  - React DOM v16.8+
+  - React v17+
+  - React DOM v17+
 
 ## Installation
 
