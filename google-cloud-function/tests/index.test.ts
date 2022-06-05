@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import { CloudEvent } from 'cloudevents';
-import { getFunction } from '@google-cloud/functions-framework/build/src/testing';
+import { getFunction } from '@google-cloud/functions-framework/testing';
 
 ////////////////////////////////////////////////////////////////////////////////
 
