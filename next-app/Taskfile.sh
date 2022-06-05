@@ -13,7 +13,7 @@ fi
 # START tasks
 
 start() {
-  next start
+  exec next start
 }
 
 build() {

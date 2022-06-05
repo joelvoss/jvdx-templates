@@ -3,6 +3,7 @@ const nextJest = require('next/jest');
 const createJestConfig = nextJest({ dir: '.' });
 
 const customJestConfig = {
+	setupFiles: ['<rootDir>/tests/jest.shim.js'],
 	setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
 	moduleDirectories: ['node_modules', '<rootDir>/'],
 	testEnvironment: 'jest-environment-jsdom',
