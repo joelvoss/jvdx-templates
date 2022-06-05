@@ -13,7 +13,7 @@ fi
 # START tasks
 
 start() {
-  node dist/template-google-cloud-run.esm.js
+  exec node dist/template-google-cloud-run.esm.js
 }
 
 build() {
