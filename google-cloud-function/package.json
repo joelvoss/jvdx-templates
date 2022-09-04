@@ -14,9 +14,9 @@
     "@google-cloud/functions-framework": "^3.1.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^2.18.0",
+    "@jvdx/core": "^2.19.0",
     "@types/jest": "^28.1.6",
-    "@types/node": "^18.0.6",
+    "@types/node": "^18.7.14",
     "cloudevents": "^6.0.2"
   },
   "prettier": "@jvdx/prettier-config",
