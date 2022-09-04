@@ -15,7 +15,7 @@ type CSRFOptions = {
 
 export type CSRFRequest = IncomingMessage & {
 	body: any;
-	cookies: { [key: string]: string };
+	cookies: Partial<{ [key: string]: string }>;
 	csrf?: { token?: string; verified: boolean };
 };
 
@@ -78,7 +78,8 @@ export function csrf(options: CSRFOptions = {}) {
 		// @see https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#double-submit-cookie
 		// @see https://owasp.org/www-chapter-london/assets/slides/David_Johansson-Double_Defeat_of_Double-Submit_Cookie.pdf
 		if (req.cookies[tokenName]) {
-			const [csrfTokenValue, csrfTokenHash] = req.cookies[tokenName].split('|');
+			const [csrfTokenValue, csrfTokenHash] =
+				req.cookies[tokenName]!.split('|');
 
 			if (
 				csrfTokenHash ===

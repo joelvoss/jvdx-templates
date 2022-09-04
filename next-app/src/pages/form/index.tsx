@@ -23,7 +23,7 @@ type FormPageProps = {
 
 export default function FormPage(props: FormPageProps) {
 	const { data, csrf } = props;
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	return (
 		<>

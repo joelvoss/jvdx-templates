@@ -1,17 +1,16 @@
 import { render } from '@testing-library/react';
-import { useI18n } from '@/hooks/use-i18n';
+import { resetState, state, useI18n } from '@/hooks/use-i18n';
+import { useSnapshot } from 'valtio';
 
 describe('useI18n', () => {
-	const initialStoreState = useI18n.getState();
-
 	beforeEach(() => {
-		useI18n.setState(initialStoreState, true);
+		resetState();
 	});
 
 	test('translate', () => {
 		function Comp() {
-			const translate = useI18n(s => s.translate);
-			return <span>{translate('global.app-title')}</span>;
+			const { t } = useI18n();
+			return <span>{t('global.app-title')}</span>;
 		}
 
 		const { baseElement } = render(<Comp />);
@@ -23,37 +22,37 @@ describe('useI18n', () => {
 
 	test('changeLocale', () => {
 		function Comp({ locale }: { locale?: any }) {
-			const changeLocale = useI18n(s => s.changeLocale);
-			const _locale = useI18n(s => s.locale);
+			const { changeLocale } = useI18n();
+			const snap = useSnapshot(state);
 
 			if (locale) {
 				changeLocale({ locale });
 			}
 
-			return <span>{_locale}</span>;
+			return <span>{JSON.stringify(snap)}</span>;
 		}
 
 		// NOTE(joel): Cross-check initial locale
 		const { baseElement, rerender } = render(<Comp />);
-		expect(baseElement.innerHTML).toBe('<div><span>de</span></div>');
+		expect(baseElement.innerHTML).toBe(
+			'<div><span>{"locale":"de","defaultLocale":"de"}</span></div>',
+		);
 
 		rerender(<Comp locale="en" />);
-		expect(baseElement.innerHTML).toBe('<div><span>en</span></div>');
+		expect(baseElement.innerHTML).toBe(
+			'<div><span>{"locale":"en","defaultLocale":"de"}</span></div>',
+		);
 	});
 
 	test('isDefaultLocale', () => {
 		function Comp({ locale }: { locale?: any }) {
-			const isDefaultLocale = useI18n(s => s.isDefaultLocale);
-			const changeLocale = useI18n(s => s.changeLocale);
+			const { changeLocale, isDefaultLocale } = useI18n();
 
 			if (locale) {
 				changeLocale({ locale });
 			}
 
-			if (isDefaultLocale()) {
-				return <span>true</span>;
-			}
-			return <span>false</span>;
+			return <span>{JSON.stringify(isDefaultLocale)}</span>;
 		}
 
 		// NOTE(joel): Cross-check initial locale

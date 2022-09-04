@@ -14,7 +14,7 @@ type SiteLayoutProps = {
  */
 function SiteLayout(props: SiteLayoutProps) {
 	const { children } = props;
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	return (
 		<>

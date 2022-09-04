@@ -9,7 +9,7 @@ import styles from './styles.module.css';
  * @see https://nextjs.org/docs/advanced-features/custom-error-page
  */
 export default function NotFoundPage() {
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	return (
 		<>

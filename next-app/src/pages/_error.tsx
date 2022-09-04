@@ -19,7 +19,7 @@ type ErrorProps = {
 export default function Error(props: ErrorProps) {
 	const { statusCode } = props;
 	const isFatalError = !isNonNull(statusCode) || statusCode !== 404;
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	if (isFatalError) {
 		return (

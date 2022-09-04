@@ -35,7 +35,7 @@ export async function getStaticProps() {
 ////////////////////////////////////////////////////////////////////////////////
 
 export default function HomePage({ data = {} }) {
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	return (
 		<section>

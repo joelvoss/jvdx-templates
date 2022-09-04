@@ -25,7 +25,7 @@ type FormWithJSPageProps = {
 
 export default function FormWithJSPage(props: FormWithJSPageProps) {
 	const { data } = props;
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 
 	// NOTE(joel): In this example we're getting the CSRF token client side.
 	const { token: csrf } = useCsrf();
@@ -98,6 +98,6 @@ function Input(props: InputProps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 function Spinner() {
-	const t = useI18n(s => s.translate);
+	const { t } = useI18n();
 	return <span className={styles.spinner}>{t(`form-js.spinner`)}</span>;
 }

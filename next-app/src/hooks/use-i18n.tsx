@@ -1,24 +1,10 @@
-import create from 'zustand';
+import { useCallback, useMemo } from 'react';
+import { proxy, useSnapshot } from 'valtio';
 import { rosetta } from '@/lib/rosetta';
-import { immer } from '@/lib/zustand-immer';
 import { languages, defaultLocale } from '@/locales/index';
 import { isNonNull } from '@/lib/assertions';
 
 ////////////////////////////////////////////////////////////////////////////////
-
-import type { GetState } from 'zustand';
-import type { ImmerSet } from '@/lib/zustand-immer';
-
-type I18nState = {
-	locale: string;
-	defaultLocale: string;
-	translate: (...payload: TranslatePayload) => string;
-	changeLocale: (payload: ChangeLocalePayload) => void;
-	isDefaultLocale: () => boolean;
-};
-
-type I18nGet = GetState<I18nState>;
-type I18nSet = ImmerSet<I18nState>;
 
 type TranslatePayload = [
 	key: string | (string | number)[],
@@ -33,6 +19,7 @@ type ChangeLocalePayload = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// NOTE(joel): Setup rosetta.
 let dictionary: { [key: string]: any } = {};
 for (let lng of Object.values(languages)) {
 	dictionary[lng.locale] = lng.dict;
@@ -41,74 +28,80 @@ const i18n = rosetta(dictionary, defaultLocale);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const initialState = {
+// NOTE(joel): Setup proxy state.
+export const state = proxy({
 	locale: defaultLocale,
 	defaultLocale,
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-export const useI18n = create<I18nState>(
-	immer((set, get) => ({
-		...initialState,
-		translate: (...payload) => translate(payload, get),
-		changeLocale: payload => changeLocale(payload, set, get),
-		isDefaultLocale: () => isDefaultLocale(get),
-	})),
-);
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * translate queries the dictionary for the requested translation by key.
+ * Helper function to reset state (used in tests)
  */
-function translate(payload: TranslatePayload, get: I18nGet) {
-	const { defaultLocale } = get();
-
-	let translation = i18n.t(...payload);
-	// NOTE(joel): If a single translation is missing, try getting a
-	//             translation for the default locale instead.
-	if (!translation || translation.length === 0) {
-		// NOTE(joel): translate(<key>, <params?>, <locale?>
-		translation = i18n.t(payload[0], payload[1], defaultLocale);
-	}
-
-	return translation;
+export function resetState() {
+	state.locale = defaultLocale;
+	state.defaultLocale = defaultLocale;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * changeLocale sets new `locale` and `defaultLocale` values.
+ * useI18n listens for changes of our proxy state and returns methods to
+ * help us translate strings.
  */
-function changeLocale(
-	payload: ChangeLocalePayload,
-	set: I18nSet,
-	get: I18nGet,
-) {
-	const { locale, defaultLocale } = payload;
+export function useI18n() {
+	const snap = useSnapshot(state);
 
-	const { locale: currentLocale } = get();
-	if (locale === currentLocale) return;
+	/**
+	 * translate queries the dictionary for the requested translation by key.
+	 */
+	const translate = useCallback(
+		(...payload: TranslatePayload) => {
+			let translation = i18n.t(...payload);
+			// NOTE(joel): If a single translation is missing, try getting a
+			//             translation for the default locale instead.
+			if (!translation || translation.length === 0) {
+				// NOTE(joel): translate(<key>, <params?>, <locale?>
+				translation = i18n.t(payload[0], payload[1], snap.defaultLocale);
+			}
 
-	i18n.locale(locale);
+			return translation;
+		},
+		[snap.defaultLocale],
+	);
 
-	set(s => {
-		if (isNonNull(locale)) {
-			s.locale = locale;
-		}
-		if (isNonNull(defaultLocale)) {
-			s.defaultLocale = defaultLocale;
-		}
-	});
-}
+	/**
+	 * changeLocale sets new `locale` and `defaultLocale` values.
+	 */
+	const changeLocale = useCallback(
+		(payload: ChangeLocalePayload) => {
+			const { locale, defaultLocale } = payload;
+			if (locale === snap.locale) return;
 
-////////////////////////////////////////////////////////////////////////////////
+			i18n.locale(locale);
 
-/**
- * isDefaultLocale checks if the current locale is the default locale.
- */
-function isDefaultLocale(get: I18nGet) {
-	const { locale, defaultLocale } = get();
-	return locale === defaultLocale;
+			if (isNonNull(locale)) {
+				state.locale = locale;
+			}
+			if (isNonNull(defaultLocale)) {
+				state.defaultLocale = defaultLocale;
+			}
+		},
+		[snap.locale],
+	);
+
+	/**
+	 * isDefaultLocale returns true if the current locale is the default locale.
+	 */
+	const isDefaultLocale = useMemo(
+		() => snap.locale === snap.defaultLocale,
+		[snap.defaultLocale, snap.locale],
+	);
+
+	return {
+		t: translate,
+		changeLocale,
+		isDefaultLocale,
+	};
 }

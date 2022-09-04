@@ -29,6 +29,10 @@ lint() {
   jvdx lint $*
 }
 
+typecheck() {
+  jvdx typecheck $*
+}
+
 test() {
   jvdx test --config jest.config.js \
   --testPathPattern=/tests \
@@ -37,6 +41,7 @@ test() {
 
 validate() {
   lint $*
+  typecheck $*
   test $*
 }
 
