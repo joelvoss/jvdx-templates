@@ -37,7 +37,11 @@ export function isObject(val: any): val is Object {
  * isFunction checks if a given value is a function.
  */
 export function isFunction(val: any): val is Function {
-	return !!(val && {}.toString.call(val) === '[object Function]');
+	return !!(
+		val &&
+		({}.toString.call(val) === '[object Function]' ||
+			{}.toString.call(val) === '[object AsyncFunction]')
+	);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
