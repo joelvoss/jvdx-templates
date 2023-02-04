@@ -19,8 +19,8 @@ export default function NotFoundPage() {
 				<div className={styles.container}>
 					<h1 className={styles.heading}>{t('404.heading')}</h1>
 					<p className={styles.body}>{t('404.description')}</p>
-					<Link href="/" passHref>
-						<a className={styles.link}>{t('404.link')}</a>
+					<Link href="/" className={styles.link}>
+						{t('404.link')}
 					</Link>
 				</div>
 			</section>

@@ -30,8 +30,8 @@ export default function Error(props: ErrorProps) {
 					<div className={styles.container}>
 						<h1 className={styles.heading}>{t('500.heading')}</h1>
 						<p className={styles.body}>{t('500.description')}</p>
-						<Link href="/" passHref>
-							<a className={styles.link}>{t('500.link')}</a>
+						<Link href="/" className={styles.link}>
+							{t('500.link')}
 						</Link>
 					</div>
 				</section>
@@ -47,8 +47,8 @@ export default function Error(props: ErrorProps) {
 				<div className={styles.container}>
 					<h1 className={styles.heading}>{t('404.heading')}</h1>
 					<p className={styles.body}>{t('404.description')}</p>
-					<Link href="/" passHref>
-						<a className={styles.link}>{t('404.link')}</a>
+					<Link href="/" className={styles.link}>
+						{t('404.link')}
 					</Link>
 				</div>
 			</section>

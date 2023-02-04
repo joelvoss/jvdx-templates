@@ -19,8 +19,8 @@ export default function ServerErrorPage() {
 				<div className={styles.container}>
 					<h1 className={styles.heading}>{t('500.heading')}</h1>
 					<p className={styles.body}>{t('500.description')}</p>
-					<Link href="/" passHref>
-						<a className={styles.link}>{t('500.link')}</a>
+					<Link href="/" className={styles.link}>
+						{t('500.link')}
 					</Link>
 				</div>
 			</section>

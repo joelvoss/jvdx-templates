@@ -20,10 +20,8 @@ function SiteLayout(props: SiteLayoutProps) {
 		<>
 			<nav className={styles.nav}>
 				<div className={styles.links}>
-					<Link href="/">
-						<a title={t('global.app-title')}>
-							<img className={styles.logo} src="/logo.svg" alt="" />
-						</a>
+					<Link href="/" title={t('global.app-title')}>
+						<img className={styles.logo} src="/logo.svg" alt="" />
 					</Link>
 
 					<NavLink href="/">{t('global.nav.home')}</NavLink>
@@ -56,10 +54,14 @@ function NavLink(props: NavLinkProps) {
 	const cls = className ? `${styles.navLink} ${className}` : styles.navLink;
 
 	return (
-		<Link href={href} prefetch={false} {...rest}>
-			<a className={cls} data-active={matches}>
-				{children}
-			</a>
+		<Link
+			href={href}
+			prefetch={false}
+			className={cls}
+			data-active={matches}
+			{...rest}
+		>
+			{children}
 		</Link>
 	);
 }

@@ -2,7 +2,26 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useSubmit } from '@/hooks/use-submit';
 
+////////////////////////////////////////////////////////////////////////////////
+
+const mockRouterPush = jest.fn();
+const mockRouterReplace = jest.fn();
+
+jest.mock('next/router', () => ({
+	useRouter: () => ({
+		push: mockRouterPush,
+		replace: mockRouterReplace,
+	}),
+}));
+
+////////////////////////////////////////////////////////////////////////////////
+
 describe('useSubmit', () => {
+	afterEach(() => {
+		jest.clearAllMocks();
+		jest.restoreAllMocks();
+	});
+
 	type CompProps = {
 		method?: string;
 		action?: string;
@@ -243,12 +262,6 @@ describe('useSubmit', () => {
 		});
 
 		test('options.redirect', async () => {
-			const routerPush = jest.fn();
-			const useRouter = jest.spyOn(require('next/router'), 'useRouter');
-			useRouter.mockImplementation(() => ({
-				push: routerPush,
-			}));
-
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -269,19 +282,11 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 
 			await waitFor(() =>
-				expect(routerPush).toBeCalledWith('http://localhost/redirected'),
+				expect(mockRouterPush).toBeCalledWith('http://localhost/redirected'),
 			);
-
-			useRouter.mockRestore();
 		});
 
 		test('options.replace', async () => {
-			const routerReplace = jest.fn();
-			const useRouter = jest.spyOn(require('next/router'), 'useRouter');
-			useRouter.mockImplementation(() => ({
-				replace: routerReplace,
-			}));
-
 			const onSubmit = jest.fn();
 			render(
 				<Comp
@@ -302,10 +307,8 @@ describe('useSubmit', () => {
 			expect(Array.from(fd).toString()).toBe('test,test-value');
 
 			await waitFor(() =>
-				expect(routerReplace).toBeCalledWith('http://localhost/replaced'),
+				expect(mockRouterReplace).toBeCalledWith('http://localhost/replaced'),
 			);
-
-			useRouter.mockRestore();
 		});
 	});
 });
