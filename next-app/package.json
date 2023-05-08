@@ -10,25 +10,24 @@
   },
   "dependencies": {
     "cors": "2.8.5",
-    "immer": "9.0.19",
     "memoize-lit": "1.6.0",
-    "next": "13.1.6",
+    "next": "13.4.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "request-lit": "1.5.0",
-    "valtio": "1.10.0"
+    "valtio": "1.10.5"
   },
   "devDependencies": {
-    "@jvdx/core": "^3.3.0",
+    "@jvdx/core": "^3.4.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/cors": "^2.8.13",
-    "@types/react": "^18.0.27",
+    "@types/react": "^18.2.6",
     "identity-obj-proxy": "^3.0.0",
-    "jest-environment-jsdom": "^29.4.1",
-    "msw": "^1.0.0",
-    "typescript": "^4.9.5",
+    "jest-environment-jsdom": "^29.5.0",
+    "msw": "^1.2.1",
+    "typescript": "^5.0.4",
     "whatwg-fetch": "^3.6.2"
   },
   "browserslist": [
