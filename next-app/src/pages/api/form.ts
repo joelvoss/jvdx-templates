@@ -38,7 +38,8 @@ export default withApiMiddlewares(
  * Returns the `tmpData`.
  */
 function handleGET(_: ExtendedAPIRequest, res: NextApiResponse) {
-	return res.status(200).json(tmpData);
+	res.status(200).json(tmpData);
+	return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -52,7 +53,8 @@ async function handlePOST(req: ExtendedAPIRequest, res: NextApiResponse) {
 
 	// NOTE(joel): CSRF protection is only useful when data is being mutated
 	if (!csrf?.verified) {
-		return res.status(403).json({ code: 'csrf/FORBIDDEN' });
+		res.status(403).json({ code: 'csrf/FORBIDDEN' });
+		return;
 	}
 	const data = req.body;
 
@@ -65,7 +67,9 @@ async function handlePOST(req: ExtendedAPIRequest, res: NextApiResponse) {
 	await new Promise(r => setTimeout(r, 500));
 
 	if (req.body?.__redirectTo) {
-		return res.redirect(303, req.body?.__redirectTo);
+		res.redirect(303, req.body?.__redirectTo);
+		return;
 	}
-	return res.status(200).json(tmpData);
+	res.status(200).json(tmpData);
+	return;
 }

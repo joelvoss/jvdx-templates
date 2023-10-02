@@ -42,9 +42,11 @@ describe('useCsrf', () => {
 			);
 
 			const loadingEl = screen.queryByTestId('loading');
+			// @ts-expect-error
 			expect(loadingEl).toBeInTheDocument();
 
 			const doneEl = await screen.findByTestId('done');
+			// @ts-expect-error
 			expect(doneEl).toBeInTheDocument();
 			expect(doneEl.innerHTML).toBe(
 				'{"token":"test-csrf-token","isLoading":false}',
@@ -59,9 +61,11 @@ describe('useCsrf', () => {
 			);
 
 			const loadingEl = screen.queryByTestId('loading');
+			// @ts-expect-error
 			expect(loadingEl).not.toBeInTheDocument();
 
 			const doneEl = await screen.findByTestId('done');
+			// @ts-expect-error
 			expect(doneEl).toBeInTheDocument();
 			expect(doneEl.innerHTML).toBe(
 				'{"token":"pre-populated-token","isLoading":false}',
@@ -76,9 +80,11 @@ describe('useCsrf', () => {
 			);
 
 			const loadingEl = screen.queryByTestId('loading');
+			// @ts-expect-error
 			expect(loadingEl).not.toBeInTheDocument();
 
 			const doneEl = await screen.findByTestId('done');
+			// @ts-expect-error
 			expect(doneEl).toBeInTheDocument();
 			expect(doneEl.innerHTML).toBe(
 				'{"token":"pre-populated-token","isLoading":false}',

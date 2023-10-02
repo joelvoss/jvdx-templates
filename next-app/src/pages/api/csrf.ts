@@ -28,5 +28,6 @@ export default withApiMiddlewares(
  */
 function handleGET(req: ExtendedAPIRequest, res: NextApiResponse) {
 	const { csrf } = req;
-	return res.status(200).json({ token: csrf?.token });
+	res.status(200).json({ token: csrf?.token });
+	return;
 }

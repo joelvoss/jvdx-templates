@@ -9,6 +9,9 @@ then
   export $(cat .env.local | sed 's/#.*//g' | xargs)
 fi
 
+# Disable Next.js telemetry
+NEXT_TELEMETRY_DISABLED=1
+
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 

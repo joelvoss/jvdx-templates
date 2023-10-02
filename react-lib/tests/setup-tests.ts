@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import "@testing-library/jest-dom/extend-expect";
+import "@testing-library/jest-dom";
 import "jest-axe/extend-expect";
 import { axe, toHaveNoViolations } from "jest-axe";
 import { act } from "react-dom/test-utils";
