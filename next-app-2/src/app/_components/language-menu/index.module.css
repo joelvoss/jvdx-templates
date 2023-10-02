@@ -1,0 +1,50 @@
+.button {
+	font-size: 1rem;
+	font-weight: 500;
+	padding: 0.75rem 1rem;
+	margin: 0 0.5rem;
+	color: var(--color-grey-text);
+	border-radius: var(--border-radius);
+	background-color: var(--color-grey-main);
+}
+.button svg {
+	width: 1em;
+	height: 1em;
+}
+
+.popover {
+	border: 1px solid var(--color-grey-main);
+	background: var(--color-common-white);
+	border-radius: 6px;
+	outline: none;
+	max-width: 250px;
+	box-shadow: var(--box-shadow-popover);
+}
+
+.menu {
+	overflow: auto;
+	padding: 2px;
+	outline: none;
+}
+
+.item {
+	position: relative;
+	display: grid;
+	grid-template-columns: 1rem auto;
+	column-gap: 0.5rem;
+	align-items: center;
+	margin: 2px;
+	padding: 0.25rem 0.5rem;
+	border-radius: var(--border-radius);
+	outline: none;
+	color: var(--color-text-primary);
+}
+.item[data-hovered],
+.item[data-focused] {
+	background: var(--color-primary-main);
+	color: var(--color-primary-text);
+}
+.item svg {
+	width: 1em;
+	height: 1em;
+}
