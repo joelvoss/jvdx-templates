@@ -11,7 +11,7 @@
   "dependencies": {
     "cors": "2.8.5",
     "memoize-lit": "1.6.0",
-    "next": "13.5.3",
+    "next": "13.5.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "request-lit": "1.5.0",
