@@ -1,0 +1,50 @@
+.container {
+	--gap: 0.5rem;
+	position: fixed;
+	inset-inline: 0;
+	z-index: 100050; /* NOTE(joel): Above react-aria modals */
+	display: flex;
+	pointer-events: none;
+	outline: none;
+	gap: var(--gap);
+}
+
+.container[data-position='top'] {
+	top: calc(2 * var(--gap));
+	flex-direction: column;
+	--slide-from: translateY(-100%);
+	--slide-to: translateY(0);
+}
+
+.container[data-position='bottom'] {
+	bottom: calc(2 * var(--gap));
+	flex-direction: column-reverse;
+	--slide-from: translateY(100%);
+	--slide-to: translateY(0);
+}
+
+.container[data-placement='left'] {
+	align-items: flex-start;
+	padding-inline-start: calc(2 * var(--gap));
+	--slide-from: translateX(-100%);
+	--slide-to: translateX(0);
+}
+
+.container[data-placement='left']:dir(rtl) {
+	--slide-from: translateX(100%);
+}
+
+.container[data-placement='center'] {
+	align-items: center;
+}
+
+.container[data-placement='right'] {
+	align-items: flex-end;
+	padding-inline-end: calc(2 * var(--gap));
+	--slide-from: translateX(100%);
+	--slide-to: translateX(0);
+}
+
+.container[data-placement='right']:dir(rtl) {
+	--slide-from: translateX(-100%);
+}

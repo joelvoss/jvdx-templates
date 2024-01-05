@@ -1,0 +1,50 @@
+.header {
+	background-color: var(--color-grey-light);
+	padding: 1rem;
+}
+
+.headerInner {
+	max-width: var(--content-width);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 1rem;
+	margin: 0 auto;
+}
+
+.nav {
+	flex: 1 0 auto;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.logo {
+	width: 2rem;
+	margin-right: 1rem;
+}
+
+.main {
+	flex: 1 0 auto;
+	width: 100%;
+	max-width: var(--content-width);
+	margin: 0 auto;
+	padding: 0 1rem;
+}
+
+.navLink {
+	font-size: 1rem;
+	font-weight: 500;
+	padding: 0.75rem 1rem;
+	margin: 0 0.5rem;
+	color: var(--color-text-primary);
+	border-radius: var(--border-radius);
+}
+.navLink:last-child {
+	margin: 0;
+}
+.navLink:hover,
+.navLink[data-active='true'] {
+	color: var(--color-grey-text);
+	background-color: var(--color-grey-main);
+}
