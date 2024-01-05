@@ -5,7 +5,8 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
 
   - [joelvoss/jvdx-templates/node-lib](./node-lib)
   - [joelvoss/jvdx-templates/react-lib](./react-lib)
-  - [joelvoss/jvdx-templates/next-app](./next-app)
+  - [joelvoss/jvdx-templates/next-pages-router](./next-pages-router)
+  - [joelvoss/jvdx-templates/next-app-router](./next-app-router)
   - [joelvoss/jvdx-templates/google-cloud-function](./google-cloud-function)
   - [joelvoss/jvdx-templates/google-cloud-run](./google-cloud-run)
 
