@@ -24,9 +24,8 @@ export function trace(options: TraceOptions) {
 		const traceHeader = req.header('X-Cloud-Trace-Context');
 		if (isNonNull(traceHeader)) {
 			const [trace] = traceHeader.split('/');
-			globalLogFields[
-				'logging.googleapis.com/trace'
-			] = `projects/${projectId}/traces/${trace}`;
+			globalLogFields['logging.googleapis.com/trace'] =
+				`projects/${projectId}/traces/${trace}`;
 		}
 
 		return next();
