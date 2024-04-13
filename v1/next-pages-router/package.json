@@ -11,23 +11,23 @@
   "dependencies": {
     "cors": "2.8.5",
     "memoize-lit": "1.6.1",
-    "next": "14.0.4",
+    "next": "14.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "request-lit": "1.5.1",
-    "valtio": "1.12.1"
+    "valtio": "1.13.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^4.1.0",
-    "@testing-library/jest-dom": "^6.2.0",
-    "@testing-library/react": "^14.1.2",
+    "@jvdx/core": "^4.2.0",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^15.0.1",
     "@testing-library/user-event": "^14.5.2",
     "@types/cors": "^2.8.17",
-    "@types/jest": "^29.5.11",
-    "@types/react": "^18.2.46",
+    "@types/jest": "^29.5.12",
+    "@types/react": "^18.2.77",
     "identity-obj-proxy": "^3.0.0",
     "jest-environment-jsdom": "^29.7.0",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.5",
     "whatwg-fetch": "^3.6.20"
   },
   "browserslist": [

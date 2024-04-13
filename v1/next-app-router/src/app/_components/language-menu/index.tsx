@@ -1,3 +1,5 @@
+'use client';
+
 import {
 	Button,
 	Menu,
@@ -6,7 +8,7 @@ import {
 	Popover,
 } from 'react-aria-components';
 import { getI18n } from '@/lib/i18n';
-import { getLocale } from '@/lib/locale/server';
+import { useLocale } from '@/lib/locale/client';
 import { mergeProps } from '@/lib/merge-props';
 import styles from './index.module.css';
 
@@ -18,7 +20,7 @@ import type { MenuItemProps } from 'react-aria-components';
  * A button that opens a language menu.
  */
 export function LanguageMenu() {
-	const lang = getLocale();
+	const lang = useLocale();
 	const t = getI18n(lang);
 
 	return (

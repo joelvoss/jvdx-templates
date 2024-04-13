@@ -15,6 +15,10 @@ NEXT_TELEMETRY_DISABLED=1
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
+start_dev() {
+  exec next dev
+}
+
 start() {
   exec next start
 }
