@@ -1,0 +1,52 @@
+{
+  "name": "node-lib",
+  "description": "A simple node library",
+  "version": "0.0.1",
+  "author": "Joel Voss <mail@joelvoss.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/joelvoss/node-lib",
+  "bugs": {
+    "url": "https://github.com/joelvoss/node-lib/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joelvoss/node-lib.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "source": "./src/index.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "scripts": {
+    "test": "./Taskfile.sh test",
+    "build": "./Taskfile.sh build"
+  },
+  "devDependencies": {
+    "@jvdx/eslint-config": "^4.1.0",
+    "@jvdx/prettier-config": "^0.3.4",
+    "@types/node": "^20.12.7",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8",
+    "vite-plugin-dts": "^3.8.2",
+    "vitest": "^1.5.0"
+  },
+  "prettier": "@jvdx/prettier-config",
+  "prettierIgnore": [
+    "tests/",
+    "dist/"
+  ]
+}
