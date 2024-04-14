@@ -12,7 +12,9 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
   - [joelvoss/jvdx-templates/v1/google-cloud-run](./v1/google-cloud-run)
 
 ## v2 Templates
-_Stay tuned, working on it!_
+  - [joelvoss/jvdx-templates/v2/node-lib](./v2/node-lib)
+  - [joelvoss/jvdx-templates/v2/react-lib](./v2/react-lib)
+  - [joelvoss/jvdx-templates/v2/cloud-run-node](./v2/cloud-run-node)
 
 ## Installation & Usage
 
