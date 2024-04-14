@@ -1,0 +1,37 @@
+name: Validate
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  validate:
+    name: Validate
+    strategy:
+      matrix:
+        node: [18, 20]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.12.0
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⎔ Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      - name: 📥 Download dependencies
+        run: npm ci
+
+      - name: ▶️ Run `validate` script
+        run: ./Taskfile.sh validate
