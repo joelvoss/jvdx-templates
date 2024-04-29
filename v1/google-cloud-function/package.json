@@ -14,7 +14,7 @@
     "@google-cloud/functions-framework": "^3.3.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^4.2.0",
+    "@jvdx/core": "^4.3.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
     "cloudevents": "^8.0.0"

@@ -3,7 +3,7 @@
 import "@testing-library/jest-dom";
 import "jest-axe/extend-expect";
 import { axe, toHaveNoViolations } from "jest-axe";
-import { act } from "react-dom/test-utils";
+import { act } from "react";
 
 expect.extend({
   /**
