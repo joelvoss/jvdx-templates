@@ -35,14 +35,14 @@
     "build": "./Taskfile.sh build"
   },
   "devDependencies": {
-    "@jvdx/eslint-config": "^4.2.0",
+    "@jvdx/eslint-config": "^4.3.0",
     "@jvdx/prettier-config": "^0.3.4",
-    "@types/node": "^20.12.7",
+    "@types/node": "^20.12.11",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
-    "vite": "^5.2.10",
-    "vite-plugin-dts": "^3.9.0",
-    "vitest": "^1.5.2"
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.6.0"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [
