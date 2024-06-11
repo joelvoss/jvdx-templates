@@ -31,15 +31,10 @@ let CreateBookSchema = v.object({
 books.post(
 	'/',
 	validator('json', (value, c) => {
-		try {
-			return v.parse(CreateBookSchema, value);
-		} catch (err: unknown) {
-			let flattend = v.flatten<typeof CreateBookSchema>(err as v.ValiError);
-			let message = Object.entries(flattend.nested)
-				.map(([, v]) => v.join(', '))
-				.join(', ');
-			return c.json({ code: 'VALIDATION_ERROR', message }, 400);
-		}
+		let result = v.safeParse(CreateBookSchema, value);
+		if (result.success) return result.output;
+		let flattend = v.flatten(result.issues);
+		return c.json({ code: 'VALIDATION_ERROR', message: flattend.nested }, 400);
 	}),
 	async c => {
 		let { title, author } = c.req.valid('json');
@@ -78,15 +73,10 @@ let UpdateBookSchema = v.object({
 books.post(
 	'/:id',
 	validator('json', (value, c) => {
-		try {
-			return v.parse(UpdateBookSchema, value);
-		} catch (err: unknown) {
-			let flattend = v.flatten<typeof UpdateBookSchema>(err as v.ValiError);
-			let message = Object.entries(flattend.nested)
-				.map(([, v]) => v.join(', '))
-				.join(', ');
-			return c.json({ code: 'VALIDATION_ERROR', message }, 400);
-		}
+		let result = v.safeParse(UpdateBookSchema, value);
+		if (result.success) return result.output;
+		let flattend = v.flatten(result.issues);
+		return c.json({ code: 'VALIDATION_ERROR', message: flattend.nested }, 400);
 	}),
 	async c => {
 		let id = c.req.param('id');

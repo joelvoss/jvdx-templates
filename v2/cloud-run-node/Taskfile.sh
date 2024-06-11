@@ -55,8 +55,14 @@ lint() {
 }
 
 test() {
-  echo "Running vitest..."
-  vitest run
+  if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+    echo "Running vitest in watch mode..."
+    vitest
+    return
+  else
+    echo "Running vitest..."
+    vitest run
+  fi
 }
 
 validate() {

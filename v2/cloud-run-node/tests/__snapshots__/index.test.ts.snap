@@ -29,7 +29,11 @@ exports[`API (v1) > GET /v1/books/:id > success 1`] = `
 exports[`API (v1) > POST /v1/books > invalid payload 1`] = `
 {
   "code": "VALIDATION_ERROR",
-  "message": "Missing or invalid parameter 'title'",
+  "message": {
+    "title": [
+      "Missing or invalid parameter 'title'",
+    ],
+  },
 }
 `;
 
