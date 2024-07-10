@@ -85,8 +85,8 @@ export function useCsrf(defaultCsrf?: string) {
 
 			try {
 				const { origin } = getHost();
-				const { data } = await makeRequest('/api/csrf', { baseURL: origin });
-				const newCsrf = data?.token;
+				const res = await makeRequest(`${origin}/api/csrf`);
+				const { token: newCsrf } = await res.json();
 				setCsrf(newCsrf);
 			} catch (err) {
 				error(`CLIENT_FETCH_CSRF_ERROR`, err);

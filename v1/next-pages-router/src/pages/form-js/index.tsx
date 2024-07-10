@@ -12,8 +12,8 @@ import styles from './styles.module.css';
 ////////////////////////////////////////////////////////////////////////////////
 
 export const getServerSideProps = withSSRMiddlewares(async ({ req }) => {
-	let { data } = await request.get(`/api/form`, { baseURL: req.baseURL });
-
+	let res = await request.get(`${req.baseURL}/api/form`);
+	let data = await res.json();
 	return { props: { data } };
 });
 
@@ -41,7 +41,10 @@ export default function FormWithJSPage(props: FormWithJSPageProps) {
 				// NOTE(joel): Make sure to pass the CSRF token when making client
 				// side request.
 				await request
-					.post(url.pathname, form, { csrf })
+					.post(url.pathname, {
+						json: form as {},
+						headers: { 'x-xsrf-token': csrf! },
+					})
 					.catch(err => error(err.message));
 				setStatus('success');
 			} catch (err: any) {

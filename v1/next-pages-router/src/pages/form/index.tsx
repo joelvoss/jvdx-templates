@@ -9,8 +9,8 @@ import styles from './styles.module.css';
 ////////////////////////////////////////////////////////////////////////////////
 
 export const getServerSideProps = withSSRMiddlewares(async ({ req }) => {
-	let { data } = await request.get(`/api/form`, { baseURL: req.baseURL });
-
+	let res = await request.get(`${req.baseURL}/api/form`);
+	let data = await res.json();
 	return { props: { data, csrf: req.csrf?.token || '' } };
 });
 
