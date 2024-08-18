@@ -22,14 +22,12 @@ let LogSeverity = {
 function log(severity: string, message: LogMessage, c?: LogContext) {
 	let traceId = c != null ? c.get('traceId') : null;
 
-	if (typeof message === 'string') {
-		message = { message };
-	}
+	let msg = typeof message === 'string' ? { message } : message;
 
 	console.log({
 		severity,
 		...(traceId ? { 'logging.googleapis.com/trace': traceId } : {}),
-		...message,
+		...msg,
 	});
 }
 

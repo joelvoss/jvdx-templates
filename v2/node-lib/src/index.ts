@@ -5,6 +5,7 @@ export function calculator(op: string, ...numbers: number[]) {
 		const [a, b] = numbers;
 		return add(a, b);
 	}
+	console.log('Invalid operation');
 	return -1;
 }
 

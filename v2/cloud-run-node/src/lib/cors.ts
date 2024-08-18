@@ -29,15 +29,17 @@ function isOriginAllowed(origin: string, allowedOrigin: Origin) {
 			}
 		}
 		return false;
-	} else if (typeof allowedOrigin === 'string') {
-		return origin === allowedOrigin;
-	} else if (typeof allowedOrigin === 'function') {
-		return allowedOrigin(origin);
-	} else if (allowedOrigin instanceof RegExp) {
-		return allowedOrigin.test(origin);
-	} else {
-		return !!allowedOrigin;
 	}
+	if (typeof allowedOrigin === 'string') {
+		return origin === allowedOrigin;
+	}
+	if (typeof allowedOrigin === 'function') {
+		return allowedOrigin(origin);
+	}
+	if (allowedOrigin instanceof RegExp) {
+		return allowedOrigin.test(origin);
+	}
+	return !!allowedOrigin;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

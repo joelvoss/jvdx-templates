@@ -2,7 +2,6 @@ import type { TraceVariables } from '~/lib/trace';
 
 // NOTE(joel): Type definitions for the environment variables
 declare global {
-	// eslint-disable-next-line @typescript-eslint/no-namespace
 	namespace NodeJS {
 		interface ProcessEnv {
 			PORT: string;

@@ -12,9 +12,11 @@ type CacheControlOptions =
  * Sets the Cache-Control header for the response.
  */
 export function cacheControl(
-	options: CacheControlOptions = {},
+	_options?: CacheControlOptions,
 ): MiddlewareHandler {
 	return async function (c, next) {
+		let options: CacheControlOptions = _options ?? {};
+
 		if (process.env.NODE_ENV === 'development') options = false;
 
 		if (typeof options === 'boolean') {

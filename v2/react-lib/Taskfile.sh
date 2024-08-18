@@ -31,8 +31,8 @@ typecheck() {
 }
 
 lint() {
-  echo "Running eslint..."
-  eslint src
+  echo "Running biome..."
+  biome lint ./src ./tests
 }
 
 test() {

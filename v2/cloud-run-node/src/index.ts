@@ -5,10 +5,10 @@ import { etag } from 'hono/etag';
 import { secureHeaders } from 'hono/secure-headers';
 import { fileURLToPath } from 'node:url';
 import { cors } from '~/lib/cors';
+import { HTTPException } from '~/lib/http-exception';
 import { logger } from '~/lib/logger';
 import { trace } from '~/lib/trace';
 import { books } from '~/routes/books';
-import { HTTPException } from '~/lib/http-exception';
 
 import type { Variables } from '~/types';
 
