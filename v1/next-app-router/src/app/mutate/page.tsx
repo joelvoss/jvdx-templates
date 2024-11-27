@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function MutatePage() {
-	const csrfToken = getCsrfToken();
+	const csrfToken = await getCsrfToken();
 
 	const data = await FileSystemDB.getItems();
 

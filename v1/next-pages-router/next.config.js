@@ -5,7 +5,6 @@ module.exports = {
 	distDir: 'dist',
 	cleanDistDir: true,
 	reactStrictMode: true,
-	swcMinify: true,
 	eslint: {
 		ignoreDuringBuilds: true,
 	},

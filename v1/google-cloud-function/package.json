@@ -11,13 +11,13 @@
     "test": "./Taskfile.sh test"
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.4.1"
+    "@google-cloud/functions-framework": "^3.4.2"
   },
   "devDependencies": {
-    "@jvdx/core": "^4.5.0",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.10",
-    "cloudevents": "^8.0.1"
+    "@jvdx/core": "^4.7.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.0",
+    "cloudevents": "^8.0.2"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [

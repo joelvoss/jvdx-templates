@@ -47,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
 			images: '/android-chrome-512x512.png',
 		},
 		other: {
-			[CSRF_HEAD_NAME]: getCsrfToken(),
+			[CSRF_HEAD_NAME]: await getCsrfToken(),
 		},
 	};
 }
@@ -61,7 +61,7 @@ type RootLayoutProps = {
 export default async function RootLayout(props: RootLayoutProps) {
 	const { children } = props;
 
-	const lang = getLocale();
+	const lang = await getLocale();
 	const t = getI18n(lang);
 
 	return (

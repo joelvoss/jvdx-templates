@@ -6,7 +6,7 @@ import styles from './page.module.css';
 ////////////////////////////////////////////////////////////////////////////////
 
 export default async function HomePage() {
-	const lang = getLocale();
+	const lang = await getLocale();
 	const t = getI18n(lang);
 
 	const data = await Github.getRepo('joelvoss/jvdx-core');

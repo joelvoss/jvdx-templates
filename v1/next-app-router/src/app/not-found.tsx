@@ -2,8 +2,8 @@ import { getI18n } from '@/lib/i18n';
 import { getLocale } from '@/lib/locale/server';
 import styles from './not-found.module.css';
 
-export default function NotFound() {
-	const lang = getLocale();
+export default async function NotFound() {
+	const lang = await getLocale();
 	const t = getI18n(lang);
 
 	return (

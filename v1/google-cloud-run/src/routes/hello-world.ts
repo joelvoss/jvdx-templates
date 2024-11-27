@@ -14,11 +14,13 @@ export function helloWorldRoute(req: Request, res: Response) {
 	try {
 		const { query } = req;
 		info(`routes/hello-world - Processed query '${JSON.stringify(query)}'`);
-		return res.status(200).json({ message: 'ok', query });
+		res.status(200).json({ message: 'ok', query });
+		return;
 	} catch (err: any) {
 		error(err.message);
 		const statusCode = err.status || 500;
-		return res.status(statusCode).json(err.message);
+		res.status(statusCode).json(err.message);
+		return;
 	}
 }
 

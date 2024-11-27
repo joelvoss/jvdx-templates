@@ -1,13 +1,12 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { Button } from 'react-aria-components';
 import { mergeProps } from '@/lib/merge-props';
 import styles from './index.module.css';
 
-import type { ButtonProps } from 'react-aria-components';
+import type { ComponentProps } from 'react';
 
-interface PendingSubmitProps extends ButtonProps {}
+interface PendingSubmitProps extends ComponentProps<'button'> {}
 
 export function PendingSubmit(props: PendingSubmitProps) {
 	const { pending } = useFormStatus();
@@ -16,11 +15,14 @@ export function PendingSubmit(props: PendingSubmitProps) {
 	const buttonProps = mergeProps(
 		rest,
 		{ type: 'submit' },
-		pending ? { isDisabled: true, className: styles.pending } : null,
+		pending ? { disabled: true, className: styles.pending } : null,
 	);
 
 	return (
-		<Button {...buttonProps}>
+		// NOTE(joel): We cant use React Arias <Button> here, since there is a
+		// bug in the current `useFormStatus` implementation that prevents us from 
+		// using it with. See https://github.com/facebook/react/issues/30368
+		<button {...buttonProps}>
 			{pending ? (
 				<>
 					<svg className={styles.svg}>
@@ -31,6 +33,6 @@ export function PendingSubmit(props: PendingSubmitProps) {
 			) : (
 				children
 			)}
-		</Button>
+		</button>
 	);
 }

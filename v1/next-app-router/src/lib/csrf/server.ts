@@ -8,8 +8,8 @@ import { CSRF_HEADER_TOKEN, CSRF_HEADER_VERIFIED } from '@/constants';
 /**
  * Get the CSRF token from request headers on the server.
  */
-export function getCsrfToken() {
-	const headersList = headers();
+export async function getCsrfToken() {
+	const headersList = await headers();
 	return headersList.get(CSRF_HEADER_TOKEN) || '';
 }
 
@@ -18,7 +18,8 @@ export function getCsrfToken() {
 /**
  * Test the "CSRF-Verified"-header to see if the CSRF token was verified.
  */
-export function verifyCsrf() {
-	const verifiedHeader = headers().get(CSRF_HEADER_VERIFIED);
+export async function verifyCsrf() {
+	const headersList = await headers();
+	const verifiedHeader = headersList.get(CSRF_HEADER_VERIFIED);
 	return verifiedHeader === '1';
 }

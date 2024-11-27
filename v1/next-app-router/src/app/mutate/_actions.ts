@@ -12,7 +12,7 @@ export async function mutateFormDb(fd: FormData) {
 	// additional layer of security by verifying the CSRF token manually.
 	// This must be done for API routes anyway, as these are not automatically
 	// secured by Next.js
-	if (!verifyCsrf()) {
+	if (!(await verifyCsrf())) {
 		throw new Error('E001 - INVALID_CSRF');
 	}
 

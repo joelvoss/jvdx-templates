@@ -39,10 +39,10 @@ app.use(json());
 app.use(cacheControl());
 
 // Fallback route
-app.get(`/`, (_, res) => res.status(200).json());
+app.get(`/`, (_, res) => void res.status(200).json());
 
 // GCP health-check routes
-app.get(`/_ah/**`, (_, res) => res.status(200).json());
+app.get(`/_ah/**`, (_, res) => void res.status(200).json());
 
 // Custom routes
 app.use(`/hello-world`, helloWorld);

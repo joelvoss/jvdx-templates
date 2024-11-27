@@ -1,10 +1,10 @@
 'use client';
 
-import { PendingSubmit } from '@/shared/pending-submit';
-import { useLocale } from '@/lib/locale/client';
-import { getI18n } from '@/lib/i18n';
 import { mutateFormDb } from '@/app/mutate/_actions';
 import { CSRF_BODY_NAME } from '@/constants';
+import { getI18n } from '@/lib/i18n';
+import { useLocale } from '@/lib/locale/client';
+import { PendingSubmit } from '@/shared/pending-submit';
 import { ToastQueue } from '@/shared/toast';
 import styles from './index.module.css';
 
@@ -24,7 +24,7 @@ export function Form(props: FormProps) {
 	const lang = useLocale();
 	const t = getI18n(lang);
 
-	const formAction = async (fd: FormData) => {
+	const action = async (fd: FormData) => {
 		try {
 			await mutateFormDb(fd);
 			ToastQueue.positive(t(`mutate.form.success`), { timeout: 1000 });
@@ -35,7 +35,7 @@ export function Form(props: FormProps) {
 
 	return (
 		<>
-			<form action={formAction}>
+			<form action={action}>
 				<input type="hidden" name={CSRF_BODY_NAME} value={csrf} />
 
 				<fieldset className={styles.fieldset}>
