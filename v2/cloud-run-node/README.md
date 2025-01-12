@@ -1,6 +1,6 @@
 # {cloud-run-node}
 
-Description of the `cloud-run-node}` service.
+Description of the `{cloud-run-node}` service.
 
 # Development
 
