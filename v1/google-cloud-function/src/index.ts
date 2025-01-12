@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 
-import * as functions from '@google-cloud/functions-framework';
+import { http, cloudEvent } from '@google-cloud/functions-framework';
+import type { CloudEvent } from '@google-cloud/functions-framework';
 
 // NOTE(joel): Choose one of the following function signatures depending on the
 // trigger type of your cloud function.
@@ -10,7 +11,7 @@ import * as functions from '@google-cloud/functions-framework';
 /**
  * HTTP-Function
  */
-functions.http('helloHttp', (req, res) => {
+http('helloHttp', (_, res) => {
 	res.json({ message: 'Hello World!' });
 });
 
@@ -27,7 +28,7 @@ type File = {
 /**
  * Storage-Trigger-Function
  */
-functions.cloudEvent<File>('helloGCS', cloudEvent => {
+cloudEvent('helloGCS', (cloudEvent: CloudEvent<File>) => {
 	console.log(`Event ID: ${cloudEvent.id}`);
 	console.log(`Event Type: ${cloudEvent.type}`);
 
@@ -52,7 +53,7 @@ type PubSubMessage = {
 /**
  * PubSub-Trigger-Function
  */
-functions.cloudEvent<PubSubMessage>('helloPubSub', cloudEvent => {
+cloudEvent('helloPubSub', (cloudEvent: CloudEvent<PubSubMessage>) => {
 	const data = cloudEvent.data;
 	if (!data) return;
 

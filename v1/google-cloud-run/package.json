@@ -13,20 +13,20 @@
   "dependencies": {
     "compression": "1.7.5",
     "cors": "2.8.5",
-    "cross-fetch": "4.0.0",
-    "dotenv": "16.4.5",
+    "cross-fetch": "4.1.0",
+    "dotenv": "16.4.7",
     "dotenv-expand": "12.0.1",
-    "express": "4.21.1",
+    "express": "4.21.2",
     "helmet": "8.0.0"
   },
   "devDependencies": {
-    "@jvdx/core": "^4.7.0",
+    "@jvdx/core": "^4.8.0",
     "@types/compression": "^1.7.5",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.0",
-    "typescript": "^5.7.2"
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
   },
   "prettier": "@jvdx/prettier-config",
   "prettierIgnore": [

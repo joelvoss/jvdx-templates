@@ -20,7 +20,7 @@ export function PendingSubmit(props: PendingSubmitProps) {
 
 	return (
 		// NOTE(joel): We cant use React Arias <Button> here, since there is a
-		// bug in the current `useFormStatus` implementation that prevents us from 
+		// bug in the current `useFormStatus` implementation that prevents us from
 		// using it with. See https://github.com/facebook/react/issues/30368
 		<button {...buttonProps}>
 			{pending ? (
