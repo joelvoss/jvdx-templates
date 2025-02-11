@@ -22,7 +22,7 @@
     "@biomejs/biome": "1.9.4",
     "@jvdx/prettier-config": "0.3.4",
     "@types/node": "22.10.5",
-    "esbuild": "0.24.2",
+    "esbuild": "0.25.0",
     "nodemon": "3.1.9",
     "prettier": "3.4.2",
     "typescript": "5.7.3",
