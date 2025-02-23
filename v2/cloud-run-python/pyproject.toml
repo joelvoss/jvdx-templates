@@ -1,0 +1,50 @@
+[project]
+name = "cloud-run-python"
+version = "0.0.1"
+description = "A FastAPI project for Cloud Run"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "fastapi[standard]>=0.115.6",
+    "google-cloud-firestore>=2.20.0",
+    "pydantic-settings>=2.7.1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+    "pytest>=8.3.4",
+    "pytest-mock>=3.14.0",
+    "ruff>=0.9.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.mypy]
+strict = true
+exclude = ["venv", ".venv"]
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG001", # unused arguments in functions
+]
+ignore = [
+    "E501",  # Line too long, handled by black
+    "B008",  # Do not perform function calls in argument defaults
+    "W191",  # Indentation contains tabs
+    "B904",  # Allow raising exceptions without from e, for HTTPException
+]
+
+[tool.ruff.lint.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+keep-runtime-typing = true
