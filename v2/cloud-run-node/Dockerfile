@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S runner -u 1001

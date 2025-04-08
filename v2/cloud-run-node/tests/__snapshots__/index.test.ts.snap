@@ -31,7 +31,7 @@ exports[`API (v1) > POST /v1/books > invalid payload 1`] = `
   "code": "VALIDATION_ERROR",
   "message": {
     "title": [
-      "Missing or invalid parameter 'title'",
+      "Invalid key: Expected "title" but received undefined",
     ],
   },
 }

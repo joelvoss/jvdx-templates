@@ -36,12 +36,9 @@ build() {
 }
 
 format() {
-  echo "Running prettier..."
+  echo "Running biome..."
 
-  prettier \
-    --write \
-    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md,mdx,yml,yaml,html}" \
-    "tests/**/*.{js,jsx,ts,tsx,json,css,scss,md,mdx,yml,yaml,html}"
+  biome format --write ./src ./tests
 }
 
 typecheck() {
