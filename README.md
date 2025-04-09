@@ -5,12 +5,8 @@ help of [`degit`](https://github.com/Rich-Harris/degit).
 
 ## v1 Templates
 [`@jvdx/core`][#jvdx/core] based templates:
-  - [joelvoss/jvdx-templates/v1/node-lib](./v1/node-lib)
-  - [joelvoss/jvdx-templates/v1/react-lib](./v1/react-lib)
   - [joelvoss/jvdx-templates/v1/next-pages-router](./v1/next-pages-router)
   - [joelvoss/jvdx-templates/v1/next-app-router](./v1/next-app-router)
-  - [joelvoss/jvdx-templates/v1/google-cloud-function](./v1/google-cloud-function)
-  - [joelvoss/jvdx-templates/v1/google-cloud-run](./v1/google-cloud-run)
 
 ## v2 Templates
 [`vite`][#vite] based templates:
