@@ -37,7 +37,7 @@ def patch_settings(request: pytest.FixtureRequest) -> Iterator[Settings]:
     env_vars_to_patch = getattr(request, "param", {})
 
     # Patch the settings to use the default values
-    for k, v in settings.model_fields.items():
+    for k, v in Settings.model_fields.items():
         setattr(settings, k, v.default)
 
     # Patch the settings with the parametrized env vars
