@@ -22,8 +22,8 @@ start_dev() {
 format() {
   echo "Running formatter..."
   uv sync
-  uv run -- ruff check src/ tests/ --fix
-  uv run -- ruff format src/ tests/
+  uv run -- ruff check src/ tests/ scripts/ --fix
+  uv run -- ruff format src/ tests/ scripts/
 }
 
 lint() {
@@ -48,6 +48,11 @@ clean() {
   echo "Removing cache files..."
   rm -rf .mypy_cache .pytest_cache .ruff_cache .venv
   find . -type d -name __pycache__ -prune -exec rm -rf {} \;
+}
+
+update_dependencies() {
+  echo "Updating dependencies..."
+  ./scripts/update_dependencies.py
 }
 
 deploy() {
