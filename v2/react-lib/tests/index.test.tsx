@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen, userEvent } from './test-utils';
 import { Counter } from '../src/index';
+import { cleanup, render, screen, userEvent } from './test-utils';
 
 afterEach(() => {
 	cleanup();
