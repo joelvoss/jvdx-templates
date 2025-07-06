@@ -1,0 +1,4 @@
+# NOTE: Several commands in gcloud involve uploading the contents of a
+# directory to Google Cloud to host or build. We don't need to upload anything
+# when deploying to Cloud Run, so we ignore everything by default.
+*

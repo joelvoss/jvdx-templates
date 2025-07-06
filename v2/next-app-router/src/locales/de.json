@@ -1,0 +1,66 @@
+{
+	"global": {
+		"app-title": "template-next-app",
+		"nav": {
+			"home": "Home",
+			"mutate": "Mutate",
+			"books": "Books"
+		}
+	},
+	"language-menu": {
+		"label": "Sprache",
+		"de": "Deutsch",
+		"en": "English"
+	},
+	"toast": {
+		"notifications": "Benachrichtigungen"
+	},
+	"500": {
+		"title": "500 | template-next-app",
+		"heading": "Unbekannter Serverfehler",
+		"description": "Es tut uns leid, die von Ihnen angeforderte Seite ist vorübergehend nicht verfügbar. Es könnte sein, dass Sie auf eine falsche oder veraltete URL zugegriffen haben. Bitte überprüfen Sie diese erneut. Oder versuchen Sie, die gewünschte Seite über unsere Startseite zu finden.",
+		"link": "← Startseite"
+	},
+	"404": {
+		"title": "404 | template-next-app",
+		"heading": "Die von Ihnen gesuchte Seite wurde leider nicht gefunden",
+		"description": "Es tut uns leid, die von Ihnen angeforderte Seite existiert nicht oder ist vorübergehend nicht verfügbar. Es könnte sein, dass Sie auf eine falsche oder veraltete URL zugegriffen haben. Bitte überprüfen Sie diese erneut. Oder versuchen Sie, die gewünschte Seite über unsere Startseite zu finden.",
+		"link": "← Startseite"
+	},
+	"home": {
+		"title": "Home | template-next-app",
+		"desc": "Diese Seite wird auf dem Server gerendert (React Server Component) und lädt Daten von GitHub, bevor die Seite tatsächlich im Browser gerendert wird."
+	},
+	"books": {
+		"title": "Bücher | template-next-app",
+		"heading": "Bücherliste",
+		"add-book": "Buch hinzufügen",
+		"table": {
+			"header": {
+				"title": "Titel",
+				"author": "Autor",
+				"year": "Jahr"
+			},
+			"actions": {
+				"edit": "Bearbeiten",
+				"delete": "Löschen"
+			},
+			"empty": "Keine Bücher gefunden"
+		},
+		"errors": {
+			"delete": "Fehler beim Löschen des Buches"
+		},
+		"dialog": {
+			"edit-title": "Buch bearbeiten",
+			"create-title": "Buch erstellen",
+			"edit-desc": "Aktualisieren Sie die Details des Buches.",
+			"create-desc": "Füllen Sie die Details aus, um ein neues Buch zu erstellen.",
+			"title-label": "Titel",
+			"author-label": "Autor",
+			"year-label": "Jahr",
+			"update": "Aktualisieren",
+			"create": "Erstellen",
+			"cancel": "Abbrechen"
+		}
+	}
+}

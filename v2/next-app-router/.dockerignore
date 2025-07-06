@@ -1,0 +1,8 @@
+# NOTE: We want to exclude files or directories from the build context to avoid
+# sending unwanted files and directories to the builder, improving build speed,
+# especially when using a remote builder, so we ignore everything by default.
+*
+
+# NOTE: We copy the pre-build standalone bundle into our image, so we have to 
+# allow it here.
+!standalone/**

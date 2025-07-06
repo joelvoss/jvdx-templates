@@ -1,0 +1,4 @@
+# This robots.txt file blocks all web crawlers from accessing any part of the 
+# site. See https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Disallow: /

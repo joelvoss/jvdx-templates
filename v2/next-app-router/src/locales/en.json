@@ -1,0 +1,66 @@
+{
+	"global": {
+		"app-title": "template-next-app",
+		"nav": {
+			"home": "Home",
+			"mutate": "Mutate",
+			"books": "Books"
+		}
+	},
+	"language-menu": {
+		"label": "Language",
+		"de": "German",
+		"en": "English"
+	},
+	"toast": {
+		"notifications": "Notifications"
+	},
+	"500": {
+		"title": "500 | template-next-app",
+		"heading": "Unknown server error",
+		"description": "We are sorry, the page you requested is temporarily unavailable. It could be that you have accessed an incorrect or outdated URL. Please check it again. Or try to find the desired page via our home page.",
+		"link": "← Home page"
+	},
+	"404": {
+		"title": "404 | template-next-app",
+		"heading": "Sorry, the page you are looking for was not found",
+		"description": "We are sorry, the page you requested does not exist or is temporarily unavailable. It could be that you have accessed an incorrect or outdated URL. Please check it again. Or try to find the desired page via our home page.",
+		"link": "← Home page"
+	},
+	"home": {
+		"title": "Home | template-next-app",
+		"desc": "This page is rendered on the server (React Server Component) and loads data from GitHub before the page is actually rendered in the browser."
+	},
+	"books": {
+		"title": "Books | template-next-app",
+		"heading": "Book List",
+		"add-book": "Add book",
+		"table": {
+			"header": {
+				"title": "Title",
+				"author": "Author",
+				"year": "Year"
+			},
+			"actions": {
+				"edit": "Edit",
+				"delete": "Delete"
+			},
+			"empty": "No books found"
+		},
+		"errors": {
+			"delete": "Error deleting book"
+		},
+		"dialog": {
+			"edit-title": "Edit Book",
+			"create-title": "Create Book",
+			"edit-desc": "Update the details of the book.",
+			"create-desc": "Fill in the details to create a new book.",
+			"title-label": "Title",
+			"author-label": "Author",
+			"year-label": "Year",
+			"update": "Update",
+			"create": "Create",
+			"cancel": "Cancel"
+		}
+	}
+}
