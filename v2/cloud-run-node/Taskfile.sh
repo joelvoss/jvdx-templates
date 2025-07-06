@@ -38,17 +38,24 @@ build() {
 format() {
   echo "Running biome..."
 
-  biome format --write ./src ./tests
+  biome check \
+    --formatter-enabled=true \
+		--assist-enabled=true \
+    --linter-enabled=false \
+    --write \
+    ./src ./tests $*
+}
+
+lint() {
+  echo "Running biome..."
+  # NOTE: Use --fix to auto-fix linting errors
+	biome lint \
+		./src ./tests $*
 }
 
 typecheck() {
   echo "Running tsc..."
   tsc --noEmit
-}
-
-lint() {
-  echo "Running biome..."
-  biome lint ./src ./tests
 }
 
 test() {

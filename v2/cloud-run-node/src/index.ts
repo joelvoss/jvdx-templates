@@ -1,9 +1,9 @@
+import { fileURLToPath } from 'node:url';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { compress } from 'hono/compress';
 import { etag } from 'hono/etag';
 import { secureHeaders } from 'hono/secure-headers';
-import { fileURLToPath } from 'node:url';
 import { cors } from '~/lib/cors';
 import { HTTPException } from '~/lib/http-exception';
 import { logger } from '~/lib/logger';

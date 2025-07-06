@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from 'vitest';
-import { logger, type LogContext } from '../../src/lib/logger';
+import { type LogContext, logger } from '../../src/lib/logger';
 
 describe('Logger', () => {
 	test('logger.info logs with INFO severity', () => {
