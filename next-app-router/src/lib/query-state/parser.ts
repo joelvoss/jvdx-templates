@@ -74,7 +74,7 @@ export const parseAsString = createParser({
 
 export const parseAsInteger = createParser({
 	parse: v => {
-		const int = Number.parseInt(v);
+		const int = Number.parseInt(v, 10);
 		if (Number.isNaN(int)) {
 			return null;
 		}
@@ -130,7 +130,7 @@ function compareDates(a: Date, b: Date) {
 
 export const parseAsTimestamp = createParser({
 	parse: v => {
-		const ms = Number.parseInt(v);
+		const ms = Number.parseInt(v, 10);
 		if (Number.isNaN(ms)) {
 			return null;
 		}

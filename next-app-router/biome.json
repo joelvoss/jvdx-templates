@@ -34,9 +34,6 @@
 			"complexity": {
 				"useArrowFunction": "off"
 			},
-			"nursery": {
-				"useUniqueElementIds": "off"
-			},
 			"suspicious": {
 				"noExplicitAny": "off"
 			},
@@ -50,6 +47,7 @@
 				"noDangerouslySetInnerHtml": "warn"
 			},
 			"correctness": {
+				"useUniqueElementIds": "off",
 				"useExhaustiveDependencies": {
 					"level": "error",
 					"options": {
