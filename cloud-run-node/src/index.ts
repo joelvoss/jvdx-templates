@@ -9,7 +9,6 @@ import { HTTPException } from '~/lib/http-exception';
 import { logger } from '~/lib/logger';
 import { trace } from '~/lib/trace';
 import { books } from '~/routes/books';
-
 import type { Variables } from '~/types';
 
 ////////////////////////////////////////////////////////////////////////////////

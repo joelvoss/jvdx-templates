@@ -1,4 +1,4 @@
-/// <reference types="vitest" />
+/// <reference types="vitest/config" />
 
 import { defineConfig } from 'vite';
 
@@ -7,5 +7,6 @@ export default defineConfig({
 		alias: {
 			'~/': new URL('./src/', import.meta.url).pathname,
 		},
+		silent: 'passed-only'
 	},
 });

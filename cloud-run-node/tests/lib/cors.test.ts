@@ -1,8 +1,14 @@
 import { Hono } from 'hono';
-import { describe, expect, test } from 'vitest';
-import { cors } from '../../src/lib/cors';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 describe('cors', () => {
+	let cors: typeof import('~/lib/cors').cors;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		cors = (await import('../../src/lib/cors')).cors;
+	});
+
 	test('default cors headers', async () => {
 		let app = new Hono();
 		app.get('/cors/*', cors(), () => new Response('test'));

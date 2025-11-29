@@ -24,11 +24,13 @@ function log(severity: string, message: LogMessage, c?: LogContext) {
 
 	let msg = typeof message === 'string' ? { message } : message;
 
-	console.log({
-		severity,
-		...(traceId ? { 'logging.googleapis.com/trace': traceId } : {}),
-		...msg,
-	});
+	console.log(
+		JSON.stringify({
+			severity,
+			...(traceId ? { 'logging.googleapis.com/trace': traceId } : {}),
+			...msg,
+		}),
+	);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

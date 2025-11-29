@@ -1,7 +1,14 @@
-import { describe, expect, test } from 'vitest';
-import { HTTPException } from '../../src/lib/http-exception';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 describe('HTTPException', () => {
+	let HTTPException: typeof import('~/lib/http-exception').HTTPException;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		HTTPException = (await import('../../src/lib/http-exception'))
+			.HTTPException;
+	});
+
 	test('should create an instance with default values', () => {
 		let exception = new HTTPException();
 		expect(exception.status).toBe(500);
