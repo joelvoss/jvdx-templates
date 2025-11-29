@@ -1,8 +1,14 @@
 import { Hono } from 'hono';
-import { describe, expect, test, vi } from 'vitest';
-import { cacheControl } from '../../src/lib/cache-control';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 describe('cacheControl', () => {
+	let cacheControl: typeof import('~/lib/cache-control').cacheControl;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		cacheControl = (await import('~/lib/cache-control')).cacheControl;
+	});
+
 	test('no-cache when options is false', async () => {
 		let app = new Hono();
 		app.get('/cacheControl/*', cacheControl(false), () => new Response('test'));

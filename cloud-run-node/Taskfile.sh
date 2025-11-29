@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 PATH=./node_modules/.bin:$PATH
@@ -7,23 +7,41 @@ PATH=./node_modules/.bin:$PATH
 # START tasks
 
 start() {
-  node dist/index.js
+  setup_env "$1"
+
+  if [ "$1" = "prod" ]; then
+    export NODE_ENV=production
+    node dist/index.js
+
+  elif [ "$1" = "dev" ]; then
+    export NODE_ENV=development
+    nodemon --watch src \
+      --ext ts \
+      --exec "./Taskfile.sh build && ./Taskfile.sh start"
+
+  elif [ "$1" = "docker" ]; then
+    build
+
+    docker build --tag "${IMAGE_TAG}" .
+    docker run -it --rm \
+      -v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
+      -e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
+      -p 3000:3000 \
+      "${IMAGE_TAG}"
+
+  else
+    echo "Unknown environment specified. Possible values: <prod|dev|docker>"
+    exit 1
+  fi
 }
 
-start_dev() {
-  export NODE_ENV=development
-
-  nodemon --watch src \
-    --ext ts \
-    --exec "./Taskfile.sh build && ./Taskfile.sh start"
-}
 
 build() {
   echo "Building..."
 
   DIST_DIR=dist
 
-  rm -rf ${DIST_DIR}
+  rm -rf "${DIST_DIR}"
   esbuild src/index.ts \
     --bundle \
     --platform=node \
@@ -31,8 +49,8 @@ build() {
     --format="esm" \
     --outdir="${DIST_DIR}"
 
-  jq 'pick(.name, .version, .type, .dependencies)' package.json > ${DIST_DIR}/package.json
-  cp package-lock.json ${DIST_DIR}/package-lock.json
+  jq 'pick(.name, .version, .type, .dependencies)' package.json > "${DIST_DIR}/package.json"
+  cp package-lock.json "${DIST_DIR}/package-lock.json"
 }
 
 format() {
@@ -40,17 +58,17 @@ format() {
 
   biome check \
     --formatter-enabled=true \
-		--assist-enabled=true \
+    --assist-enabled=true \
     --linter-enabled=false \
     --write \
-    ./src ./tests $*
+    ./src ./tests "$@"
 }
 
 lint() {
   echo "Running biome..."
   # NOTE: Use --fix to auto-fix linting errors
-	biome lint \
-		./src ./tests $*
+  biome lint \
+    ./src ./tests "$@"
 }
 
 typecheck() {
@@ -80,7 +98,7 @@ clean() {
 }
 
 deploy() {
-  setup_env $*
+  setup_env "$@"
 
   build
 
@@ -106,16 +124,16 @@ setup_env() {
   export NAME=$(jq -r ".name" package.json)
   export VERSION=$(jq -r ".version" package.json | tr "." "-")
 
-  if [[ "$1" == "prod" ]]; then
+  if [ "$1" = "prod" ]; then
     export PROJECT="<CHANGE_ME>"
     export REGION="europe-west3"
     export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
-  elif [[ "$1" == "staging" ]]; then
+  elif [ "$1" = "dev" ] || [ "$1" = "docker" ]; then
     export PROJECT="<CHANGE_ME>"
     export REGION="europe-west3"
     export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
   else
-    echo "Unknown environment specified. Possible values: <prod|staging>"
+    echo "Unknown environment specified. Possible values: <prod|dev|docker>"
     exit 1
   fi
 
@@ -145,4 +163,4 @@ help() {
 # END tasks
 # //////////////////////////////////////////////////////////////////////////////
 
-${@:-help}
+"${@:-help}"

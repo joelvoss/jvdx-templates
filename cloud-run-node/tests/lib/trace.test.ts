@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
-import { describe, expect, test, vi } from 'vitest';
-import { trace } from '../../src/lib/trace';
-
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import type { Variables } from '../../src/types';
+
+////////////////////////////////////////////////////////////////////////////////
+// Mocks
 
 vi.mock('node:crypto', () => {
 	return {
@@ -10,7 +11,17 @@ vi.mock('node:crypto', () => {
 	};
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// Tests
+
 describe('trace', () => {
+	let trace: typeof import('~/lib/trace').trace;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		trace = (await import('../../src/lib/trace')).trace;
+	});
+
 	test('generate random trace id', async () => {
 		let app = new Hono<{ Variables: Variables }>();
 		app.use(trace({ projectId: 'test-project-id' }));

@@ -1,10 +1,9 @@
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
 import * as v from 'valibot';
-import { Firestore } from '~/db/firestore';
+import { Firestore } from '~/adapters/firestore';
 import { cacheControl } from '~/lib/cache-control';
 import { HTTPException } from '~/lib/http-exception';
-
 import type { Variables } from '~/types';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,8 +21,8 @@ books.get('/', cacheControl(), async c => {
 ////////////////////////////////////////////////////////////////////////////////
 
 let CreateBookSchema = v.object({
-	title: v.string(`Missing or invalid parameter 'title'`),
-	author: v.string(`Missing or invalid parameter 'author'`),
+	title: v.string(),
+	author: v.string(),
 });
 
 // NOTE(joel): POST /v1/books
@@ -63,8 +62,8 @@ books.get('/:id', cacheControl(), async c => {
 ////////////////////////////////////////////////////////////////////////////////
 
 let UpdateBookSchema = v.object({
-	title: v.optional(v.string(`Invalid parameter 'title'`)),
-	author: v.optional(v.string(`Invalid parameter 'author'`)),
+	title: v.optional(v.string()),
+	author: v.optional(v.string()),
 });
 
 // NOTE(joel): POST /v1/books/:id

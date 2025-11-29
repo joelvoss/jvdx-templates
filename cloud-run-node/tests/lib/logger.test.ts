@@ -1,7 +1,14 @@
-import { describe, expect, test, vi } from 'vitest';
-import { type LogContext, logger } from '../../src/lib/logger';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { LogContext } from '~/lib/logger';
 
 describe('Logger', () => {
+	let logger: typeof import('~/lib/logger').logger;
+
+	beforeEach(async () => {
+		vi.resetModules();
+		logger = (await import('../../src/lib/logger')).logger;
+	});
+
 	test('logger.info logs with INFO severity', () => {
 		let consoleSpy = vi.spyOn(console, 'log');
 		let message = 'Test message';
@@ -9,11 +16,13 @@ describe('Logger', () => {
 
 		logger.info(message, context);
 
-		expect(consoleSpy).toHaveBeenCalledWith({
-			severity: 'INFO',
-			'logging.googleapis.com/trace': 'traceId',
-			message,
-		});
+		expect(consoleSpy).toHaveBeenCalledWith(
+			JSON.stringify({
+				severity: 'INFO',
+				'logging.googleapis.com/trace': 'traceId',
+				message,
+			}),
+		);
 
 		consoleSpy.mockRestore();
 	});
@@ -25,11 +34,13 @@ describe('Logger', () => {
 
 		logger.warn(message, context);
 
-		expect(consoleSpy).toHaveBeenCalledWith({
-			severity: 'WARN',
-			'logging.googleapis.com/trace': 'traceId',
-			message,
-		});
+		expect(consoleSpy).toHaveBeenCalledWith(
+			JSON.stringify({
+				severity: 'WARN',
+				'logging.googleapis.com/trace': 'traceId',
+				message,
+			}),
+		);
 
 		consoleSpy.mockRestore();
 	});
@@ -41,11 +52,13 @@ describe('Logger', () => {
 
 		logger.error(message, context);
 
-		expect(consoleSpy).toHaveBeenCalledWith({
-			severity: 'ERROR',
-			'logging.googleapis.com/trace': 'traceId',
-			message,
-		});
+		expect(consoleSpy).toHaveBeenCalledWith(
+			JSON.stringify({
+				severity: 'ERROR',
+				'logging.googleapis.com/trace': 'traceId',
+				message,
+			}),
+		);
 
 		consoleSpy.mockRestore();
 	});
@@ -56,10 +69,12 @@ describe('Logger', () => {
 
 		logger.error(message);
 
-		expect(consoleSpy).toHaveBeenCalledWith({
-			severity: 'ERROR',
-			message,
-		});
+		expect(consoleSpy).toHaveBeenCalledWith(
+			JSON.stringify({
+				severity: 'ERROR',
+				message,
+			}),
+		);
 
 		consoleSpy.mockRestore();
 	});
@@ -70,10 +85,12 @@ describe('Logger', () => {
 
 		logger.error(message);
 
-		expect(consoleSpy).toHaveBeenCalledWith({
-			severity: 'ERROR',
-			...message,
-		});
+		expect(consoleSpy).toHaveBeenCalledWith(
+			JSON.stringify({
+				severity: 'ERROR',
+				...message,
+			}),
+		);
 
 		consoleSpy.mockRestore();
 	});
