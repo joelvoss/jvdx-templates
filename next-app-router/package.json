@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.3",
-    "@playwright/test": "1.55.0",
+    "@playwright/test": "1.57.0",
     "@tailwindcss/postcss": "4.1.13",
     "@types/cors": "2.8.19",
     "@types/node": "24.3.1",
