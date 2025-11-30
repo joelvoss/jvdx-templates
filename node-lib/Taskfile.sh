@@ -24,14 +24,14 @@ format() {
 		--assist-enabled=true \
     --linter-enabled=false \
     --write \
-    ./src ./tests $*
+    ./src ./tests ./plugins $*
 }
 
 lint() {
   echo "Running biome..."
   # NOTE: Use --fix to auto-fix linting errors
 	biome lint \
-		./src ./tests $*
+		./src ./tests ./plugins $*
 }
 
 typecheck() {
