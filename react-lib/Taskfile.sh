@@ -6,8 +6,8 @@ PATH=./node_modules/.bin:$PATH
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
-start_dev() {
-  vite
+dev() {
+  vite --port 3000
 }
 
 build() {
@@ -24,14 +24,14 @@ format() {
 		--assist-enabled=true \
     --linter-enabled=false \
     --write \
-    ./src ./tests $*
+    ./src ./tests ./plugins $*
 }
 
 lint() {
   echo "Running biome..."
   # NOTE: Use --fix to auto-fix linting errors
 	biome lint \
-		./src ./tests $*
+		./src ./tests ./plugins $*
 }
 
 typecheck() {
@@ -58,7 +58,7 @@ help() {
   echo "Usage: $0 <command>"
   echo
   echo "Commands:"
-  echo "  start_dev   Start development server"
+  echo "  dev         Start development server"
   echo "  build       Build for production"
   echo "  format      Format code"
   echo "  typecheck   Typecheck code"

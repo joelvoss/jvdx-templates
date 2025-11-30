@@ -1,22 +1,23 @@
-/// <reference types="vitest" />
+/// <reference types="vitest/config" />
 
-import { resolve, parse, dirname } from 'node:path';
+import { dirname, parse, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import react from '@vitejs/plugin-react';
+import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react'
-import dts from 'vite-plugin-dts'
 import packageJson from './package.json';
+import { dtsBundle } from './plugins/vite-plugin-dts-bundle';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-	plugins: [react(), dts({ rollupTypes: true, logLevel: 'error' })],
+	plugins: [react(), dtsBundle()],
 	build: {
-    // NOTE(joel): Don't minify, because every consumer will minify themselves
-    // anyway. We're only bundling for the sake of publishing to npm.
-    minify: false,
+		// NOTE(joel): Don't minify, because every consumer will minify themselves
+		// anyway. We're only bundling for the sake of publishing to npm.
+		minify: false,
 		lib: {
-      entry: resolve(__dirname, packageJson.source),
+			entry: resolve(__dirname, packageJson.source),
 			formats: ['cjs', 'es'],
 			fileName: parse(packageJson.module).name,
 		},
@@ -27,7 +28,14 @@ export default defineConfig({
 		},
 	},
 	test: {
-    environment: 'jsdom',
-    setupFiles: resolve(__dirname, './tests/setup.ts'),
+		browser: {
+      enabled: true,
+			headless: true,
+      provider: playwright(),
+			screenshotFailures: false,
+      instances: [
+        { browser: 'chromium' },
+      ],
+    },
 	},
 });

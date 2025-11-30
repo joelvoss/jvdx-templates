@@ -29,24 +29,22 @@
   },
   "scripts": {
     "test": "./Taskfile.sh test",
-    "prepublishOnly": "./Taskfile.sh build"
+    "prepublishOnly": "./Taskfile.sh build",
+    "test:browser": "vitest --config=vitest.browser.config.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.2.3",
-    "@testing-library/jest-dom": "6.8.0",
-    "@testing-library/react": "16.3.0",
-    "@testing-library/user-event": "14.6.1",
-    "@types/node": "24.3.1",
-    "@types/react": "19.1.12",
-    "@types/react-dom": "19.1.9",
-    "@vitejs/plugin-react": "5.0.2",
-    "jsdom": "26.1.0",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "typescript": "5.9.2",
-    "vite": "7.1.4",
-    "vite-plugin-dts": "4.5.4",
-    "vitest": "3.2.4"
+    "@biomejs/biome": "2.3.8",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "5.1.1",
+    "@vitest/browser-playwright": "4.0.14",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "typescript": "5.9.3",
+    "vite": "7.2.4",
+    "vitest": "4.0.14",
+    "vitest-browser-react": "2.0.2"
   },
   "peerDependencies": {
     "react": ">=17",
