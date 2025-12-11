@@ -13,7 +13,7 @@
     "@tanstack/react-table": "8.21.3",
     "client-only": "0.0.1",
     "cors": "2.8.5",
-    "next": "15.5.2",
+    "next": "15.5.8",
     "react": "19.1.1",
     "react-aria-components": "1.12.1",
     "react-dom": "19.1.1",
