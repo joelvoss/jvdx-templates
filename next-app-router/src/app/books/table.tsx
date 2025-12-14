@@ -11,7 +11,6 @@ import {
 import { useMemo, useOptimistic, useState, useTransition } from 'react';
 import { Button, type PressEvent } from 'react-aria-components';
 import { useI18n } from '@/lib/i18n/client';
-import { useLocale } from '@/lib/locale/client';
 import { useQueryState } from '@/lib/query-state/use-query-state';
 import { type Book, deleteBook } from './actions';
 import { TableEditDialog } from './table-edit-dialog';
@@ -54,8 +53,7 @@ export function BooksTable(props: BooksTableProps) {
 		(_, value: typeof initialBooks) => value,
 	);
 
-	const lang = useLocale();
-	const t = useI18n(lang);
+	const t = useI18n();
 
 	const [edit, editSet] = useQueryState('edit');
 	const [error, errorSet] = useState<string | null>(null);
@@ -207,8 +205,7 @@ export function TableActions(props: TableActionsProps) {
 		row: { original },
 	} = props.ctx;
 
-	const lang = useLocale();
-	const t = useI18n(lang);
+	const t = useI18n();
 
 	const [isPending, startTransition] = useTransition();
 

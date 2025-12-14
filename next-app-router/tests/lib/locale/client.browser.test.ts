@@ -19,19 +19,19 @@ describe('useLocale (client)', () => {
 		vi.resetAllMocks();
 	});
 
-	it('returns locale from search params if present', () => {
+	it('returns locale from search params if present', async () => {
 		mocks.useSearchParams.mockImplementation(() => ({
 			get: (key: string) => (key === 'lang' ? 'de' : null),
 		}));
-		const { result } = renderHook(() => useLocale());
+		const { result } = await renderHook(() => useLocale());
 		expect(result.current).toBe('de');
 	});
 
-	it('returns defaultLocale if search param is missing', () => {
+	it('returns defaultLocale if search param is missing', async () => {
 		mocks.useSearchParams.mockImplementation(() => ({
 			get: () => null,
 		}));
-		const { result } = renderHook(() => useLocale());
+		const { result } = await renderHook(() => useLocale());
 		expect(result.current).toBe('en');
 	});
 });

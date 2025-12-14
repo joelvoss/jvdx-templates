@@ -44,7 +44,7 @@ export default async function RootLayout(props: RootLayoutProps) {
 	const { children } = props;
 
 	const lang = await getLocale();
-	const t = useI18n(lang);
+	const t = await useI18n();
 
 	return (
 		<html lang={lang}>

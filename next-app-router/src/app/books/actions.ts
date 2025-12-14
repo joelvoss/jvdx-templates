@@ -1,7 +1,6 @@
 'use server';
 
 import { randomUUID } from 'node:crypto';
-import { revalidatePath } from 'next/cache';
 import { FileSystemDB } from '@/db/file-system-db';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +30,6 @@ export async function createBook(formData: Partial<Book>) {
 		},
 	];
 	await FileSystemDB.updateItems({ books: updatedBooks });
-	revalidatePath('/books');
 	return updatedBooks;
 }
 
@@ -53,7 +51,6 @@ export async function updateBook(formData: Partial<Book>) {
 			: b,
 	);
 	await FileSystemDB.updateItems({ books: updatedBooks });
-	revalidatePath('/books');
 	return updatedBooks;
 }
 
@@ -67,6 +64,5 @@ export async function deleteBook(id: string) {
 	const books = (db.books || []) as Book[];
 	const updatedBooks = books.filter((b: Book) => b.id !== id);
 	await FileSystemDB.updateItems({ books: updatedBooks });
-	revalidatePath('/books');
 	return updatedBooks;
 }

@@ -1,24 +1,44 @@
 {
-	"compilerOptions": {
-		"lib": ["dom", "dom.iterable", "esnext"],
-		"target": "ES2017",
-		"module": "esnext",
-		"moduleResolution": "bundler",
-		"esModuleInterop": true,
-		"resolveJsonModule": true,
-		"isolatedModules": true,
-		"allowJs": true,
-		"skipLibCheck": true,
-		"strict": false,
-		"noEmit": true,
-		"incremental": false,
-		"jsx": "preserve",
-		"plugins": [{ "name": "next" }],
-		"paths": {
-			"@/*": ["./src/*"]
-		},
-		"types": ["@vitest/browser/matchers"]
-	},
-	"include": ["next-env.d.ts", "dist/types/**/*.ts", "**/*.ts", "**/*.tsx"],
-	"exclude": ["node_modules"]
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "target": "ES2017",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": false,
+    "jsx": "react-jsx",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "types": [
+      "@vitest/browser/matchers"
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "dist/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "dist/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

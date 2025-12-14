@@ -1,5 +1,4 @@
 import { useI18n } from '@/lib/i18n/server';
-import { getLocale } from '@/lib/locale/server';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -7,8 +6,7 @@ import { getLocale } from '@/lib/locale/server';
  * NotFound renders a custom 404 page when a route is not found.
  */
 export default async function NotFound() {
-	const lang = await getLocale();
-	const t = useI18n(lang);
+	const t = await useI18n();
 
 	return (
 		<section className='mt-8 flex items-center justify-center'>

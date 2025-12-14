@@ -13,7 +13,6 @@ import {
 	TextField,
 } from 'react-aria-components';
 import { useI18n } from '@/lib/i18n/client';
-import { useLocale } from '@/lib/locale/client';
 import { useQueryState } from '@/lib/query-state/use-query-state';
 import { type Book, createBook, updateBook } from './actions';
 
@@ -21,7 +20,7 @@ import { type Book, createBook, updateBook } from './actions';
 
 interface TableEditDialogProps {
 	book?: Partial<Book>;
-	setOptimisticBooks: (action: Book[]) => void;
+	setOptimisticBooks?: (action: Book[]) => void;
 }
 
 /**
@@ -32,8 +31,7 @@ interface TableEditDialogProps {
 export function TableEditDialog(props: TableEditDialogProps) {
 	const { book, setOptimisticBooks } = props;
 
-	const lang = useLocale();
-	const t = useI18n(lang);
+	const t = useI18n();
 
 	const [edit, editSet] = useQueryState('edit');
 
@@ -74,8 +72,8 @@ export function TableEditDialog(props: TableEditDialogProps) {
 
 	return (
 		<DialogTrigger isOpen={isOpen}>
-			<ModalOverlay className='fixed inset-0 z-10 w-screen bg-gray-500/75 data-[entering]:animate-modal-enter'>
-				<Modal className='flex min-h-full justify-center text-center data-[entering]:animate-modal-zoom items-center p-0'>
+			<ModalOverlay className='fixed inset-0 z-10 w-screen bg-gray-500/75 data-entering:animate-modal-enter'>
+				<Modal className='flex min-h-full justify-center text-center data-entering:animate-modal-zoom items-center p-0'>
 					<Dialog className='relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl mx-4 w-full max-w-lg'>
 						<form action={formAction}>
 							<input type='hidden' name='id' defaultValue={book?.id} readOnly />

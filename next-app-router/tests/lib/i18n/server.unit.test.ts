@@ -5,19 +5,21 @@ vi.mock('@/lib/rosetta', () => ({
 	rosetta: vi.fn((dict, lng) => vi.fn(key => dict[lng][key])),
 }));
 vi.mock('@/locales', () => ({
-	defaultLocale: 'en',
 	dictionary: { en: { hello: 'Hello' }, de: { hello: 'Hallo' } },
+}));
+vi.mock('@/lib/locale/server', () => ({
+	getLocale: vi.fn(() => Promise.resolve('en')),
 }));
 
 describe('useI18n (server)', () => {
-	it('returns a translation function for the given language', () => {
-		const t = useI18n('de');
+	it('returns a translation function for the given language', async () => {
+		const t = await useI18n('de');
 		expect(typeof t).toBe('function');
 		expect(t('hello')).toBe('Hallo');
 	});
 
-	it('defaults to defaultLocale if no lang is provided', () => {
-		const t = useI18n();
+	it('defaults to defaultLocale if no lang is provided', async () => {
+		const t = await useI18n();
 		expect(typeof t).toBe('function');
 		expect(t('hello')).toBe('Hello');
 	});

@@ -1,6 +1,5 @@
 import { Github } from '@/db/github';
 import { useI18n } from '@/lib/i18n/server';
-import { getLocale } from '@/lib/locale/server';
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -8,8 +7,7 @@ import { getLocale } from '@/lib/locale/server';
  * HomePage is the main landing page of the app.
  */
 export default async function HomePage() {
-	const lang = await getLocale();
-	const t = useI18n(lang);
+	const t = await useI18n();
 
 	return (
 		<section>
