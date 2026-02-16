@@ -10,6 +10,7 @@ of [`degit`](https://github.com/Rich-Harris/degit).
 - [joelvoss/jvdx-templates/next-app-router](./next-app-router)
 - [joelvoss/jvdx-templates/node-lib](./node-lib)
 - [joelvoss/jvdx-templates/react-lib](./react-lib)
+- [joelvoss/jvdx-templates/cloud-run-tanstack-start](./cloud-run-tanstack-start)
 
 ## Installation & Usage
 
