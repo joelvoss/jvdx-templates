@@ -4,17 +4,17 @@ version = "0.0.1"
 description = "A FastAPI project for Cloud Run"
 requires-python = ">=3.13,<4.0"
 dependencies = [
-    "fastapi[standard]>=0.116.1",
-    "google-cloud-firestore>=2.21.0",
-    "pydantic-settings>=2.10.1",
+    "fastapi[standard]>=0.129.0",
+    "google-cloud-firestore>=2.23.0",
+    "pydantic-settings>=2.13.0",
 ]
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.1",
-    "pytest>=8.4.2",
-    "pytest-mock>=3.15.0",
-    "ruff>=0.12.12",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.15.1",
 ]
 
 [tool.uv]
