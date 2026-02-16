@@ -1,0 +1,44 @@
+{
+	"name": "cloud-run-tanstack-start",
+	"version": "0.0.1",
+	"author": "Joel Voß <mail@joelvoss.de>",
+	"type": "module",
+	"scripts": {
+		"build": "./Taskfile.sh build"
+	},
+	"dependencies": {
+		"@google-cloud/firestore": "8.3.0",
+		"@tanstack/react-query": "5.90.21",
+		"@tanstack/react-router": "1.160.0",
+		"@tanstack/react-router-ssr-query": "1.160.0",
+		"@tanstack/react-start": "1.160.0",
+		"express": "5.2.1",
+		"react": "19.2.4",
+		"react-aria-components": "1.15.1",
+		"react-dom": "19.2.4",
+		"valibot": "1.2.0"
+	},
+	"devDependencies": {
+		"@react-aria/optimize-locales-plugin": "1.1.5",
+		"@tailwindcss/vite": "4.1.18",
+		"@types/express": "5.0.6",
+		"@types/node": "25.2.3",
+		"@types/react": "19.2.14",
+		"@types/react-dom": "19.2.3",
+		"@vitejs/plugin-react": "5.1.4",
+		"@vitest/browser-playwright": "4.0.18",
+		"babel-plugin-react-compiler": "1.0.0",
+		"oxfmt": "0.33.0",
+		"oxlint": "1.48.0",
+		"oxlint-tsgolint": "0.13.0",
+		"srvx": "0.11.4",
+		"tailwindcss": "4.1.18",
+		"tailwindcss-animate": "1.0.7",
+		"tailwindcss-react-aria-components": "2.0.1",
+		"typescript": "5.9.3",
+		"vite": "7.3.1",
+		"vite-tsconfig-paths": "6.1.1",
+		"vitest": "4.0.18",
+		"vitest-browser-react": "2.0.5"
+	}
+}

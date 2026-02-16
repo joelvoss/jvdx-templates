@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+pnpm-lock.yaml
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage/
+.nyc_output/
+tests/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Tooling / CI
+.github/
+.husky/
+.eslint*
+.prettier*
+.editorconfig
+
+# Misc
+.git/
+.gitignore
+README.md
+Dockerfile

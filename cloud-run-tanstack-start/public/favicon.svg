@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bookGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0069a8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#024a70;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#bookGradient)"/>
+  <!-- Open book icon -->
+  <g fill="#ffffff">
+    <!-- Left page -->
+    <path d="M25 30 Q25 28 27 28 L47 28 Q49 28 49 30 L49 70 Q49 72 47 72 L27 72 Q25 72 25 70 Z"/>
+    <!-- Right page -->
+    <path d="M51 30 Q51 28 53 28 L73 28 Q75 28 75 30 L75 70 Q75 72 73 72 L53 72 Q51 72 51 70 Z"/>
+    <!-- Book spine shadow -->
+    <rect x="48" y="28" width="4" height="44" fill="#e0e7ff" opacity="0.3"/>
+    <!-- Page lines left -->
+    <rect x="30" y="36" width="14" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="30" y="42" width="14" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="30" y="48" width="12" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="30" y="54" width="14" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="30" y="60" width="10" height="2" rx="1" fill="#c7d2fe"/>
+    <!-- Page lines right -->
+    <rect x="56" y="36" width="14" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="56" y="42" width="12" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="56" y="48" width="14" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="56" y="54" width="10" height="2" rx="1" fill="#c7d2fe"/>
+    <rect x="56" y="60" width="14" height="2" rx="1" fill="#c7d2fe"/>
+  </g>
+</svg>

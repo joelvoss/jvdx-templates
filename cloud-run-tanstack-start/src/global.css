@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+@plugin "tailwindcss-react-aria-components";
+
+@layer base {
+	html,
+	body {
+		@apply text-gray-900 bg-gray-50;
+	}
+
+	.using-mouse * {
+		outline: none !important;
+	}
+
+	::view-transition-new(.toast):only-child {
+		animation: slide-in 400ms;
+	}
+
+	::view-transition-old(.toast):only-child {
+		animation: slide-out 400ms;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes slide-out {
+		to {
+			translate: 100% 0;
+			opacity: 0;
+			visibility: hidden;
+		}
+	}
+
+	@keyframes slide-in {
+		from {
+			translate: 100% 0;
+			opacity: 0;
+		}
+	}
+}
