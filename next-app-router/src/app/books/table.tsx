@@ -18,7 +18,6 @@ import { TableEditDialog } from './table-edit-dialog';
 ////////////////////////////////////////////////////////////////////////////////
 
 declare module '@tanstack/react-table' {
-	// biome-ignore lint/correctness/noUnusedVariables: -
 	interface TableMeta<TData extends RowData> {
 		// NOTE(joel): We namespace the meta to avoid conflicts with other tables.
 		booksTable?: {
