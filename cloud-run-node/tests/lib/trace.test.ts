@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 import type { Variables } from '../../src/types';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +27,7 @@ describe('trace', () => {
 		let app = new Hono<{ Variables: Variables }>();
 		app.use(trace({ projectId: 'test-project-id' }));
 
-		app.get('/', c => {
+		app.get('/', (c) => {
 			let id = c.get('traceId');
 			return c.json({ id });
 		});
@@ -43,7 +44,7 @@ describe('trace', () => {
 		let app = new Hono<{ Variables: Variables }>();
 		app.use(trace({ projectId: 'test-project-id' }));
 
-		app.get('/', c => {
+		app.get('/', (c) => {
 			let id = c.get('traceId');
 			return c.json({ id });
 		});

@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 ////////////////////////////////////////////////////////////////////////////////
 // Mocks
 
-const mockGet = vi.fn();
-const mockSet = vi.fn();
-const mockUpdate = vi.fn();
-const mockDelete = vi.fn();
+let mockGet = vi.fn();
+let mockSet = vi.fn();
+let mockUpdate = vi.fn();
+let mockDelete = vi.fn();
 
-const mockDoc = vi.fn(() => {
+let mockDoc = vi.fn(() => {
 	return {
 		get: mockGet,
 		set: mockSet,
@@ -17,7 +17,7 @@ const mockDoc = vi.fn(() => {
 	};
 });
 
-const mockCollection = vi.fn(() => {
+let mockCollection = vi.fn(() => {
 	return {
 		get: mockGet,
 		doc: mockDoc,
@@ -49,19 +49,19 @@ describe('Firestore adapter', () => {
 
 	describe('getBooks', () => {
 		test('returns all books from the collection', async () => {
-			const mockBooks = [
+			let mockBooks = [
 				{ id: '1', title: 'Book One', author: 'Author One' },
 				{ id: '2', title: 'Book Two', author: 'Author Two' },
 			];
 
 			mockGet.mockResolvedValue({
-				docs: mockBooks.map(book => ({
+				docs: mockBooks.map((book) => ({
 					id: book.id,
 					data: () => ({ title: book.title, author: book.author }),
 				})),
 			});
 
-			const result = await Firestore.getBooks();
+			let result = await Firestore.getBooks();
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockGet).toHaveBeenCalled();
@@ -71,7 +71,7 @@ describe('Firestore adapter', () => {
 		test('returns empty array when no books exist', async () => {
 			mockGet.mockResolvedValueOnce({ docs: [] });
 
-			const result = await Firestore.getBooks();
+			let result = await Firestore.getBooks();
 
 			expect(result).toEqual([]);
 		});
@@ -79,7 +79,7 @@ describe('Firestore adapter', () => {
 
 	describe('getBook', () => {
 		test('returns book when it exists', async () => {
-			const mockBook = {
+			let mockBook = {
 				id: 'test-id',
 				title: 'Test Book',
 				author: 'Test Author',
@@ -87,10 +87,11 @@ describe('Firestore adapter', () => {
 
 			mockGet.mockResolvedValueOnce({
 				exists: true,
-				data: () => mockBook,
+				id: mockBook.id,
+				data: () => ({ title: mockBook.title, author: mockBook.author }),
 			});
 
-			const result = await Firestore.getBook({ id: 'test-id' });
+			let result = await Firestore.getBook({ id: 'test-id' });
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('test-id');
@@ -103,7 +104,7 @@ describe('Firestore adapter', () => {
 				exists: false,
 			});
 
-			const result = await Firestore.getBook({ id: 'non-existent-id' });
+			let result = await Firestore.getBook({ id: 'non-existent-id' });
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('non-existent-id');
@@ -113,10 +114,10 @@ describe('Firestore adapter', () => {
 
 	describe('createBook', () => {
 		test('creates a new book with generated ID', async () => {
-			const payload = { title: 'New Book', author: 'New Author' };
+			let payload = { title: 'New Book', author: 'New Author' };
 			mockSet.mockResolvedValueOnce(undefined);
 
-			const result = await Firestore.createBook(payload);
+			let result = await Firestore.createBook(payload);
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalled();
@@ -135,7 +136,7 @@ describe('Firestore adapter', () => {
 		test('updates an existing book with partial data', async () => {
 			mockUpdate.mockResolvedValueOnce(undefined);
 
-			const result = await Firestore.updateBook({
+			let result = await Firestore.updateBook({
 				id: 'test-id',
 				title: 'Updated Title',
 			});
@@ -149,7 +150,7 @@ describe('Firestore adapter', () => {
 		test('updates book with multiple fields', async () => {
 			mockUpdate.mockResolvedValueOnce(undefined);
 
-			const result = await Firestore.updateBook({
+			let result = await Firestore.updateBook({
 				id: 'test-id',
 				title: 'Updated Title',
 				author: 'Updated Author',
@@ -167,7 +168,7 @@ describe('Firestore adapter', () => {
 		test('deletes a book by ID', async () => {
 			mockDelete.mockResolvedValueOnce(undefined);
 
-			const result = await Firestore.deleteBook({ id: 'test-id' });
+			let result = await Firestore.deleteBook({ id: 'test-id' });
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('test-id');

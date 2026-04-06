@@ -1,7 +1,4 @@
-FROM node:22-alpine
-
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S runner -u 1001
+FROM node:24-trixie-slim AS build
 
 WORKDIR /app
 
@@ -9,10 +6,16 @@ COPY dist ./
 
 RUN npm ci --only=production
 
-USER runner
+################################################################################
+
+FROM gcr.io/distroless/nodejs24-debian13
+
+WORKDIR /app
+
+COPY --from=build /app ./
 
 EXPOSE 3000
-ENV PORT 3000
-ENV NODE_ENV production
+ENV PORT=3000
+ENV NODE_ENV=production
 
-CMD [ "node", "index.js" ]
+CMD [ "index.js" ]

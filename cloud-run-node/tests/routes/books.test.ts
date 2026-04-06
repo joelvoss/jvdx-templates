@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+
 import { HTTPException } from '~/lib/http-exception';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,9 +30,15 @@ async function createApp() {
 	let { books } = await import('~/routes/books');
 	let app = new Hono();
 
-	app.onError((err, c) => {
-		if (err instanceof HTTPException) return err.getResponse();
-		return c.json({ message: err.message }, 500);
+	app.onError((err) => {
+		let httpErr =
+			err instanceof HTTPException
+				? err
+				: new HTTPException(500, {
+						code: 'INTERNAL_SERVER_ERROR',
+						message: err.message,
+					});
+		return httpErr.getResponse();
 	});
 
 	app.route('/v1/books', books);
@@ -129,8 +136,10 @@ describe('books routes', () => {
 		expect(mockCreateBook).not.toHaveBeenCalled();
 
 		let body = await response.json();
-		expect(body.code).toBe('VALIDATION_ERROR');
-		expect(body.message.author).toBeDefined();
+		expect(body).toEqual({
+			code: 'VALIDATION_ERROR',
+			message: 'Invalid key: Expected "author" but received undefined',
+		});
 	});
 
 	test('POST /v1/books/:id updates a book when payload is valid', async () => {
@@ -164,8 +173,7 @@ describe('books routes', () => {
 		let body = await response.json();
 		expect(body).toEqual({
 			code: 'NOT_FOUND',
-			message:
-				'Error updating book. Reason: "Book with ID \'book-404\' not found"',
+			message: "Book with ID 'book-404' not found",
 		});
 	});
 

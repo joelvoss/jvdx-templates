@@ -1,5 +1,7 @@
-import crypto from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+
 import { Firestore as GCFirestore } from '@google-cloud/firestore';
+
 import type { AtLeast } from '~/types';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,7 +23,7 @@ let client = new GCFirestore({ ignoreUndefinedProperties: true });
  */
 async function getBooks() {
 	let snap = await client.collection('books').get();
-	let books = snap.docs.map(doc => {
+	let books = snap.docs.map((doc) => {
 		return { id: doc.id, ...doc.data() };
 	});
 	return books as Book[];
@@ -40,7 +42,7 @@ async function getBook(payload: GetBookPayload) {
 	let { id } = payload;
 	let snap = await client.collection('books').doc(id).get();
 	if (!snap.exists) return null;
-	return snap.data() as Book;
+	return { id: snap.id, ...snap.data() } as Book;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,7 @@ interface CreateBookPayload extends Omit<Book, 'id'> {}
  * Create a new book in the 'books' collection.
  */
 async function createBook(payload: CreateBookPayload) {
-	let id = crypto.randomUUID();
+	let id = randomUUID();
 	let book: Book = { id, ...payload };
 	await client.collection('books').doc(id).set(book);
 	return true;

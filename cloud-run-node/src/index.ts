@@ -1,9 +1,11 @@
 import { fileURLToPath } from 'node:url';
+
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { compress } from 'hono/compress';
 import { etag } from 'hono/etag';
 import { secureHeaders } from 'hono/secure-headers';
+
 import { cors } from '~/lib/cors';
 import { HTTPException } from '~/lib/http-exception';
 import { logger } from '~/lib/logger';
@@ -30,19 +32,19 @@ export function build() {
 
 	// NOTE(joel): Global error handler
 	app.onError((err, c) => {
-		if (err instanceof HTTPException) {
-			logger.error({ code: err.code, message: err.message }, c);
-			return err.getResponse();
-		}
-		logger.error(err.message, c);
-		return c.json(
-			{ message: `Internal Server Error. Reason: ${err.message}` },
-			500,
-		);
+		let httpErr =
+			err instanceof HTTPException
+				? err
+				: new HTTPException(500, {
+						code: 'INTERNAL_SERVER_ERROR',
+						message: err.message,
+					});
+		logger.error({ code: httpErr.code, message: httpErr.message }, c);
+		return httpErr.getResponse();
 	});
 
 	// NOTE(joel): Add routes
-	app.get('/', c => {
+	app.get('/', (c) => {
 		return c.json({ message: 'ok' });
 	});
 
@@ -54,7 +56,7 @@ export function build() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Starts the Fastify app instance and listen for incoming requests.
+ * Starts the Hono app instance and listens for incoming requests.
  */
 async function start() {
 	let hostname = '0.0.0.0';

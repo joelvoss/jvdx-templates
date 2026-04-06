@@ -17,7 +17,7 @@ start() {
     export NODE_ENV=development
     nodemon --watch src \
       --ext ts \
-      --exec "./Taskfile.sh build && ./Taskfile.sh start"
+      --exec "./Taskfile.sh build && node dist/index.js"
 
   elif [ "$1" = "docker" ]; then
     build
@@ -54,21 +54,15 @@ build() {
 }
 
 format() {
-  echo "Running biome..."
+  echo "Running oxfmt..."
 
-  biome check \
-    --formatter-enabled=true \
-    --assist-enabled=true \
-    --linter-enabled=false \
-    --write \
-    ./src ./tests "$@"
+  oxfmt --write ./src ./tests "$@"
 }
 
 lint() {
-  echo "Running biome..."
+  echo "Running oxlint..."
   # NOTE: Use --fix to auto-fix linting errors
-  biome lint \
-    ./src ./tests "$@"
+  oxlint ./src ./tests "$@"
 }
 
 typecheck() {
@@ -91,6 +85,41 @@ validate() {
   typecheck
   lint
   test
+}
+
+docker_smoketest() {
+  echo "Running Docker smoke test..."
+
+  IMAGE="cloud-run-node-smoketest"
+  CONTAINER="cloud-run-node-smoketest"
+
+  build
+  docker build --tag "${IMAGE}" .
+  docker run -d --rm --name "${CONTAINER}" -p 3000:3000 "${IMAGE}"
+
+  # NOTE: Wait for the container to be ready
+  echo "Waiting for the container to be ready..."
+  for i in $(seq 1 10); do
+    if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+
+  # NOTE: Run the healthcheck
+  echo "Running healthcheck..."
+  STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
+  BODY=$(curl -sf http://localhost:3000)
+
+  docker stop "${CONTAINER}" > /dev/null 2>&1
+  docker rmi "${IMAGE}" > /dev/null 2>&1
+
+  if [ "${STATUS}" = "200" ] && [ "${BODY}" = '{"message":"ok"}' ]; then
+    echo "Smoke test passed (status=${STATUS}, body=${BODY})"
+  else
+    echo "Smoke test failed (status=${STATUS}, body=${BODY})"
+    exit 1
+  fi
 }
 
 clean() {
@@ -153,6 +182,7 @@ help() {
   echo "  lint        Lint code"
   echo "  test        Run tests"
   echo "  validate    Validate code"
+  echo "  smoketest   Build and run Docker smoke test"
   echo "  clean       Clean temporary files/directories"
   echo "  deploy      Deploy to Cloud Run"
   echo "  setup_env   Setup environment variables for deployment"

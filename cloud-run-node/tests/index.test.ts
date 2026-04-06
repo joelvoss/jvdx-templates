@@ -1,7 +1,9 @@
 import { Buffer } from 'node:buffer';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
+
 import type { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
 import type { Variables } from '~/types';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +86,7 @@ describe('build()', () => {
 		expect(response.headers.get('access-control-allow-origin')).toBe(origin);
 		let vary = response.headers.get('vary');
 		expect(vary).toBeTruthy();
-		expect(vary?.split(',').map(value => value.trim())).toContain('Origin');
+		expect(vary?.split(',').map((value) => value.trim())).toContain('Origin');
 	});
 
 	test('compress middleware returns gzipped responses when requested', async () => {
