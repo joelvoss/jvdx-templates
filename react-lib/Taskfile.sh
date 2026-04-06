@@ -17,21 +17,15 @@ build() {
 }
 
 format() {
-  echo "Running biome..."
+  echo "Running oxfmt..."
 
-  biome check \
-    --formatter-enabled=true \
-		--assist-enabled=true \
-    --linter-enabled=false \
-    --write \
-    ./src ./tests ./plugins $*
+  oxfmt --write ./src ./tests ./examples $*
 }
 
 lint() {
-  echo "Running biome..."
+  echo "Running oxlint..."
   # NOTE: Use --fix to auto-fix linting errors
-	biome lint \
-		./src ./tests ./plugins $*
+	oxlint ./src ./tests ./examples $*
 }
 
 typecheck() {

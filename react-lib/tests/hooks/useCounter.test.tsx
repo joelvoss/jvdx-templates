@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderHook } from 'vitest-browser-react';
+
 import { useCounter } from '../../src';
 
 describe('useCounter', () => {

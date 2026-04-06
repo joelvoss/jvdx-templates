@@ -21,8 +21,12 @@ export function Example() {
 			<h1>Basic example:</h1>
 			<div>
 				<p>Count: {count}</p>
-				<button type="button" onClick={increment}>+1</button>
-				<button type="button" onClick={decrement}>-1</button>
+				<button type="button" onClick={increment}>
+					+1
+				</button>
+				<button type="button" onClick={decrement}>
+					-1
+				</button>
 			</div>
 		</div>
 	);
