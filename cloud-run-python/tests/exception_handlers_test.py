@@ -29,7 +29,7 @@ def test_handle_validation_exception():
 
     # Assertions
     assert response.status_code == 400
-    assert response.json() == {"message": ["foo", "bar"]}
+    assert response.json() == {"code": 400, "message": ["foo", "bar"]}
 
 
 def test_handle_http_exception():
@@ -54,7 +54,7 @@ def test_handle_http_exception():
 
     # Assertions
     assert response.status_code == 404
-    assert response.json() == {"message": "foo"}
+    assert response.json() == {"code": 404, "message": "foo"}
     assert response.headers["X-Custom-Header"] == "value"
 
 
@@ -71,7 +71,7 @@ def test_handle_general_exception():
         routes=[APIRoute("/", handler)],
         exception_handlers={
             # FastAPI/Starlette raises "real" exceptions again, so we use the
-            # general exception handler to catch a HTTPEXception.
+            # general exception handler to catch a HTTPException.
             404: handle_general_exception,
         },
     )
@@ -82,7 +82,7 @@ def test_handle_general_exception():
 
     # Assertions
     assert response.status_code == 500
-    assert response.json() == {"message": "404: foo"}
+    assert response.json() == {"code": 500, "message": "Internal Server Error"}
 
 
 @pytest.mark.anyio
@@ -92,4 +92,4 @@ async def test_handle_general_exception_2():
 
     # Assertions
     assert response.status_code == 500
-    assert response.body == b'{"message":"foo"}'
+    assert response.body == b'{"code":500,"message":"Internal Server Error"}'

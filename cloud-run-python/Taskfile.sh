@@ -36,7 +36,7 @@ lint() {
 
 test() {
   echo "Running tests..."
-  uv run -- pytest ./tests $*
+  uv run -- pytest ./tests "$@"
 }
 
 validate() {
@@ -55,8 +55,47 @@ update_dependencies() {
   ./scripts/update_dependencies.py
 }
 
+docker_smoketest() {
+  echo "Running Docker smoke test..."
+
+  IMAGE="cloud-run-python-smoketest"
+  CONTAINER="cloud-run-python-smoketest"
+
+  docker build --tag "${IMAGE}" .
+
+  # NOTE: FIRESTORE_EMULATOR_HOST tells the Firestore client to skip real GCP
+  # authentication so the app can start without credentials.
+  docker run -d --rm --name "${CONTAINER}" -p 3000:3000 \
+    -e FIRESTORE_EMULATOR_HOST=localhost:8086 \
+    "${IMAGE}"
+
+  # NOTE: Wait for the container to be ready
+  echo "Waiting for the container to be ready..."
+  for i in $(seq 1 10); do
+    if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+      break
+    fi
+    sleep 1
+  done
+
+  # NOTE: Run the healthcheck
+  echo "Running healthcheck..."
+  STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
+  BODY=$(curl -sf http://localhost:3000)
+
+  docker stop "${CONTAINER}" > /dev/null 2>&1
+  docker rmi "${IMAGE}" > /dev/null 2>&1
+
+  if [ "${STATUS}" = "200" ] && [ "${BODY}" = '{"message":"ok"}' ]; then
+    echo "Smoke test passed (status=${STATUS}, body=${BODY})"
+  else
+    echo "Smoke test failed (status=${STATUS}, body=${BODY})"
+    exit 1
+  fi
+}
+
 deploy() {
-  setup_env $*
+  setup_env "$@"
 
   echo "Building Docker container..."
   docker build --platform linux/amd64 --tag "${IMAGE_TAG}" .
@@ -110,9 +149,10 @@ help() {
   echo "  lint        Lint code"
   echo "  test        Run tests"
   echo "  validate    Validate code"
-  echo "  deploy      Deploy to Cloud Run"
-  echo "  setup_env   Setup environment variables for deployment"
-  echo "  help        Show help"
+  echo "  docker_smoketest  Run Docker smoke test"
+  echo "  deploy            Deploy to Cloud Run"
+  echo "  setup_env         Setup environment variables for deployment"
+  echo "  help              Show help"
   echo
 }
 

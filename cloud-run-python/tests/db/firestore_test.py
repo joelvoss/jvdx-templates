@@ -2,6 +2,7 @@ import pytest
 from fastapi import HTTPException
 from google.cloud.exceptions import NotFound
 from google.cloud.firestore import AsyncClient, DocumentSnapshot
+from pydantic import ValidationError
 
 from src.db import firestore
 
@@ -198,39 +199,11 @@ async def test_update_book(mocker):
     mocker.resetall()
 
 
-@pytest.mark.anyio
-async def test_update_book_empty(mocker):
-    # Mock Firestore AsyncClient
-    mock_db = mocker.AsyncMock(spec=AsyncClient)
-    mock_collection = mock_db.collection.return_value
-    mock_document = mock_collection.document.return_value
-    mock_document.update = mocker.AsyncMock()
-
-    # Raise a ValueError exception
-    # See https://github.com/googleapis/python-firestore/blob/main/google/cloud/firestore_v1/_helpers.py#L945
-    mock_document.update.side_effect = ValueError(
-        "Cannot update with an empty document."
-    )
-
-    # Patch the firestore.AsyncClient to use the mock
-    mocker.patch("src.db.firestore.db", mock_db)
-
-    # Create an update book payload
-    update_book_payload = firestore.UpdateBook()
-
-    # Call the update_book function
-    with pytest.raises(HTTPException) as e_info:
-        await firestore.update_book("1", update_book_payload)
-
-        # Assertions
-        assert e_info.value.status_code == 400
-        assert e_info.value.detail == "Cannot update with an empty document."
-
-    mock_db.collection.assert_called_once_with("books")
-    mock_collection.document.assert_called_once_with("1")
-    mock_document.update.assert_called_once_with({})
-
-    mocker.resetall()
+def test_update_book_empty_payload_rejected():
+    # Pydantic's model_validator rejects construction with no fields set,
+    # mirroring valibot's v.check() in the Node ecosystem.
+    with pytest.raises(ValidationError, match="At least one field must be provided"):
+        firestore.UpdateBook()
 
 
 @pytest.mark.anyio
@@ -248,20 +221,19 @@ async def test_update_book_not_found(mocker):
     # Patch the firestore.AsyncClient to use the mock
     mocker.patch("src.db.firestore.db", mock_db)
 
-    # Create an update book payload
-    update_book_payload = firestore.UpdateBook()
+    # Create an update book payload (must include at least one field)
+    update_book_payload = firestore.UpdateBook(title="Updated")
 
     # Call the update_book function
     with pytest.raises(HTTPException) as e_info:
         await firestore.update_book("not_found", update_book_payload)
 
-        # Assertions
-        assert e_info.value.status_code == 404
-        assert e_info.value.detail == "Book with ID 'not_found' not found."
+    assert e_info.value.status_code == 404
+    assert e_info.value.detail == "Book with ID 'not_found' not found"
 
     mock_db.collection.assert_called_once_with("books")
     mock_collection.document.assert_called_once_with("not_found")
-    mock_document.update.assert_called_once_with({})
+    mock_document.update.assert_called_once_with({"title": "Updated"})
 
     mocker.resetall()
 

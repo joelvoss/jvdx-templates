@@ -10,7 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.settings import settings
 
 
-class CloudLogginFormatter(logging.Formatter):
+class CloudLoggingFormatter(logging.Formatter):
     """
     Custom logging formatter for Google Cloud Logging.
     """
@@ -71,40 +71,6 @@ class CloudLogginFormatter(logging.Formatter):
         return log
 
 
-def get_logging_config() -> dict[str, Any]:
-    """
-    Defines the main logging configuration and overwrites unicorns default
-    logging configuration.
-    Application logs should be written using the he "app" logger.
-
-    Returns:
-        dict[str, Any]:
-            The logging configuration
-    """
-    return {
-        "version": 1,
-        "disable_existing_loggers": True,
-        "formatters": {
-            "default": {
-                "()": "src.log.CloudLogginFormatter",
-            },
-        },
-        "handlers": {
-            "default": {
-                "formatter": "default",
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stdout",
-            },
-        },
-        "loggers": {
-            "app": {"handlers": ["default"], "level": "DEBUG", "propagate": False},
-            "uvicorn": {"handlers": ["default"], "level": "INFO", "propagate": False},
-            "uvicorn.error": {"level": "INFO"},
-            "uvicorn.access": {"level": "INFO"},
-        },
-    }
-
-
 # //////////////////////////////////////////////////////////////////////////////
 
 trace_context: ContextVar[dict[str, Any] | None] = ContextVar(
@@ -112,7 +78,7 @@ trace_context: ContextVar[dict[str, Any] | None] = ContextVar(
 )
 
 
-class CloudLogginMiddleware(BaseHTTPMiddleware):
+class CloudLoggingMiddleware(BaseHTTPMiddleware):
     """
     Middleware to load Cloud Logging trace context from headers.
     """

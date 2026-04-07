@@ -1,8 +1,9 @@
 import uuid
+from typing import Self
 
 from fastapi import HTTPException
-from google.cloud import exceptions, firestore  # type: ignore
-from pydantic import BaseModel
+from google.cloud import exceptions, firestore
+from pydantic import BaseModel, model_validator
 
 db = firestore.AsyncClient()
 
@@ -22,6 +23,12 @@ class UpdateBook(BaseModel):
     title: str | None = None
     author: str | None = None
 
+    @model_validator(mode="after")
+    def check_at_least_one_field(self) -> Self:
+        if self.title is None and self.author is None:
+            raise ValueError("At least one field must be provided for update")
+        return self
+
 
 async def get_books() -> list[Book]:
     """
@@ -32,13 +39,14 @@ async def get_books() -> list[Book]:
     """
     books: list[Book] = []
     async for doc in db.collection("books").stream():
-        books.append(Book(**{"id": doc.id, **doc.to_dict()}))
+        data = doc.to_dict() or {}
+        books.append(Book(**{"id": doc.id, **data}))
     return books
 
 
-async def get_book(id: str) -> Book | None:
+async def get_book(id: str) -> Book:
     """
-    Get a book from the 'books' collection by it's ID.
+    Get a book from the 'books' collection by its ID.
 
     Args:
         id (str): Book ID.
@@ -48,7 +56,8 @@ async def get_book(id: str) -> Book | None:
     doc = await db.collection("books").document(id).get()
     if not doc.exists:
         raise HTTPException(status_code=404, detail=f"Book with ID '{id}' not found")
-    return Book(**{"id": doc.id, **doc.to_dict()})
+    data = doc.to_dict() or {}
+    return Book(**{"id": doc.id, **data})
 
 
 async def create_book(payload: NewBook) -> bool:
@@ -67,35 +76,28 @@ async def create_book(payload: NewBook) -> bool:
 
 async def update_book(id: str, payload: UpdateBook) -> bool:
     """
-    Update a book in the 'books' collection by it's ID.
+    Update a book in the 'books' collection by its ID.
 
     Args:
-        payload (_UpdateBook): Book data.
+        id (str): Book ID.
+        payload (UpdateBook): Book data.
     Returns:
         bool: True if successful.
     """
+    data = payload.model_dump(exclude_unset=True)
     try:
-        await (
-            db.collection("books")
-            .document(id)
-            .update(payload.model_dump(exclude_unset=True))
-        )
+        await db.collection("books").document(id).update(data)
         return True
     except exceptions.NotFound:
         raise HTTPException(
             status_code=404,
-            detail=f"Error updating book. Reason: Book with ID '{id}' not found",
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error updating book. Reason: {str(e)}",
+            detail=f"Book with ID '{id}' not found",
         )
 
 
 async def delete_book(id: str) -> bool:
     """
-    Delete a book from the 'books' collection by it's ID.
+    Delete a book from the 'books' collection by its ID.
     If the document did not exist when the delete was sent (i.e. nothing was
     deleted), this method will still succeed.
 

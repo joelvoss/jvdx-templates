@@ -8,8 +8,8 @@ from starlette.middleware.base import RequestResponseEndpoint
 
 from src.settings import Settings, settings
 from src.utils.cloud_logging import (
-    CloudLogginFormatter,
-    CloudLogginMiddleware,
+    CloudLoggingFormatter,
+    CloudLoggingMiddleware,
     trace_context,
 )
 
@@ -55,7 +55,7 @@ def patch_settings(request: pytest.FixtureRequest) -> Iterator[Settings]:
 
 
 def test_cloud_logging_formatter_format(log_record):
-    formatter = CloudLogginFormatter()
+    formatter = CloudLoggingFormatter()
     formatted_log = formatter.format(log_record)
     log_dict = json.loads(formatted_log)
 
@@ -70,7 +70,7 @@ def test_cloud_logging_formatter_format(log_record):
     indirect=True,
 )
 def test_cloud_logging_formatter_with_trace_context(patch_settings, log_record):
-    formatter = CloudLogginFormatter()
+    formatter = CloudLoggingFormatter()
     token = trace_context.set(
         {"trace_id": "1234", "span_id": "5678", "trace_sampled": True}
     )
@@ -97,7 +97,7 @@ async def test_cloud_logging_middleware_dispatch(mocker):
     }
     mock_call_next = mocker.AsyncMock(RequestResponseEndpoint)
 
-    middleware = CloudLogginMiddleware(None)
+    middleware = CloudLoggingMiddleware(None)
     await middleware.dispatch(mock_request, mock_call_next)
 
     # Assertions
@@ -111,7 +111,7 @@ async def test_cloud_logging_middleware_dispatch(mocker):
 
 
 def test_parse_trace_parent():
-    middleware = CloudLogginMiddleware(None)
+    middleware = CloudLoggingMiddleware(None)
     trace_id, span_id, trace_sampled = middleware.parse_trace_parent(
         "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-00"
     )
@@ -123,7 +123,7 @@ def test_parse_trace_parent():
 
 
 def test_parse_xcloud_trace():
-    middleware = CloudLogginMiddleware(None)
+    middleware = CloudLoggingMiddleware(None)
     trace_id, span_id, trace_sampled = middleware.parse_xcloud_trace(
         "105445aa7843bc8bf206b12000100000/1;o=1"
     )

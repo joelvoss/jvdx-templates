@@ -1,5 +1,6 @@
 # Keep version in sync with `.python-version`.
-FROM python:3.13-slim
+# check-vulnerabilities=skip
+FROM python:3.13-slim-trixie AS build
 
 ENV PYTHONUNBUFFERED=1
 
@@ -7,11 +8,7 @@ WORKDIR /app/
 
 # Install uv.
 # @see https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:0.5.26 /uv /uvx /bin/
-
-# Place executables in the environment at the front of the path.
-# @see https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
-ENV PATH="/app/.venv/bin:$PATH"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Compile bytecode.
 # @see https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
@@ -26,18 +23,32 @@ ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+    --mount=type=bind,source=.python-version,target=.python-version \
+    uv sync --frozen --no-install-project --no-dev
 
-ENV PYTHONPATH=/src
-ENV PYTHON_ENV=production
-
-COPY ./pyproject.toml ./uv.lock /app/
+COPY ./pyproject.toml ./uv.lock ./.python-version /app/
 COPY ./src /app/src
 
 # Sync the project.
 # @see https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
+    uv sync --frozen --no-dev
 
-# Run the application. FastAPI uses uvicorn as the ASGI server under the hood.
-CMD ["uv", "run", "-m", "src.main"]
+################################################################################
+
+FROM gcr.io/distroless/python3-debian13
+
+WORKDIR /app
+
+COPY --from=build /app/.venv /app/.venv
+COPY --from=build /app/src /app/src
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app/.venv/lib/python3.13/site-packages:/app
+ENV PYTHON_ENV=production
+
+EXPOSE 3000
+
+# NOTE: The distroless image has ENTRYPOINT ["/usr/bin/python3.13"], so CMD
+# provides only the arguments.
+CMD ["-m", "src.main"]

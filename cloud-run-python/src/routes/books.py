@@ -45,10 +45,10 @@ async def get_book(id: str) -> Any:
     return book
 
 
-@router.post("/{id}", response_model=ResponseOK)
+@router.patch("/{id}", response_model=ResponseOK)
 async def update_book(id: str, payload: firestore.UpdateBook) -> Any:
     """
-    POST /v1/books/{id}
+    PATCH /v1/books/{id}
     """
     await firestore.update_book(id, payload)
     return ResponseOK(message="ok")

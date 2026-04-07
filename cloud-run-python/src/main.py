@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from src.routes import books
 from src.settings import settings
-from src.utils.cloud_logging import CloudLogginMiddleware
+from src.utils.cloud_logging import CloudLoggingMiddleware
 from src.utils.exception_handlers import (
     handle_general_exception,
     handle_http_exception,
@@ -31,7 +31,7 @@ app = FastAPI(
 
 # NOTE: Add middleware to extract Google Cloud Logging trace ID, span ID, and
 # trace sample decision from the incoming request headers.
-app.add_middleware(CloudLogginMiddleware)
+app.add_middleware(CloudLoggingMiddleware)
 
 # NOTE: Add middleware to set secure headers
 app.add_middleware(SecureHeadersMiddleware)
@@ -76,7 +76,7 @@ if __name__ == "__main__":
             "disable_existing_loggers": True,
             "formatters": {
                 "default": {
-                    "()": "src.utils.cloud_logging.CloudLogginFormatter",
+                    "()": "src.utils.cloud_logging.CloudLoggingFormatter",
                 },
             },
             "handlers": {

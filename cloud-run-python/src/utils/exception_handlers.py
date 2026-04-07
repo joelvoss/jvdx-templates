@@ -11,49 +11,42 @@ async def handle_validation_exception(
     _: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """
-    Handle validation exceptions.
+    Handle validation exceptions raised by Pydantic/FastAPI request parsing.
 
     Args:
-        _ (Request):
-            The request object.
-        exc (RequestValidationError):
-            The validation error object.
+        _ (Request): The request object.
+        exc (RequestValidationError): The validation error object.
     Returns:
-        JSONResponse:
-            The reponse object with the exception message and status code.
+        JSONResponse: Response with code and message.
     """
-    logger.error(f"Handled validation error: {exc.errors()}")
+    logger.error("Handled validation error: %s", exc.errors())
     return JSONResponse(
-        content={"message": exc.errors()},
+        content={"code": status.HTTP_400_BAD_REQUEST, "message": exc.errors()},
         status_code=status.HTTP_400_BAD_REQUEST,
     )
 
 
 async def handle_http_exception(_: Request, exc: HTTPException) -> Response:
     """
-    Handle exceptions. We use a single exception handler for all exceptions
-    raised in our API. This includes 404, 500, and any other non-validation
-    exceptions that may be raised.
+    Handle HTTPExceptions raised in our API. This includes 404, 500, and any
+    other non-validation exceptions.
 
     Args:
-        _ (Request):
-            The request object.
-        exc (HTTPException):
-            The exception object.
+        _ (Request): The request object.
+        exc (HTTPException): The exception object.
     Returns:
-        Response:
-            The reponse object with the exception message and status code.
+        Response: Response with code and message.
     """
     headers = getattr(exc, "headers", None)
     status_code = getattr(exc, "status_code", status.HTTP_500_INTERNAL_SERVER_ERROR)
     body_allowed = not (status_code < 200 or status_code in {204, 205, 304})
     # NOTE: Don't log 404 errors, as they might spam Cloud Logging.
     if status_code != 404:
-        logger.error(f"Handled HTTP error: {str(exc)}")
+        logger.error("Handled HTTP error: %s", exc)
     if not body_allowed:
         return Response(status_code=status_code, headers=headers)
     return JSONResponse(
-        content={"message": exc.detail},
+        content={"code": status_code, "message": exc.detail},
         status_code=status_code,
         headers=headers,
     )
@@ -61,21 +54,17 @@ async def handle_http_exception(_: Request, exc: HTTPException) -> Response:
 
 async def handle_general_exception(_: Request, exc: Exception) -> Response:
     """
-    Handle exceptions. We use a single exception handler for all exceptions
-    raised in our API. This includes 404, 500, and any other non-validation
-    exceptions that may be raised.
+    Catch-all handler for unhandled exceptions. Returns a generic 500 response
+    without leaking internal error details to callers.
 
     Args:
-        _ (Request):
-            The request object.
-        exc (Exception):
-            The exception object.
+        _ (Request): The request object.
+        exc (Exception): The exception object.
     Returns:
-        Response:
-            The reponse object with the exception message and status code.
+        Response: Response with code and message.
     """
-    logger.error(f"Handled server error: {str(exc)}")
+    logger.error("Handled server error: %s", exc)
     return JSONResponse(
-        content={"message": str(exc)},
+        content={"code": 500, "message": "Internal Server Error"},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
