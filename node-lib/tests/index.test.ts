@@ -13,14 +13,15 @@ describe('calculator', () => {
 		expect(calculator('add', 4, 6)).toBe(10);
 	});
 
-	test('logs and returns -1 when using an unsupported operation', () => {
-		const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
-		expect(calculator('multiply', 2, 3)).toBe(-1);
-		expect(logSpy).toHaveBeenCalledWith('Invalid operation');
+	test('throws when using an unsupported operation', () => {
+		expect(() => calculator('multiply', 2, 3)).toThrow(
+			'Unsupported operation: multiply',
+		);
 	});
 
-	test('propagates NaN when insufficient operands are provided', () => {
-		expect(Number.isNaN(calculator('add', 4))).toBe(true);
+	test('throws when insufficient operands are provided', () => {
+		expect(() => calculator('add', 4)).toThrow(
+			'Operation "add" requires at least 2 operands',
+		);
 	});
 });

@@ -1,13 +1,8 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
+
+import { add } from '../src/add';
 
 describe('add', () => {
-	let add: typeof import('../src/add').add;
-
-	beforeEach(async () => {
-		vi.resetModules();
-		add = (await import('../src/add')).add;
-	});
-
 	test('adds two positive numbers', () => {
 		expect(add(2, 3)).toBe(5);
 	});

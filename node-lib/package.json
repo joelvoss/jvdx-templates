@@ -35,10 +35,12 @@
     "prepublishOnly": "./Taskfile.sh build"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.1",
-    "@types/node": "25.2.3",
-    "typescript": "5.9.3",
-    "vite": "7.3.1",
-    "vitest": "4.0.18"
+    "@types/node": "^25.5.2",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
+    "typescript": "6.0.2",
+    "vite": "^8.0.6",
+    "vite-plugin-bundle-dts": "^0.3.0",
+    "vitest": "4.1.3"
   }
 }
