@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+
 import type { QueryClient } from "@tanstack/react-query";
 import {
 	Outlet,
@@ -8,12 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { useContext } from "react";
 
-import {
-	type AbstractIntlMessages,
-	getDirFromLocale,
-	translations,
-} from "~/lib/i18n";
-import { I18nScript, I18nContext } from "~/shared/i18n";
+import { type AbstractIntlMessages, getDirFromLocale } from "~/lib/i18n";
+import { I18nContext, I18nScript, translations } from "~/shared/i18n";
 import { SvgSprite } from "~/shared/svg-sprite";
 import { ToastRegion } from "~/shared/toast";
 
@@ -25,7 +22,7 @@ interface RouterContext {
 	queryClient: QueryClient;
 	i18n: {
 		locale: string;
-		messages: Record<string, AbstractIntlMessages>;
+		messages: AbstractIntlMessages;
 	};
 }
 
@@ -61,15 +58,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
 	const context = useContext(I18nContext);
 	if (!context) {
-		throw new Error("RootComponent must be used within an IntlProvider");
+		throw new Error("RootComponent must be used within an I18nProvider");
 	}
 
 	const { locale } = context;
 	const dir = getDirFromLocale(locale);
 
 	return (
-		<html>
-			<head lang={locale} dir={dir}>
+		<html lang={locale} dir={dir}>
+			<head>
 				<HeadContent />
 			</head>
 			<body>

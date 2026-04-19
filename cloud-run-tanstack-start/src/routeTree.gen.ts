@@ -9,106 +9,87 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as Char123LocaleChar125DefaultRouteRouteImport } from './routes/{-$locale}/_default/route'
-import { Route as Char123LocaleChar125AuthRouteRouteImport } from './routes/{-$locale}/_auth/route'
-import { Route as Char123LocaleChar125DefaultIndexRouteImport } from './routes/{-$locale}/_default/index'
-import { Route as Char123LocaleChar125AuthLoginRouteImport } from './routes/{-$locale}/_auth/login'
-import { Route as Char123LocaleChar125DefaultBooksIndexRouteImport } from './routes/{-$locale}/_default/books/index'
-import { Route as Char123LocaleChar125DefaultBooksIdRouteRouteImport } from './routes/{-$locale}/_default/books/$id/route'
-import { Route as Char123LocaleChar125DefaultBooksNewIndexRouteImport } from './routes/{-$locale}/_default/books/new/index'
-import { Route as Char123LocaleChar125DefaultBooksIdIndexRouteImport } from './routes/{-$locale}/_default/books/$id/index'
-import { Route as Char123LocaleChar125DefaultBooksIdEditIndexRouteImport } from './routes/{-$locale}/_default/books/$id/edit/index'
+import { Route as Char123LocaleChar125RouteRouteImport } from './routes/{-$locale}/route'
+import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}/index'
+import { Route as Char123LocaleChar125BooksIndexRouteImport } from './routes/{-$locale}/books/index'
+import { Route as Char123LocaleChar125BooksIdRouteRouteImport } from './routes/{-$locale}/books/$id/route'
+import { Route as Char123LocaleChar125BooksNewIndexRouteImport } from './routes/{-$locale}/books/new/index'
+import { Route as Char123LocaleChar125BooksIdIndexRouteImport } from './routes/{-$locale}/books/$id/index'
+import { Route as Char123LocaleChar125BooksIdEditIndexRouteImport } from './routes/{-$locale}/books/$id/edit/index'
 
-const Char123LocaleChar125DefaultRouteRoute =
-  Char123LocaleChar125DefaultRouteRouteImport.update({
-    id: '/{-$locale}/_default',
+const Char123LocaleChar125RouteRoute =
+  Char123LocaleChar125RouteRouteImport.update({
+    id: '/{-$locale}',
     path: '/{-$locale}',
     getParentRoute: () => rootRouteImport,
   } as any)
-const Char123LocaleChar125AuthRouteRoute =
-  Char123LocaleChar125AuthRouteRouteImport.update({
-    id: '/{-$locale}/_auth',
-    path: '/{-$locale}',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char123LocaleChar125DefaultIndexRoute =
-  Char123LocaleChar125DefaultIndexRouteImport.update({
+const Char123LocaleChar125IndexRoute =
+  Char123LocaleChar125IndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => Char123LocaleChar125DefaultRouteRoute,
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125AuthLoginRoute =
-  Char123LocaleChar125AuthLoginRouteImport.update({
-    id: '/login',
-    path: '/login',
-    getParentRoute: () => Char123LocaleChar125AuthRouteRoute,
-  } as any)
-const Char123LocaleChar125DefaultBooksIndexRoute =
-  Char123LocaleChar125DefaultBooksIndexRouteImport.update({
+const Char123LocaleChar125BooksIndexRoute =
+  Char123LocaleChar125BooksIndexRouteImport.update({
     id: '/books/',
     path: '/books/',
-    getParentRoute: () => Char123LocaleChar125DefaultRouteRoute,
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125DefaultBooksIdRouteRoute =
-  Char123LocaleChar125DefaultBooksIdRouteRouteImport.update({
+const Char123LocaleChar125BooksIdRouteRoute =
+  Char123LocaleChar125BooksIdRouteRouteImport.update({
     id: '/books/$id',
     path: '/books/$id',
-    getParentRoute: () => Char123LocaleChar125DefaultRouteRoute,
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125DefaultBooksNewIndexRoute =
-  Char123LocaleChar125DefaultBooksNewIndexRouteImport.update({
+const Char123LocaleChar125BooksNewIndexRoute =
+  Char123LocaleChar125BooksNewIndexRouteImport.update({
     id: '/books/new/',
     path: '/books/new/',
-    getParentRoute: () => Char123LocaleChar125DefaultRouteRoute,
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125DefaultBooksIdIndexRoute =
-  Char123LocaleChar125DefaultBooksIdIndexRouteImport.update({
+const Char123LocaleChar125BooksIdIndexRoute =
+  Char123LocaleChar125BooksIdIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => Char123LocaleChar125DefaultBooksIdRouteRoute,
+    getParentRoute: () => Char123LocaleChar125BooksIdRouteRoute,
   } as any)
-const Char123LocaleChar125DefaultBooksIdEditIndexRoute =
-  Char123LocaleChar125DefaultBooksIdEditIndexRouteImport.update({
+const Char123LocaleChar125BooksIdEditIndexRoute =
+  Char123LocaleChar125BooksIdEditIndexRouteImport.update({
     id: '/edit/',
     path: '/edit/',
-    getParentRoute: () => Char123LocaleChar125DefaultBooksIdRouteRoute,
+    getParentRoute: () => Char123LocaleChar125BooksIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/{-$locale}': typeof Char123LocaleChar125DefaultRouteRouteWithChildren
-  '/{-$locale}/login': typeof Char123LocaleChar125AuthLoginRoute
-  '/{-$locale}/': typeof Char123LocaleChar125DefaultIndexRoute
-  '/{-$locale}/books/$id': typeof Char123LocaleChar125DefaultBooksIdRouteRouteWithChildren
-  '/{-$locale}/books/': typeof Char123LocaleChar125DefaultBooksIndexRoute
-  '/{-$locale}/books/$id/': typeof Char123LocaleChar125DefaultBooksIdIndexRoute
-  '/{-$locale}/books/new/': typeof Char123LocaleChar125DefaultBooksNewIndexRoute
-  '/{-$locale}/books/$id/edit/': typeof Char123LocaleChar125DefaultBooksIdEditIndexRoute
+  '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
+  '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/books/$id': typeof Char123LocaleChar125BooksIdRouteRouteWithChildren
+  '/{-$locale}/books/': typeof Char123LocaleChar125BooksIndexRoute
+  '/{-$locale}/books/$id/': typeof Char123LocaleChar125BooksIdIndexRoute
+  '/{-$locale}/books/new/': typeof Char123LocaleChar125BooksNewIndexRoute
+  '/{-$locale}/books/$id/edit/': typeof Char123LocaleChar125BooksIdEditIndexRoute
 }
 export interface FileRoutesByTo {
-  '/{-$locale}': typeof Char123LocaleChar125DefaultIndexRoute
-  '/{-$locale}/login': typeof Char123LocaleChar125AuthLoginRoute
-  '/{-$locale}/books': typeof Char123LocaleChar125DefaultBooksIndexRoute
-  '/{-$locale}/books/$id': typeof Char123LocaleChar125DefaultBooksIdIndexRoute
-  '/{-$locale}/books/new': typeof Char123LocaleChar125DefaultBooksNewIndexRoute
-  '/{-$locale}/books/$id/edit': typeof Char123LocaleChar125DefaultBooksIdEditIndexRoute
+  '/{-$locale}': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/books': typeof Char123LocaleChar125BooksIndexRoute
+  '/{-$locale}/books/$id': typeof Char123LocaleChar125BooksIdIndexRoute
+  '/{-$locale}/books/new': typeof Char123LocaleChar125BooksNewIndexRoute
+  '/{-$locale}/books/$id/edit': typeof Char123LocaleChar125BooksIdEditIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/{-$locale}/_auth': typeof Char123LocaleChar125AuthRouteRouteWithChildren
-  '/{-$locale}/_default': typeof Char123LocaleChar125DefaultRouteRouteWithChildren
-  '/{-$locale}/_auth/login': typeof Char123LocaleChar125AuthLoginRoute
-  '/{-$locale}/_default/': typeof Char123LocaleChar125DefaultIndexRoute
-  '/{-$locale}/_default/books/$id': typeof Char123LocaleChar125DefaultBooksIdRouteRouteWithChildren
-  '/{-$locale}/_default/books/': typeof Char123LocaleChar125DefaultBooksIndexRoute
-  '/{-$locale}/_default/books/$id/': typeof Char123LocaleChar125DefaultBooksIdIndexRoute
-  '/{-$locale}/_default/books/new/': typeof Char123LocaleChar125DefaultBooksNewIndexRoute
-  '/{-$locale}/_default/books/$id/edit/': typeof Char123LocaleChar125DefaultBooksIdEditIndexRoute
+  '/{-$locale}': typeof Char123LocaleChar125RouteRouteWithChildren
+  '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/{-$locale}/books/$id': typeof Char123LocaleChar125BooksIdRouteRouteWithChildren
+  '/{-$locale}/books/': typeof Char123LocaleChar125BooksIndexRoute
+  '/{-$locale}/books/$id/': typeof Char123LocaleChar125BooksIdIndexRoute
+  '/{-$locale}/books/new/': typeof Char123LocaleChar125BooksNewIndexRoute
+  '/{-$locale}/books/$id/edit/': typeof Char123LocaleChar125BooksIdEditIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/{-$locale}'
-    | '/{-$locale}/login'
     | '/{-$locale}/'
     | '/{-$locale}/books/$id'
     | '/{-$locale}/books/'
@@ -118,168 +99,132 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/{-$locale}'
-    | '/{-$locale}/login'
     | '/{-$locale}/books'
     | '/{-$locale}/books/$id'
     | '/{-$locale}/books/new'
     | '/{-$locale}/books/$id/edit'
   id:
     | '__root__'
-    | '/{-$locale}/_auth'
-    | '/{-$locale}/_default'
-    | '/{-$locale}/_auth/login'
-    | '/{-$locale}/_default/'
-    | '/{-$locale}/_default/books/$id'
-    | '/{-$locale}/_default/books/'
-    | '/{-$locale}/_default/books/$id/'
-    | '/{-$locale}/_default/books/new/'
-    | '/{-$locale}/_default/books/$id/edit/'
+    | '/{-$locale}'
+    | '/{-$locale}/'
+    | '/{-$locale}/books/$id'
+    | '/{-$locale}/books/'
+    | '/{-$locale}/books/$id/'
+    | '/{-$locale}/books/new/'
+    | '/{-$locale}/books/$id/edit/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  Char123LocaleChar125AuthRouteRoute: typeof Char123LocaleChar125AuthRouteRouteWithChildren
-  Char123LocaleChar125DefaultRouteRoute: typeof Char123LocaleChar125DefaultRouteRouteWithChildren
+  Char123LocaleChar125RouteRoute: typeof Char123LocaleChar125RouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/{-$locale}/_default': {
-      id: '/{-$locale}/_default'
+    '/{-$locale}': {
+      id: '/{-$locale}'
       path: '/{-$locale}'
       fullPath: '/{-$locale}'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultRouteRouteImport
+      preLoaderRoute: typeof Char123LocaleChar125RouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/{-$locale}/_auth': {
-      id: '/{-$locale}/_auth'
-      path: '/{-$locale}'
-      fullPath: '/{-$locale}'
-      preLoaderRoute: typeof Char123LocaleChar125AuthRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/{-$locale}/_default/': {
-      id: '/{-$locale}/_default/'
+    '/{-$locale}/': {
+      id: '/{-$locale}/'
       path: '/'
       fullPath: '/{-$locale}/'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125IndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/_auth/login': {
-      id: '/{-$locale}/_auth/login'
-      path: '/login'
-      fullPath: '/{-$locale}/login'
-      preLoaderRoute: typeof Char123LocaleChar125AuthLoginRouteImport
-      parentRoute: typeof Char123LocaleChar125AuthRouteRoute
-    }
-    '/{-$locale}/_default/books/': {
-      id: '/{-$locale}/_default/books/'
+    '/{-$locale}/books/': {
+      id: '/{-$locale}/books/'
       path: '/books'
       fullPath: '/{-$locale}/books/'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultBooksIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125BooksIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/_default/books/$id': {
-      id: '/{-$locale}/_default/books/$id'
+    '/{-$locale}/books/$id': {
+      id: '/{-$locale}/books/$id'
       path: '/books/$id'
       fullPath: '/{-$locale}/books/$id'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultBooksIdRouteRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125BooksIdRouteRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/_default/books/new/': {
-      id: '/{-$locale}/_default/books/new/'
+    '/{-$locale}/books/new/': {
+      id: '/{-$locale}/books/new/'
       path: '/books/new'
       fullPath: '/{-$locale}/books/new/'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultBooksNewIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125BooksNewIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/_default/books/$id/': {
-      id: '/{-$locale}/_default/books/$id/'
+    '/{-$locale}/books/$id/': {
+      id: '/{-$locale}/books/$id/'
       path: '/'
       fullPath: '/{-$locale}/books/$id/'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultBooksIdIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultBooksIdRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125BooksIdIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125BooksIdRouteRoute
     }
-    '/{-$locale}/_default/books/$id/edit/': {
-      id: '/{-$locale}/_default/books/$id/edit/'
+    '/{-$locale}/books/$id/edit/': {
+      id: '/{-$locale}/books/$id/edit/'
       path: '/edit'
       fullPath: '/{-$locale}/books/$id/edit/'
-      preLoaderRoute: typeof Char123LocaleChar125DefaultBooksIdEditIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125DefaultBooksIdRouteRoute
+      preLoaderRoute: typeof Char123LocaleChar125BooksIdEditIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125BooksIdRouteRoute
     }
   }
 }
 
-interface Char123LocaleChar125AuthRouteRouteChildren {
-  Char123LocaleChar125AuthLoginRoute: typeof Char123LocaleChar125AuthLoginRoute
+interface Char123LocaleChar125BooksIdRouteRouteChildren {
+  Char123LocaleChar125BooksIdIndexRoute: typeof Char123LocaleChar125BooksIdIndexRoute
+  Char123LocaleChar125BooksIdEditIndexRoute: typeof Char123LocaleChar125BooksIdEditIndexRoute
 }
 
-const Char123LocaleChar125AuthRouteRouteChildren: Char123LocaleChar125AuthRouteRouteChildren =
+const Char123LocaleChar125BooksIdRouteRouteChildren: Char123LocaleChar125BooksIdRouteRouteChildren =
   {
-    Char123LocaleChar125AuthLoginRoute: Char123LocaleChar125AuthLoginRoute,
+    Char123LocaleChar125BooksIdIndexRoute:
+      Char123LocaleChar125BooksIdIndexRoute,
+    Char123LocaleChar125BooksIdEditIndexRoute:
+      Char123LocaleChar125BooksIdEditIndexRoute,
   }
 
-const Char123LocaleChar125AuthRouteRouteWithChildren =
-  Char123LocaleChar125AuthRouteRoute._addFileChildren(
-    Char123LocaleChar125AuthRouteRouteChildren,
+const Char123LocaleChar125BooksIdRouteRouteWithChildren =
+  Char123LocaleChar125BooksIdRouteRoute._addFileChildren(
+    Char123LocaleChar125BooksIdRouteRouteChildren,
   )
 
-interface Char123LocaleChar125DefaultBooksIdRouteRouteChildren {
-  Char123LocaleChar125DefaultBooksIdIndexRoute: typeof Char123LocaleChar125DefaultBooksIdIndexRoute
-  Char123LocaleChar125DefaultBooksIdEditIndexRoute: typeof Char123LocaleChar125DefaultBooksIdEditIndexRoute
+interface Char123LocaleChar125RouteRouteChildren {
+  Char123LocaleChar125IndexRoute: typeof Char123LocaleChar125IndexRoute
+  Char123LocaleChar125BooksIdRouteRoute: typeof Char123LocaleChar125BooksIdRouteRouteWithChildren
+  Char123LocaleChar125BooksIndexRoute: typeof Char123LocaleChar125BooksIndexRoute
+  Char123LocaleChar125BooksNewIndexRoute: typeof Char123LocaleChar125BooksNewIndexRoute
 }
 
-const Char123LocaleChar125DefaultBooksIdRouteRouteChildren: Char123LocaleChar125DefaultBooksIdRouteRouteChildren =
+const Char123LocaleChar125RouteRouteChildren: Char123LocaleChar125RouteRouteChildren =
   {
-    Char123LocaleChar125DefaultBooksIdIndexRoute:
-      Char123LocaleChar125DefaultBooksIdIndexRoute,
-    Char123LocaleChar125DefaultBooksIdEditIndexRoute:
-      Char123LocaleChar125DefaultBooksIdEditIndexRoute,
+    Char123LocaleChar125IndexRoute: Char123LocaleChar125IndexRoute,
+    Char123LocaleChar125BooksIdRouteRoute:
+      Char123LocaleChar125BooksIdRouteRouteWithChildren,
+    Char123LocaleChar125BooksIndexRoute: Char123LocaleChar125BooksIndexRoute,
+    Char123LocaleChar125BooksNewIndexRoute:
+      Char123LocaleChar125BooksNewIndexRoute,
   }
 
-const Char123LocaleChar125DefaultBooksIdRouteRouteWithChildren =
-  Char123LocaleChar125DefaultBooksIdRouteRoute._addFileChildren(
-    Char123LocaleChar125DefaultBooksIdRouteRouteChildren,
-  )
-
-interface Char123LocaleChar125DefaultRouteRouteChildren {
-  Char123LocaleChar125DefaultIndexRoute: typeof Char123LocaleChar125DefaultIndexRoute
-  Char123LocaleChar125DefaultBooksIdRouteRoute: typeof Char123LocaleChar125DefaultBooksIdRouteRouteWithChildren
-  Char123LocaleChar125DefaultBooksIndexRoute: typeof Char123LocaleChar125DefaultBooksIndexRoute
-  Char123LocaleChar125DefaultBooksNewIndexRoute: typeof Char123LocaleChar125DefaultBooksNewIndexRoute
-}
-
-const Char123LocaleChar125DefaultRouteRouteChildren: Char123LocaleChar125DefaultRouteRouteChildren =
-  {
-    Char123LocaleChar125DefaultIndexRoute:
-      Char123LocaleChar125DefaultIndexRoute,
-    Char123LocaleChar125DefaultBooksIdRouteRoute:
-      Char123LocaleChar125DefaultBooksIdRouteRouteWithChildren,
-    Char123LocaleChar125DefaultBooksIndexRoute:
-      Char123LocaleChar125DefaultBooksIndexRoute,
-    Char123LocaleChar125DefaultBooksNewIndexRoute:
-      Char123LocaleChar125DefaultBooksNewIndexRoute,
-  }
-
-const Char123LocaleChar125DefaultRouteRouteWithChildren =
-  Char123LocaleChar125DefaultRouteRoute._addFileChildren(
-    Char123LocaleChar125DefaultRouteRouteChildren,
+const Char123LocaleChar125RouteRouteWithChildren =
+  Char123LocaleChar125RouteRoute._addFileChildren(
+    Char123LocaleChar125RouteRouteChildren,
   )
 
 const rootRouteChildren: RootRouteChildren = {
-  Char123LocaleChar125AuthRouteRoute:
-    Char123LocaleChar125AuthRouteRouteWithChildren,
-  Char123LocaleChar125DefaultRouteRoute:
-    Char123LocaleChar125DefaultRouteRouteWithChildren,
+  Char123LocaleChar125RouteRoute: Char123LocaleChar125RouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }

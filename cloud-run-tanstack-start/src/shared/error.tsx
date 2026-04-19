@@ -1,7 +1,6 @@
-import { rootRouteId, useMatch } from "@tanstack/react-router";
+import { Link, rootRouteId, useMatch } from "@tanstack/react-router";
 
 import { useTranslations } from "~/shared/i18n";
-import { LocalizedLink } from "~/shared/localized-link";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,15 +34,15 @@ export function ErrorComponent(props: ErrorComponentProps) {
 				</h2>
 				<p className="mb-8 text-gray-600">{error.message || t("message")}</p>
 				{isRoot ? (
-					<LocalizedLink
-						to="/"
+					<Link
+						to="/{-$locale}"
 						className="inline-block rounded-lg bg-sky-600 px-6 py-3 text-white transition-colors hover:bg-sky-700"
 					>
 						{t("goHome")}
-					</LocalizedLink>
+					</Link>
 				) : (
-					<LocalizedLink
-						to="/"
+					<Link
+						to="/{-$locale}"
 						className="inline-block rounded-lg bg-sky-600 px-6 py-3 text-white transition-colors hover:bg-sky-700"
 						onClick={(e) => {
 							e.preventDefault();
@@ -51,7 +50,7 @@ export function ErrorComponent(props: ErrorComponentProps) {
 						}}
 					>
 						{t("goBack")}
-					</LocalizedLink>
+					</Link>
 				)}
 			</div>
 		</div>

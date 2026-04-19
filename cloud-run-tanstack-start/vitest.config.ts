@@ -1,27 +1,28 @@
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { playwright } from "@vitest/browser-playwright";
-import tsConfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 /**
  * Vitest configuration file.
  * We use a separate Vitest config file instead of putting the config in vite.
- * config.ts to avoid loading unnecessary plugins during testing, which can 
+ * config.ts to avoid loading unnecessary plugins during testing, which can
  * slow down the test runs.
  */
 export default defineConfig({
+	resolve: {
+		tsconfigPaths: true,
+	},
 	plugins: [
-		tsConfigPaths(),
 		tailwindcss(),
-		viteReact({
-			babel: {
-				plugins: ["babel-plugin-react-compiler"],
-			},
+		react(),
+		babel({
+			presets: [reactCompilerPreset()],
 		}),
 	],
 	optimizeDeps: {
-		include: ["@tanstack/react-router"],
+		include: ["@tanstack/react-router", "react-aria-components"],
 	},
 	test: {
 		pool: "threads",

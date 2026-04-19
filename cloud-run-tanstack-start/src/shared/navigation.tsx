@@ -1,6 +1,8 @@
+import type { LinkComponentProps } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
+
 import { useTranslations } from "~/shared/i18n";
 import { LanguageSwitcher } from "~/shared/language-switcher";
-import { LocalizedLink, LocalizedLinkProps } from "~/shared/localized-link";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -9,7 +11,8 @@ interface NavigationProps {
 }
 
 /**
- * Navigation Component
+ * Navigation Component.
+ * Renders a responsive navigation bar with links and a language switcher.
  */
 export function Navigation(props: NavigationProps) {
 	const t = useTranslations("shared.navigation");
@@ -19,12 +22,12 @@ export function Navigation(props: NavigationProps) {
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 				<div className="flex h-16 justify-between">
 					<div className="flex items-center">
-						<LocalizedLink to="/" className="text-2xl font-bold text-sky-600">
+						<Link to="/{-$locale}" className="text-2xl font-bold text-sky-600">
 							{t("title")}
-						</LocalizedLink>
+						</Link>
 						{props.hideLinks ? null : (
 							<div className="ml-10 flex space-x-8">
-								<NavLink to="/books">{t("nav.books")}</NavLink>
+								<NavLink to="/{-$locale}/books">{t("nav.books")}</NavLink>
 							</div>
 						)}
 					</div>
@@ -41,11 +44,13 @@ export function Navigation(props: NavigationProps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * NavLink Component
+ * NavLink Component.
+ * A wrapper around the Link component that applies active/inactive styles
+ * based on the current route.
  */
-function NavLink(props: LocalizedLinkProps) {
+function NavLink(props: LinkComponentProps) {
 	return (
-		<LocalizedLink
+		<Link
 			{...props}
 			className="inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium"
 			inactiveProps={{
@@ -55,6 +60,6 @@ function NavLink(props: LocalizedLinkProps) {
 			activeProps={{ className: "border-sky-500 text-gray-900" }}
 		>
 			{props.children}
-		</LocalizedLink>
+		</Link>
 	);
 }

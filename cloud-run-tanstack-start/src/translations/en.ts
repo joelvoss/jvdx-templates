@@ -4,7 +4,6 @@
 const head = {
 	title: {
 		root: "Home | Book Manager",
-		login: "Login | Book Manager",
 		books: "Books | Book Manager",
 		bookDetails: "Book Details | Book Manager",
 		newBook: "New Book | Book Manager",
@@ -47,12 +46,6 @@ const routes = {
 		subtitle: "A simple and elegant way to manage your book collection",
 		viewBooks: "View Books",
 		addNewBook: "Add New Book",
-	},
-	auth: {
-		login: {
-			title: "Login",
-			placeholder: 'Hello "/_auth/login"!',
-		},
 	},
 	books: {
 		title: "Books",

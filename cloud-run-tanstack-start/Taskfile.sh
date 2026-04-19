@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 PATH=./node_modules/.bin:$PATH
@@ -23,15 +23,15 @@ start() {
 		build
 		LOCAL_TAG=$(jq -r ".name" package.json)
 		docker build --tag "${LOCAL_TAG}" .
-    docker run -it --rm \
-      -v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
-      -e PROJECT="${PROJECT}" \
-      -p 3000:3000 \
-      "${LOCAL_TAG}"
+		docker run -it --rm \
+			-v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
+			-e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
+			-e PROJECT="${PROJECT}" \
+			-p 3000:3000 \
+			"${LOCAL_TAG}"
 
 	else
-		echo "Unknown environement specified."
+		echo "Unknown environment specified."
 		echo "Possible values: <dev|docker>"
 		exit 1
 	fi
@@ -47,15 +47,22 @@ build() {
 	
 	cp express-server.mjs "${DIST_DIR}/"
 	jq '{name, version, type, dependencies}' package.json > "${DIST_DIR}/package.json"
-  cp package-lock.json "${DIST_DIR}/package-lock.json"
+	cp package-lock.json "${DIST_DIR}/package-lock.json"
 }
 
 format() {
-	oxfmt
+	echo "Running oxfmt..."
+	oxfmt --write ./src ./tests "$@"
 }
 
 lint() {
-	oxlint --type-aware src
+	echo "Running oxlint..."
+	oxlint ./src ./tests "$@"
+}
+
+typecheck() {
+	echo "Running tsc..."
+	tsc --noEmit
 }
 
 test() {
@@ -70,16 +77,43 @@ test() {
 }
 
 validate() {
+	typecheck
 	lint
 	test
 }
 
+docker_smoketest() {
+	echo "Running Docker smoke test..."
+	IMAGE="cloud-run-tanstack-start-smoketest"
+	CONTAINER="cloud-run-tanstack-start-smoketest"
+	build
+	docker build --tag "${IMAGE}" .
+	docker run -d --rm --name "${CONTAINER}" -p 3000:3000 "${IMAGE}"
+	echo "Waiting for the container to be ready..."
+	for i in $(seq 1 15); do
+		if curl -sf http://localhost:3000 > /dev/null 2>&1; then
+			break
+		fi
+		sleep 1
+	done
+	echo "Running healthcheck..."
+	STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
+	docker stop "${CONTAINER}" > /dev/null 2>&1
+	docker rmi "${IMAGE}" > /dev/null 2>&1
+	if [ "${STATUS}" = "200" ]; then
+		echo "Smoke test passed (status=${STATUS})"
+	else
+		echo "Smoke test failed (status=${STATUS})"
+		exit 1
+	fi
+}
+
 clean() {
-	rm -rf build node_modules
+	rm -rf node_modules dist
 }
 
 deploy() {
-	setup_env $*
+	setup_env "$@"
 
 	build
 
@@ -107,12 +141,12 @@ setup_env() {
 	export NAME=$(jq -r ".name" package.json)
 	export VERSION=$(jq -r ".version" package.json | tr "." "-")
 
-	if [[ "$1" == "prod" ]]; then
+	if [ "$1" = "prod" ]; then
 		export PROJECT="<CHANGE_ME>"
 		export REGION="europe-west3"
 		export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
 		export DEPLOY_FLAGS="--allow-unauthenticated"
-	elif [[ "$1" == "staging" ]]; then
+	elif [ "$1" = "staging" ]; then
 		export PROJECT="<CHANGE_ME>"
 		export REGION="europe-west3"
 		export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
@@ -130,16 +164,18 @@ help() {
 	echo "Usage: $0 <command>"
 	echo
 	echo "Commands:"
-	echo "  start       Start production server"
-	echo "  build       Build for production"
-	echo "  format      Format code"
-	echo "  lint        Lint code"
-	echo "  test        Run tests"
-	echo "  validate    Validate code"
-	echo "  clean       Clean temporary files/directories"
-	echo "  deploy      Deploy to Cloud Run"
-	echo "  setup_env   Setup environment variables for deployment"
-	echo "  help        Show help"
+	echo "  start              Start production server"
+	echo "  build              Build for production"
+	echo "  format             Format code"
+	echo "  lint               Lint code"
+	echo "  typecheck          Run TypeScript type checking"
+	echo "  test               Run tests"
+	echo "  validate           Validate code (typecheck + lint + test)"
+	echo "  docker_smoketest   Run Docker smoke test"
+	echo "  clean              Clean temporary files/directories"
+	echo "  deploy             Deploy to Cloud Run"
+	echo "  setup_env          Setup environment variables for deployment"
+	echo "  help               Show help"
 	echo
 }
 

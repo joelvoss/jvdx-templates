@@ -3,7 +3,8 @@ import { useTranslations } from "~/shared/i18n";
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Footer Component
+ * Footer Component.
+ * Renders a simple footer with copyright information.
  */
 export function Footer() {
 	const t = useTranslations("shared.footer");

@@ -1,28 +1,21 @@
-FROM node:24 AS deps
+FROM node:24-trixie-slim AS build
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+COPY dist ./
 
-COPY ./dist ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --only=production
 
-FROM gcr.io/distroless/nodejs24-debian12 AS runner
+################################################################################
+
+FROM gcr.io/distroless/nodejs24-debian13
 
 WORKDIR /app
 
-# Copy build artifacts and production dependencies from deps stage
-COPY --from=deps /app ./
+COPY --from=build /app ./
 
-# Expose port (Cloud Run will set PORT env var)
 EXPOSE 3000
-
-# Set environment variable for production
-ENV NODE_ENV=production
 ENV PORT=3000
+ENV NODE_ENV=production
 
-# Run as non-root for security
-USER nonroot
-
-# Start the application
 CMD ["express-server.mjs"]

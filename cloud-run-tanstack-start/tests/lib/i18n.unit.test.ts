@@ -11,8 +11,12 @@ import {
 	isValidLocale,
 	parseLocaleCookie,
 	shouldIgnorePath,
-	translations,
 } from "~/lib/i18n";
+import {
+	formatRichMessage,
+	serializeMessagesForScript,
+	translations,
+} from "~/shared/i18n";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -76,18 +80,18 @@ describe("lib/i18n", () => {
 	});
 
 	describe("parseLocaleCookie", () => {
-		it("parses a cookie named 'locale'", () => {
-			expect(parseLocaleCookie("locale=de")).toBe("de");
-			expect(parseLocaleCookie("foo=bar; locale=en")).toBe("en");
+		it("parses the __app_locale cookie", () => {
+			expect(parseLocaleCookie("__app_locale=de")).toBe("de");
+			expect(parseLocaleCookie("foo=bar; __app_locale=en")).toBe("en");
 		});
 
 		it("returns null for unrelated cookies", () => {
-			expect(parseLocaleCookie("__i18n_locale=de")).toBeNull();
+			expect(parseLocaleCookie("locale=de")).toBeNull();
 			expect(parseLocaleCookie(null)).toBeNull();
 		});
 
 		it("decodes encoded cookie values", () => {
-			expect(parseLocaleCookie("locale=de%2DDE")).toBe("de-DE");
+			expect(parseLocaleCookie("__app_locale=de%2DDE")).toBe("de-DE");
 		});
 	});
 
@@ -147,9 +151,9 @@ describe("lib/i18n", () => {
 			expect(formatMessage(msg, { n: 2 }, "en")).toBe("1 guest");
 		});
 
-		it("supports rich tag rendering", () => {
+		it("supports rich tag rendering via formatRichMessage", () => {
 			const msg = "Hello <strong>{name}</strong><br/>!";
-			const out = formatMessage(
+			const out = formatRichMessage(
 				msg,
 				{
 					name: "World",
@@ -158,7 +162,6 @@ describe("lib/i18n", () => {
 					br: () => createElement("br", { "data-testid": "br" }),
 				},
 				"en",
-				true,
 			);
 
 			expect(Array.isArray(out)).toBe(true);
@@ -193,6 +196,18 @@ describe("lib/i18n", () => {
 			const messages = { ns: { greet: "hi" } };
 			const t = translations(messages, "en", "ns");
 			expect(t("missing")).toBe("ns.missing");
+		});
+	});
+
+	describe("serializeMessagesForScript", () => {
+		it("escapes HTML-sensitive characters for inline scripts", () => {
+			const serialized = serializeMessagesForScript({
+				message: '</script><script>alert("xss")</script>',
+			});
+
+			expect(serialized).not.toContain("</script>");
+			expect(serialized).toContain("\\u003c/script\\u003e");
+			expect(serialized).toContain("\\u003cscript\\u003ealert");
 		});
 	});
 
@@ -239,17 +254,17 @@ describe("lib/i18n", () => {
 
 		it("sets the locale cookie when URL locale differs", () => {
 			const request = new Request("https://example.com/de/books", {
-				headers: { cookie: "locale=en" },
+				headers: { cookie: "__app_locale=en" },
 			});
 			const result = i18nMiddleware(request);
 
-			expect(result.setCookie).toContain("__i18n_locale=de");
+			expect(result.setCookie).toContain("__app_locale=de");
 			expect(result.setCookie).toContain("Path=/");
 		});
 
 		it("does not set cookie when locale matches", () => {
 			const request = new Request("https://example.com/de/books", {
-				headers: { cookie: "locale=de" },
+				headers: { cookie: "__app_locale=de" },
 			});
 			const result = i18nMiddleware(request);
 			expect(result).toEqual({});
