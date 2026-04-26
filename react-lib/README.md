@@ -1,42 +1,70 @@
-# {react-lib}
+# react-lib
 
-Description of the `{react-lib}` component/hook library.
+A simple React component and hook library template.
 
 ## Requirements
-- React v17+
-- React DOM v17+
+
+- React 17+
+- React DOM 17+
 
 ## Installation
 
 ```shell
-$ npm install {react-lib}
+npm install react react-dom react-lib
 ```
 
-## Example / Usage
+## Usage
 
-```js
-import {...} from '{react-lib}';
+```tsx
+import { Counter, useCounter } from 'react-lib';
 
-// Do something with the library
+export function CounterExample() {
+	return <Counter />;
+}
+
+export function HookExample() {
+	const { count, increment, decrement } = useCounter();
+
+	return (
+		<div>
+			<p>Count: {count}</p>
+			<button type="button" onClick={increment}>
+				+1
+			</button>
+			<button type="button" onClick={decrement}>
+				-1
+			</button>
+		</div>
+	);
+}
 ```
 
-> Check out the [examples](./examples) directory for more.
+If you scaffold from this template, replace `react-lib` with your package name
+in the examples above.
+
+More examples are available in [`examples/`](./examples).
 
 ## Development
 
-(1) Start the development server:
+Validate the template:
 
 ```shell
-$ ./Taskfile.sh start_dev
+./Taskfile.sh validate
 ```
 
-> This starts vite's development server on
-> [http://localhost:5173](http://localhost:5173). 
+Build the distributable files:
 
-(2) Author your component/hook in the [src](./src) directory.<br>
-The development server will automatically reload when you make changes.
+```shell
+./Taskfile.sh build
+```
 
-(3) Write tests for your component/hook in the [tests](./tests) directory.
+Run the Vite examples app:
+
+```shell
+./Taskfile.sh dev
+```
+
+This starts the dev server on [http://localhost:3000](http://localhost:3000).
 
 ## License
 
