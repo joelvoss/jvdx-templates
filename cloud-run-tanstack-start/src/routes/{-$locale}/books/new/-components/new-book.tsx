@@ -21,20 +21,19 @@ export function NewBook() {
 	const t = useTranslations("routes.books.form");
 	const navigate = Route.useNavigate();
 
-	const { mutate, isPending, error } = useMutation(
-		createBookMutationOpts({
-			onSuccess: () => {
-				toastQueue.add(
-					{
-						title: t("toasts.createdTitle"),
-						description: t("toasts.createdDescription"),
-					},
-					{ timeout: 5000 },
-				);
-				void navigate({ to: "/{-$locale}/books" });
-			},
-		}),
-	);
+	const { mutate, isPending, error } = useMutation({
+		...createBookMutationOpts(),
+		onSuccess: () => {
+			toastQueue.add(
+				{
+					title: t("toasts.createdTitle"),
+					description: t("toasts.createdDescription"),
+				},
+				{ timeout: 5000 },
+			);
+			void navigate({ to: "/{-$locale}/books" });
+		},
+	});
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();

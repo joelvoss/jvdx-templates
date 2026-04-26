@@ -26,20 +26,18 @@ export function EditBook() {
 	const { data } = useSuspenseQuery(bookQueryOptions({ id }));
 	const t = useTranslations("routes.books.form");
 
-	const { mutate, isPending, error } = useMutation(
-		updateBookMutationOpts({
-			id,
-			onSuccess: () => {
-				toastQueue.add(
-					{
-						title: t("toasts.updatedTitle"),
-						description: t("toasts.updatedDescription"),
-					},
-					{ timeout: 5000 },
-				);
-			},
-		}),
-	);
+	const { mutate, isPending, error } = useMutation({
+		...updateBookMutationOpts({ id }),
+		onSuccess: () => {
+			toastQueue.add(
+				{
+					title: t("toasts.updatedTitle"),
+					description: t("toasts.updatedDescription"),
+				},
+				{ timeout: 5000 },
+			);
+		},
+	});
 
 	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();

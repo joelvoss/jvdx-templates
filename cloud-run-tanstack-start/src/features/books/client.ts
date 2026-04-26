@@ -20,13 +20,22 @@ import { csrfCookieName, csrfHeaderName, readCookie } from "~/lib/cookies";
 import { toMutationError, validateFormData } from "~/lib/valibot";
 
 ////////////////////////////////////////////////////////////////////////////////
+// Query Options
 
+/**
+ * Query options for fetching the list of books, optionally sorted by title,
+ * author, or published year.
+ */
 export const booksQueryOptions = (data: v.InferInput<typeof GetBooksSchema>) =>
 	queryOptions({
 		queryKey: ["books", data.sort],
 		queryFn: () => getBooks({ data }),
 	});
 
+/**
+ * Query options for fetching a single book by ID. If the book does not exist,
+ * this will throw a 404 error which can be handled by the caller.
+ */
 export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 	queryOptions({
 		queryKey: ["book", data.id],
@@ -38,28 +47,29 @@ export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 	});
 
 ////////////////////////////////////////////////////////////////////////////////
+// Mutation Options
 
-interface CreateBookMutationPayload {
-	onSuccess?: () => void;
-}
-
-interface CreateBookMutationError {
-	issues: v.FlatErrors<typeof CreateBookSchema>;
-}
-
-export const createBookMutationOpts = (payload: CreateBookMutationPayload) =>
-	mutationOptions<unknown, CreateBookMutationError, FormData>({
-		mutationFn: async (fd) => {
+/**
+ * Mutation options for creating a new book.
+ */
+export const createBookMutationOpts = () =>
+	mutationOptions<
+		Awaited<ReturnType<typeof createBook>>,
+		{ issues: v.FlatErrors<typeof CreateBookSchema> },
+		FormData
+	>({
+		mutationFn: (payload) => {
 			const headers = getMutationHeaders();
-			const data = validateFormData(CreateBookSchema, fd, { keepEmpty: false });
+			const data = validateFormData(CreateBookSchema, payload, {
+				keepEmpty: false,
+			});
 
 			try {
-				return await createBook({ data, headers });
+				return createBook({ data, headers });
 			} catch (error: unknown) {
 				throw toMutationError(CreateBookSchema, error, { rootFallback: true });
 			}
 		},
-		onSuccess: payload.onSuccess,
 		meta: {
 			awaits: [["books"]],
 		},
@@ -67,39 +77,46 @@ export const createBookMutationOpts = (payload: CreateBookMutationPayload) =>
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface UpdateBookMutationPayload {
-	id: v.InferInput<typeof UpdateBookSchema>["id"];
-	onSuccess?: () => void;
-}
-
-interface UpdateBookMutationError {
-	issues: v.FlatErrors<typeof UpdateBookSchema>;
-}
-
-export const updateBookMutationOpts = (payload: UpdateBookMutationPayload) =>
-	mutationOptions<unknown, UpdateBookMutationError, FormData>({
-		mutationFn: async (fd) => {
+/**
+ * Mutation options for updating a book.
+ */
+export const updateBookMutationOpts = (
+	data: v.InferInput<typeof UpdateBookSchema>,
+) =>
+	mutationOptions<
+		Awaited<ReturnType<typeof updateBook>>,
+		{ issues: v.FlatErrors<typeof UpdateBookSchema> },
+		FormData
+	>({
+		mutationFn: (payload) => {
 			const headers = getMutationHeaders();
-			const data = validateFormData(UpdateBookSchema, fd, { keepEmpty: true });
+			const data = validateFormData(UpdateBookSchema, payload, {
+				keepEmpty: true,
+			});
 
 			try {
-				return await updateBook({ data, headers });
+				return updateBook({ data, headers });
 			} catch (error: unknown) {
 				throw toMutationError(UpdateBookSchema, error);
 			}
 		},
-		onSuccess: payload.onSuccess,
 		meta: {
-			awaits: [["book", payload.id], ["books"]],
+			awaits: [["books"], ["book", data.id]],
 		},
 	});
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Mutation options for deleting a book.
+ */
 export const deleteBookMutationOpts = (
 	data: v.InferInput<typeof DeleteBookSchema>,
 ) =>
-	mutationOptions({
+	mutationOptions<
+		Awaited<ReturnType<typeof deleteBook>>,
+		{ issues: v.FlatErrors<typeof DeleteBookSchema> }
+	>({
 		mutationFn: () => deleteBook({ data, headers: getMutationHeaders() }),
 		meta: {
 			awaits: [["books"]],
@@ -109,6 +126,9 @@ export const deleteBookMutationOpts = (
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Helper function to get mutation headers, including CSRF token if available.
+ */
 function getMutationHeaders() {
 	if (typeof document === "undefined") return undefined;
 

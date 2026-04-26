@@ -571,7 +571,9 @@ describe("features/books/server", () => {
 
 		it("ignores missing books", async () => {
 			const db = await setupDb();
-			await expect(db.deleteBook({ data: { id: "missing" } })).resolves.toBeUndefined();
+			await expect(
+				db.deleteBook({ data: { id: "missing" } }),
+			).resolves.toBeUndefined();
 		});
 
 		it("releases ISBNs after deleting books", async () => {

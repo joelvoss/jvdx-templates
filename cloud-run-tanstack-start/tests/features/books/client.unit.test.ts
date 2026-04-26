@@ -24,12 +24,12 @@ describe("features/books/client", () => {
 	});
 
 	it("wires mutation meta await keys", () => {
-		const createOpts = createBookMutationOpts({});
+		const createOpts = createBookMutationOpts();
 		expect(createOpts.meta).toEqual({ awaits: [["books"]] });
 
 		const updateOpts = updateBookMutationOpts({ id: "1" });
 		expect(updateOpts.meta).toEqual({
-			awaits: [["book", "1"], ["books"]],
+			awaits: [["books"], ["book", "1"]],
 		});
 
 		const deleteOpts = deleteBookMutationOpts({ id: "1" });
@@ -40,14 +40,16 @@ describe("features/books/client", () => {
 	});
 
 	it("createBookMutationOpts trims and drops empty form values", async () => {
-		const opts = createBookMutationOpts({});
+		const opts = createBookMutationOpts();
 		const fd = new FormData();
 		fd.set("title", " New Book ");
 		fd.set("author", "   ");
 		fd.set("isbn", "978-1111111111");
 		fd.set("publishedYear", "2024");
 
-		await expect((opts as any).mutationFn(fd)).rejects.toMatchObject({
+		await expect(
+			Promise.resolve().then(() => (opts as any).mutationFn(fd)),
+		).rejects.toMatchObject({
 			issues: {
 				nested: expect.any(Object),
 			},
@@ -55,7 +57,7 @@ describe("features/books/client", () => {
 	});
 
 	it("createBookMutationOpts ignores non-string FormData entries", async () => {
-		const opts = createBookMutationOpts({});
+		const opts = createBookMutationOpts();
 		const fd = new FormData();
 		fd.set("title", " New Book ");
 		fd.set("author", "Someone");
@@ -63,7 +65,9 @@ describe("features/books/client", () => {
 		fd.set("publishedYear", "2024");
 		fd.append("coverImageUrl", new Blob(["x"], { type: "text/plain" }));
 
-		await expect((opts as any).mutationFn(fd)).rejects.toMatchObject({
+		await expect(
+			Promise.resolve().then(() => (opts as any).mutationFn(fd)),
+		).rejects.toMatchObject({
 			issues: expect.any(Object),
 		});
 	});
@@ -73,7 +77,9 @@ describe("features/books/client", () => {
 		const fd = new FormData();
 		fd.set("title", "Updated");
 
-		await expect((opts as any).mutationFn(fd)).rejects.toMatchObject({
+		await expect(
+			Promise.resolve().then(() => (opts as any).mutationFn(fd)),
+		).rejects.toMatchObject({
 			issues: {
 				nested: expect.any(Object),
 			},

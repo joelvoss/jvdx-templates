@@ -21,6 +21,9 @@ const BOOK_ISBN_INDEX_COLLECTION = "book_isbns";
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Gets a list of books, optionally sorted by title, author, or published year.
+ */
 export const getBooks = createServerFn({ method: "GET" })
 	.inputValidator(GetBooksSchema)
 	.handler(async ({ data }) => {
@@ -46,6 +49,10 @@ export const getBooks = createServerFn({ method: "GET" })
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Gets a single book by ID. If the book does not exist, this function returns
+ * null.
+ */
 export const getBook = createServerFn({ method: "GET" })
 	.inputValidator(GetBookSchema)
 	.handler(async ({ data }) => {
@@ -56,6 +63,14 @@ export const getBook = createServerFn({ method: "GET" })
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Creates a new book. This function first checks if a book with the same ISBN
+ * already exists by looking up the ISBN index. If it does, it throws an error.
+ * If not, it creates a new book document and an ISBN index document in a
+ * transaction to ensure atomicity. The ISBN index document allows us to enforce
+ * uniqueness of ISBNs across books without needing to perform a collection
+ * scan.
+ */
 export const createBook = createServerFn({ method: "POST" })
 	.inputValidator(CreateBookSchema)
 	.handler(async ({ data }) => {
@@ -87,6 +102,11 @@ export const createBook = createServerFn({ method: "POST" })
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Updates a book by ID. If the ISBN is being updated, this function also checks
+ * for uniqueness of the new ISBN and updates the ISBN index accordingly. If
+ * the book does not exist, this function throws an error.
+ */
 export const updateBook = createServerFn({ method: "POST" })
 	.inputValidator(UpdateBookSchema)
 	.handler(async ({ data }) => {
@@ -127,6 +147,11 @@ export const updateBook = createServerFn({ method: "POST" })
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Deletes a book by ID. Also deletes the corresponding ISBN index document to
+ * maintain data integrity. If the book does not exist, this function does
+ * nothing.
+ */
 export const deleteBook = createServerFn({ method: "POST" })
 	.inputValidator(DeleteBookSchema)
 	.handler(async ({ data }) => {
@@ -144,6 +169,11 @@ export const deleteBook = createServerFn({ method: "POST" })
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Gets a reference to the ISBN index document for a given ISBN. This is used
+ * to enforce uniqueness of ISBNs across books. The document will contain a
+ * reference to the book that has that ISBN.
+ */
 function getBookIsbnRef(isbn: string) {
 	return firestore
 		.collection(BOOK_ISBN_INDEX_COLLECTION)

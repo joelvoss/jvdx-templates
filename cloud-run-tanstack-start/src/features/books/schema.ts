@@ -18,14 +18,6 @@ export type Book = v.InferOutput<typeof BookSchema>;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const PublishedYearSchema = v.pipe(
-	v.union([v.string(), v.number()]),
-	v.toNumber(),
-	v.check(isValidPublishedYear),
-);
-
-////////////////////////////////////////////////////////////////////////////////
-
 export const GetBooksSchema = v.object({
 	sort: v.optional(v.picklist(["title", "author", "year"]), undefined),
 });
@@ -42,8 +34,12 @@ export const CreateBookSchema = v.object({
 	title: v.pipe(v.string(), v.minLength(2)),
 	author: v.pipe(v.string(), v.minLength(2)),
 	isbn: v.pipe(v.string(), v.check(isValidISBN)),
+	publishedYear: v.pipe(
+		v.union([v.string(), v.number()]),
+		v.toNumber(),
+		v.check(isValidPublishedYear),
+	),
 	description: v.optional(v.pipe(v.string(), v.check(isValidDescription))),
-	publishedYear: PublishedYearSchema,
 	coverImageUrl: v.optional(v.pipe(v.string(), v.check(isValidCoverImageUrl))),
 });
 
