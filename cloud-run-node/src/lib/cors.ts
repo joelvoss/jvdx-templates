@@ -37,6 +37,7 @@ function isOriginAllowed(origin: string, allowedOrigin: Origin) {
 		return allowedOrigin(origin);
 	}
 	if (allowedOrigin instanceof RegExp) {
+		allowedOrigin.lastIndex = 0;
 		return allowedOrigin.test(origin);
 	}
 	return !!allowedOrigin;
@@ -57,13 +58,19 @@ export function cors(options?: CORSOptions): MiddlewareHandler {
 	};
 
 	return async function (c, next) {
-		if (!opts.origin || opts.origin === '*') {
+		let requestOrigin = c.req.header('origin') || '';
+
+		if (opts.credentials && (!opts.origin || opts.origin === '*')) {
+			if (requestOrigin) {
+				c.res.headers.set('Access-Control-Allow-Origin', requestOrigin);
+				c.res.headers.set('Vary', 'Origin');
+			}
+		} else if (!opts.origin || opts.origin === '*') {
 			c.res.headers.set('Access-Control-Allow-Origin', '*');
 		} else if (typeof opts.origin === 'string') {
 			c.res.headers.set('Access-Control-Allow-Origin', opts.origin);
 			c.res.headers.set('Vary', 'Origin');
 		} else {
-			let requestOrigin = c.req.header('origin') || '';
 			let isAllowed = isOriginAllowed(requestOrigin, opts.origin);
 			if (isAllowed) {
 				c.res.headers.set('Access-Control-Allow-Origin', requestOrigin);

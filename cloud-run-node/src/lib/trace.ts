@@ -20,7 +20,12 @@ export type TraceVariables = {
 export function trace(
 	options: TraceOptions = {},
 ): MiddlewareHandler<{ Variables: TraceVariables }> {
-	let projectId = options.projectId || '';
+	let projectId =
+		options.projectId ||
+		process.env.PROJECT_ID ||
+		process.env.GOOGLE_CLOUD_PROJECT ||
+		process.env.GCLOUD_PROJECT ||
+		'';
 
 	return async function (c, next) {
 		// NOTE(joel): Get parent trace id
@@ -30,7 +35,9 @@ export function trace(
 			[traceId] = traceHeader.split('/');
 		}
 
-		c.set('traceId', `projects/${projectId}/traces/${traceId}`);
+		if (projectId) {
+			c.set('traceId', `projects/${projectId}/traces/${traceId}`);
+		}
 
 		await next();
 	};

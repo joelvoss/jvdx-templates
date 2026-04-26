@@ -130,4 +130,20 @@ describe('build()', () => {
 			'projects/test-project/traces/105445aa7843bc8bf206b120001000',
 		);
 	});
+
+	test('returns 400 for malformed JSON request bodies', async () => {
+		let response = await app.request('/v1/books', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: '{invalid',
+		});
+
+		expect(response.status).toBe(400);
+
+		let body = await response.json();
+		expect(body).toEqual({
+			code: 'BAD_REQUEST',
+			message: 'Malformed JSON in request body',
+		});
+	});
 });

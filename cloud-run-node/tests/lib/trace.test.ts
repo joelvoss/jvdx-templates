@@ -60,4 +60,40 @@ describe('trace', () => {
 			id: 'projects/test-project-id/traces/cloud_ecef2e4f21ab8302e23ac1409c',
 		});
 	});
+
+	test('use GOOGLE_CLOUD_PROJECT when projectId is not passed', async () => {
+		vi.stubEnv('GOOGLE_CLOUD_PROJECT', 'env-project-id');
+
+		let app = new Hono<{ Variables: Variables }>();
+		app.use(trace());
+
+		app.get('/', (c) => {
+			let id = c.get('traceId');
+			return c.json({ id });
+		});
+
+		let res = await app.request('/');
+		let body = await res.json();
+
+		expect(body).toStrictEqual({
+			id: 'projects/env-project-id/traces/345e5aecef2e4f21ab8302e23ac1409c',
+		});
+
+		vi.unstubAllEnvs();
+	});
+
+	test('omit trace id when project id is unavailable', async () => {
+		let app = new Hono<{ Variables: Variables }>();
+		app.use(trace());
+
+		app.get('/', (c) => {
+			let id = c.get('traceId');
+			return c.json({ id: id ?? null });
+		});
+
+		let res = await app.request('/');
+		let body = await res.json();
+
+		expect(body).toStrictEqual({ id: null });
+	});
 });

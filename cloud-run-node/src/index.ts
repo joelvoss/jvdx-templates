@@ -35,6 +35,11 @@ export function build() {
 		let httpErr =
 			err instanceof HTTPException
 				? err
+				: err.message === 'Malformed JSON in request body'
+					? new HTTPException(400, {
+							code: 'BAD_REQUEST',
+							message: err.message,
+						})
 				: new HTTPException(500, {
 						code: 'INTERNAL_SERVER_ERROR',
 						message: err.message,

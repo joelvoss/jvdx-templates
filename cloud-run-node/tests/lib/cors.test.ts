@@ -146,6 +146,25 @@ describe('cors', () => {
 		expect(res2.headers.get('Vary')).toBe(null);
 	});
 
+	test('RegExp origin is stable across repeated requests', async () => {
+		let app = new Hono();
+		app.get('/cors/*', cors({ origin: /\.com/g }), () => new Response('test'));
+
+		let first = await app.request('/cors/a', {
+			headers: { origin: 'http://example.com' },
+		});
+		let second = await app.request('/cors/a', {
+			headers: { origin: 'http://example.com' },
+		});
+
+		expect(first.headers.get('Access-Control-Allow-Origin')).toBe(
+			'http://example.com',
+		);
+		expect(second.headers.get('Access-Control-Allow-Origin')).toBe(
+			'http://example.com',
+		);
+	});
+
 	test('with credentials', async () => {
 		let app = new Hono();
 		app.get('/cors/*', cors({ credentials: true }), () => new Response('test'));
@@ -153,6 +172,21 @@ describe('cors', () => {
 		let res = await app.request('/cors/a');
 
 		expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+	});
+
+	test('with credentials reflects the request origin', async () => {
+		let app = new Hono();
+		app.get('/cors/*', cors({ credentials: true }), () => new Response('test'));
+
+		let res = await app.request('/cors/a', {
+			headers: { origin: 'http://example.com' },
+		});
+
+		expect(res.headers.get('Access-Control-Allow-Origin')).toBe(
+			'http://example.com',
+		);
+		expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+		expect(res.headers.get('Vary')).toBe('Origin');
 	});
 
 	test('with exposeHeaders', async () => {
