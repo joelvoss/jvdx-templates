@@ -40,7 +40,7 @@ async def get_books() -> list[Book]:
     books: list[Book] = []
     async for doc in db.collection("books").stream():
         data = doc.to_dict() or {}
-        books.append(Book(**{"id": doc.id, **data}))
+        books.append(Book(**{**data, "id": doc.id}))
     return books
 
 
@@ -57,7 +57,7 @@ async def get_book(id: str) -> Book:
     if not doc.exists:
         raise HTTPException(status_code=404, detail=f"Book with ID '{id}' not found")
     data = doc.to_dict() or {}
-    return Book(**{"id": doc.id, **data})
+    return Book(**{**data, "id": doc.id})
 
 
 async def create_book(payload: NewBook) -> bool:

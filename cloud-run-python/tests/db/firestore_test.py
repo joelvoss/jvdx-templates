@@ -122,9 +122,9 @@ async def test_get_book_not_found(mocker):
     with pytest.raises(HTTPException) as e:
         await firestore.get_book("unknown")
 
-        # Assertions
-        assert e.value.status_code == 404
-        assert e.value.detail == "Book with ID 'unknown' not found."
+    # Assertions
+    assert e.value.status_code == 404
+    assert e.value.detail == "Book with ID 'unknown' not found"
 
     mock_db.collection.assert_called_once_with("books")
     mock_collection.document.assert_called_once_with("unknown")
