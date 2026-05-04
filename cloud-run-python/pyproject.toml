@@ -13,9 +13,14 @@ dependencies = [
 dev = [
     "mypy>=1.20.2",
     "pytest>=9.0.3",
+    "pytest-asyncio>=0.24.0",
     "pytest-mock>=3.15.1",
     "ruff>=0.15.12",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
 
 [tool.uv]
 package = false

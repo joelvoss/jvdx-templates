@@ -7,8 +7,6 @@ from typing import Any
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from src.settings import settings
-
 
 class CloudLoggingFormatter(logging.Formatter):
     """
@@ -23,8 +21,9 @@ class CloudLoggingFormatter(logging.Formatter):
         logging.CRITICAL: "CRITICAL",  # Critical events cause more severe problems or outages.
     }
 
-    def __init__(self, fmt: str = ""):
+    def __init__(self, fmt: str = "", project: str | None = None):
         logging.Formatter.__init__(self, fmt)
+        self.project = project
 
     def format(self, record: logging.LogRecord) -> str:
         logging.Formatter.format(self, record)
@@ -44,14 +43,13 @@ class CloudLoggingFormatter(logging.Formatter):
             "message": record.message,
         }
 
-        project = settings.PROJECT
         trace_ctx = trace_context.get()
         if trace_ctx:
             inferred_trace = trace_ctx.get("trace_id", None)
-            if inferred_trace is not None and project is not None:
+            if inferred_trace is not None and self.project is not None:
                 # NOTE: Add full path for detected trace
                 log["logging.googleapis.com/trace"] = (
-                    f"projects/{project}/traces/{inferred_trace}"
+                    f"projects/{self.project}/traces/{inferred_trace}"
                 )
 
             inferred_span = trace_ctx.get("span_id", None)

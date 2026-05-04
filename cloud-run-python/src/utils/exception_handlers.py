@@ -4,29 +4,53 @@ from fastapi import HTTPException, Request, Response, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+# //////////////////////////////////////////////////////////////////////////////
+
 logger = logging.getLogger("app")
+
+# //////////////////////////////////////////////////////////////////////////////
 
 
 async def handle_validation_exception(
-    _: Request, exc: RequestValidationError
+    request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """
     Handle validation exceptions raised by Pydantic/FastAPI request parsing.
 
     Args:
-        _ (Request): The request object.
+        request (Request): The request object.
         exc (RequestValidationError): The validation error object.
     Returns:
         JSONResponse: Response with code and message.
     """
-    logger.error("Handled validation error: %s", exc.errors())
+    summarized_errors = []
+    for error in exc.errors():
+        if not isinstance(error, dict):
+            summarized_errors.append(error)
+            continue
+
+        summarized_error = {}
+        if "loc" in error:
+            summarized_error["loc"] = error["loc"]
+        if "type" in error:
+            summarized_error["type"] = error["type"]
+
+        summarized_errors.append(summarized_error)
+
+    logger.error(
+        "Handled validation error on %s: %s",
+        request.url.path,
+        summarized_errors,
+    )
     return JSONResponse(
-        content={"code": status.HTTP_400_BAD_REQUEST, "message": exc.errors()},
+        content={"code": status.HTTP_400_BAD_REQUEST, "message": summarized_errors},
         status_code=status.HTTP_400_BAD_REQUEST,
     )
 
 
-async def handle_http_exception(_: Request, exc: HTTPException) -> Response:
+async def handle_http_exception(
+    _: Request, exc: HTTPException
+) -> Response | JSONResponse:
     """
     Handle HTTPExceptions raised in our API. This includes 404, 500, and any
     other non-validation exceptions.
@@ -52,7 +76,7 @@ async def handle_http_exception(_: Request, exc: HTTPException) -> Response:
     )
 
 
-async def handle_general_exception(_: Request, exc: Exception) -> Response:
+async def handle_general_exception(_: Request, exc: Exception) -> JSONResponse:
     """
     Catch-all handler for unhandled exceptions. Returns a generic 500 response
     without leaking internal error details to callers.

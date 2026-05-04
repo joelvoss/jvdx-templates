@@ -6,15 +6,8 @@ set -e
 # START tasks
 
 start() {
-  echo "Starting production server..."
-  setup_env prod
-  uv sync
-  uv run -m src.main
-}
-
-start_dev() {
-  echo "Starting development server..."
-  setup_env staging
+  setup_env "$1"
+  echo "Starting server (Env: $1)..."
   uv sync
   uv run -m src.main
 }
@@ -125,13 +118,13 @@ setup_env() {
     export PROJECT="<CHANGE_ME>"
     export REGION="europe-west3"
     export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
-  elif [[ "$1" == "staging" ]]; then
+  elif [[ "$1" == "dev" ]]; then
     export PYTHON_ENV="development"
     export PROJECT="<CHANGE_ME>"
     export REGION="europe-west3"
     export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
   else
-    echo "Unknown environment specified. Possible values: <prod|staging>"
+    echo "Unknown environment specified. Possible values: <prod|dev>"
     exit 1
   fi
 
