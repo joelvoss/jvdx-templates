@@ -6,6 +6,7 @@ of [`degit`](https://github.com/Rich-Harris/degit).
 ## Templates
 
 - [joelvoss/jvdx-templates/cloud-run-node](./cloud-run-node)
+- [joelvoss/jvdx-templates/cloud-run-job-node](./cloud-run-job-node)
 - [joelvoss/jvdx-templates/cloud-run-python](./cloud-run-python)
 - [joelvoss/jvdx-templates/next-app-router](./next-app-router)
 - [joelvoss/jvdx-templates/node-lib](./node-lib)
