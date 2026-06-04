@@ -16,9 +16,11 @@ let mockLoggerWarn = vi.fn();
 vi.mock('~/lib/logger', () => {
 	return {
 		logger: {
+			addContext: vi.fn(),
 			error: mockLoggerError,
 			info: mockLoggerInfo,
 			warn: mockLoggerWarn,
+			withContext: vi.fn(async (_context, callback) => callback()),
 		},
 	};
 });
@@ -125,10 +127,10 @@ describe('build()', () => {
 
 		expect(mockLoggerError).toHaveBeenCalledTimes(1);
 
-		let [, context] = mockLoggerError.mock.calls[0];
-		expect(context.get('traceId')).toBe(
-			'projects/test-project/traces/105445aa7843bc8bf206b120001000',
-		);
+		expect(mockLoggerError).toHaveBeenCalledWith({
+			code: 'NOT_FOUND',
+			message: "Book with ID 'missing' not found",
+		});
 	});
 
 	test('returns 400 for malformed JSON request bodies', async () => {

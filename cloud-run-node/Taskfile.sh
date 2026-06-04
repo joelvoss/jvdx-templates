@@ -17,11 +17,9 @@ start() {
     export NODE_ENV=development
     nodemon --watch src \
       --ext ts \
-      --exec "./Taskfile.sh build && node dist/index.js"
+      --exec "vite build && node dist/index.js"
 
   elif [ "$1" = "docker" ]; then
-    build
-
     docker build --tag "${IMAGE_TAG}" .
     docker run -it --rm \
       -v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
@@ -42,15 +40,11 @@ build() {
   DIST_DIR=dist
 
   rm -rf "${DIST_DIR}"
-  esbuild src/index.ts \
-    --bundle \
-    --platform=node \
-    --packages=external \
-    --format="esm" \
-    --outdir="${DIST_DIR}"
+  vite build
 
+  echo "Generating package.json and lockfile for production..."
   jq 'pick(.name, .version, .type, .dependencies)' package.json > "${DIST_DIR}/package.json"
-  cp package-lock.json "${DIST_DIR}/package-lock.json"
+  (cd "${DIST_DIR}" && npm i --package-lock-only --ignore-scripts=true --omit=dev)
 }
 
 format() {
@@ -93,7 +87,6 @@ docker_smoketest() {
   IMAGE="cloud-run-node-smoketest"
   CONTAINER="cloud-run-node-smoketest"
 
-  build
   docker build --tag "${IMAGE}" .
   docker run -d --rm --name "${CONTAINER}" -p 3000:3000 "${IMAGE}"
 
@@ -128,8 +121,6 @@ clean() {
 
 deploy() {
   setup_env "$@"
-
-  build
 
   echo "Building Docker container..."
   docker build --platform linux/amd64 --tag "${IMAGE_TAG}" .

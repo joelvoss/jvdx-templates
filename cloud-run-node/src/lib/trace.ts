@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import type { MiddlewareHandler } from 'hono';
 
+import { logger } from '~/lib/logger';
+
 ////////////////////////////////////////////////////////////////////////////////
 
 interface TraceOptions {
@@ -36,7 +38,9 @@ export function trace(
 		}
 
 		if (projectId) {
-			c.set('traceId', `projects/${projectId}/traces/${traceId}`);
+			let trace = `projects/${projectId}/traces/${traceId}`;
+			c.set('traceId', trace);
+			logger.addContext({ 'logging.googleapis.com/trace': trace });
 		}
 
 		await next();

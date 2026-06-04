@@ -1,0 +1,9 @@
+*
+
+!package.json
+!package-lock.json
+!Taskfile.sh
+!tsconfig.json
+!vite.config.ts
+!src
+!src/**

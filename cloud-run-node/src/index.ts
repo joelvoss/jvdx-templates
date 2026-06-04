@@ -19,6 +19,9 @@ export function build() {
 	let app = new Hono<{ Variables: Variables }>();
 
 	// NOTE(joel): Add middlewares for all routes
+	app.use(async (_c, next) => {
+		await logger.withContext({}, next);
+	});
 	app.use(secureHeaders());
 	app.use(etag());
 	app.use(
@@ -29,9 +32,23 @@ export function build() {
 	);
 	app.use(compress());
 	app.use(trace({ projectId: process.env.PROJECT_ID }));
+	app.use(async (c, next) => {
+		let startedAt = Date.now();
+		let method = c.req.method;
+		let path = c.req.path;
+
+		logger.info('Request started', { method, path });
+		await next();
+		logger.info('Request finished', {
+			method,
+			path,
+			status: c.res.status,
+			durationMs: Date.now() - startedAt,
+		});
+	});
 
 	// NOTE(joel): Global error handler
-	app.onError((err, c) => {
+	app.onError((err, _c) => {
 		let httpErr =
 			err instanceof HTTPException
 				? err
@@ -40,16 +57,17 @@ export function build() {
 							code: 'BAD_REQUEST',
 							message: err.message,
 						})
-				: new HTTPException(500, {
-						code: 'INTERNAL_SERVER_ERROR',
-						message: err.message,
-					});
-		logger.error({ code: httpErr.code, message: httpErr.message }, c);
+					: new HTTPException(500, {
+							code: 'INTERNAL_SERVER_ERROR',
+							message: err.message,
+						});
+		logger.error({ code: httpErr.code, message: httpErr.message });
 		return httpErr.getResponse();
 	});
 
 	// NOTE(joel): Add routes
 	app.get('/', (c) => {
+		logger.info('Healthcheck requested');
 		return c.json({ message: 'ok' });
 	});
 

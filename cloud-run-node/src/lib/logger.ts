@@ -1,11 +1,11 @@
-import type { Context } from 'hono';
-
-import type { Variables } from '~/types';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 ////////////////////////////////////////////////////////////////////////////////
 
 export type LogMessage = string | Record<string, unknown>;
-export type LogContext = Context<{ Variables: Variables }>;
+export interface LogContext {
+	[key: string]: unknown;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -17,30 +17,43 @@ let LogSeverity = {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Log a message to the console.
- */
-function log(severity: string, message: LogMessage, c?: LogContext) {
-	let traceId = c != null ? c.get('traceId') : null;
+export function createLogger() {
+	let asyncLocalStorage = new AsyncLocalStorage<LogContext>();
 
-	let msg = typeof message === 'string' ? { message } : message;
+	function log(
+		severity: string,
+		message: LogMessage,
+		context: LogContext = {},
+	) {
+		let metadata = { ...asyncLocalStorage.getStore(), ...context };
+		let msg = typeof message === 'string' ? { message } : message;
 
-	console.log(
-		JSON.stringify({
-			severity,
-			...(traceId ? { 'logging.googleapis.com/trace': traceId } : {}),
-			...msg,
-		}),
-	);
+		console.log(JSON.stringify({ ...metadata, severity, ...msg }));
+	}
+
+	function addContext(context: LogContext) {
+		asyncLocalStorage.enterWith({
+			...asyncLocalStorage.getStore(),
+			...context,
+		});
+	}
+
+	function withContext<T>(context: LogContext, callback: () => T) {
+		return asyncLocalStorage.run(context, callback);
+	}
+
+	return {
+		addContext,
+		withContext,
+		info: (message: LogMessage, context?: LogContext) =>
+			log(LogSeverity.INFO, message, context),
+		warn: (message: LogMessage, context?: LogContext) =>
+			log(LogSeverity.WARN, message, context),
+		error: (message: LogMessage, context?: LogContext) =>
+			log(LogSeverity.ERROR, message, context),
+	};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export let logger = {
-	info: (message: LogMessage, c?: LogContext) =>
-		log(LogSeverity.INFO, message, c),
-	warn: (message: LogMessage, c?: LogContext) =>
-		log(LogSeverity.WARN, message, c),
-	error: (message: LogMessage, c?: LogContext) =>
-		log(LogSeverity.ERROR, message, c),
-};
+export let logger = createLogger();

@@ -7,6 +7,9 @@ let mockGet = vi.fn();
 let mockSet = vi.fn();
 let mockUpdate = vi.fn();
 let mockDelete = vi.fn();
+let mockAddContext = vi.fn();
+let mockInfo = vi.fn();
+let mockWarn = vi.fn();
 
 let mockDoc = vi.fn(() => {
 	return {
@@ -32,6 +35,16 @@ vi.mock('@google-cloud/firestore', function () {
 				doc: mockDoc,
 			};
 		}),
+	};
+});
+
+vi.mock('~/lib/logger', () => {
+	return {
+		logger: {
+			addContext: mockAddContext,
+			info: mockInfo,
+			warn: mockWarn,
+		},
 	};
 });
 
@@ -65,6 +78,10 @@ describe('Firestore adapter', () => {
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockGet).toHaveBeenCalled();
+			expect(mockInfo).toHaveBeenCalledWith('Reading books from Firestore');
+			expect(mockInfo).toHaveBeenCalledWith('Read books from Firestore', {
+				total: mockBooks.length,
+			});
 			expect(result).toEqual(mockBooks);
 		});
 
@@ -96,6 +113,9 @@ describe('Firestore adapter', () => {
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('test-id');
 			expect(mockGet).toHaveBeenCalled();
+			expect(mockAddContext).toHaveBeenCalledWith({ bookId: 'test-id' });
+			expect(mockInfo).toHaveBeenCalledWith('Reading book from Firestore');
+			expect(mockInfo).toHaveBeenCalledWith('Read book from Firestore');
 			expect(result).toEqual(mockBook);
 		});
 
@@ -108,6 +128,10 @@ describe('Firestore adapter', () => {
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('non-existent-id');
+			expect(mockAddContext).toHaveBeenCalledWith({
+				bookId: 'non-existent-id',
+			});
+			expect(mockWarn).toHaveBeenCalledWith('Book missing in Firestore');
 			expect(result).toBeNull();
 		});
 	});
@@ -121,6 +145,11 @@ describe('Firestore adapter', () => {
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalled();
+			expect(mockAddContext).toHaveBeenCalledWith({
+				bookId: expect.any(String),
+			});
+			expect(mockInfo).toHaveBeenCalledWith('Writing book to Firestore');
+			expect(mockInfo).toHaveBeenCalledWith('Wrote book to Firestore');
 			expect(mockSet).toHaveBeenCalledWith(
 				expect.objectContaining({
 					id: expect.any(String),
@@ -143,6 +172,9 @@ describe('Firestore adapter', () => {
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('test-id');
+			expect(mockAddContext).toHaveBeenCalledWith({ bookId: 'test-id' });
+			expect(mockInfo).toHaveBeenCalledWith('Updating book in Firestore');
+			expect(mockInfo).toHaveBeenCalledWith('Updated book in Firestore');
 			expect(mockUpdate).toHaveBeenCalledWith({ title: 'Updated Title' });
 			expect(result).toBe(true);
 		});
@@ -172,6 +204,9 @@ describe('Firestore adapter', () => {
 
 			expect(mockCollection).toHaveBeenCalledWith('books');
 			expect(mockDoc).toHaveBeenCalledWith('test-id');
+			expect(mockAddContext).toHaveBeenCalledWith({ bookId: 'test-id' });
+			expect(mockInfo).toHaveBeenCalledWith('Deleting book from Firestore');
+			expect(mockInfo).toHaveBeenCalledWith('Deleted book from Firestore');
 			expect(mockDelete).toHaveBeenCalled();
 			expect(result).toBe(true);
 		});
