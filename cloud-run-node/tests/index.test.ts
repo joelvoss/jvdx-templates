@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 
-import type { Hono } from 'hono';
+import type { Hono, MiddlewareHandler } from 'hono';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { Variables } from '~/types';
@@ -15,6 +15,9 @@ let mockLoggerWarn = vi.fn();
 
 vi.mock('~/lib/logger', () => {
 	return {
+		loggerMiddleware: (): MiddlewareHandler => async (_c, next) => {
+			await next();
+		},
 		logger: {
 			addContext: vi.fn(),
 			error: mockLoggerError,
@@ -41,6 +44,22 @@ vi.mock('~/adapters/firestore', () => {
 			deleteBook: mockDeleteBook,
 		},
 	};
+});
+
+let mockServerClose = vi.fn();
+let mockServe = vi.fn(() => {
+	return { close: mockServerClose };
+});
+
+vi.mock('@hono/node-server', () => {
+	return { serve: mockServe };
+});
+
+let mockShutdownTracing = vi.fn();
+
+vi.mock('~/lib/trace', async (importOriginal) => {
+	let actual = await importOriginal<typeof import('~/lib/trace')>();
+	return { ...actual, shutdownTracing: mockShutdownTracing };
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,11 +129,11 @@ describe('build()', () => {
 	test('global error handler logs http exceptions with trace context', async () => {
 		mockGetBook.mockResolvedValueOnce(null);
 
-		let traceHeader = '105445aa7843bc8bf206b120001000/1;o=1';
+		let traceHeader = '00-1234567890abcdef1234567890abcdef-fedcba0987654321-01';
 		let response = await app.request('/v1/books/missing', {
 			headers: {
 				origin: 'https://example.com',
-				'X-Cloud-Trace-Context': traceHeader,
+				traceparent: traceHeader,
 			},
 		});
 
@@ -147,5 +166,83 @@ describe('build()', () => {
 			code: 'BAD_REQUEST',
 			message: 'Malformed JSON in request body',
 		});
+	});
+});
+
+describe('start()', () => {
+	let processOnSpy: ReturnType<typeof vi.spyOn>;
+	let processExitSpy: ReturnType<typeof vi.spyOn>;
+	let signalHandlers: Map<string, () => Promise<void>>;
+
+	beforeEach(async () => {
+		vi.clearAllMocks();
+		signalHandlers = new Map();
+		processOnSpy = vi
+			.spyOn(process, 'on')
+			.mockImplementation((event, handler) => {
+				signalHandlers.set(event as string, handler as () => Promise<void>);
+				return process;
+			});
+		processExitSpy = vi
+			.spyOn(process, 'exit')
+			.mockImplementation(() => undefined as never);
+		vi.spyOn(console, 'log').mockImplementation(() => {});
+
+		let { start } = await import('~/index');
+		await start();
+	});
+
+	afterEach(() => {
+		vi.resetAllMocks();
+	});
+
+	test('registers SIGTERM and SIGINT handlers', () => {
+		expect(processOnSpy).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+		expect(processOnSpy).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+	});
+
+	test('flushes traces and closes the server on SIGTERM', async () => {
+		// NOTE(joel): Cloud Run sends `SIGTERM` before stopping a container
+		// instance (e.g. on scale-down or redeploy). If tracing isn't flushed
+		// here, spans buffered in the BatchSpanProcessor that haven't hit their
+		// export interval yet are silently dropped.
+		let handler = signalHandlers.get('SIGTERM');
+		expect(handler).toBeDefined();
+
+		await handler?.();
+
+		expect(mockServerClose).toHaveBeenCalledTimes(1);
+		expect(mockShutdownTracing).toHaveBeenCalledTimes(1);
+		expect(processExitSpy).toHaveBeenCalledWith(0);
+	});
+
+	test('flushes traces and closes the server on SIGINT', async () => {
+		let handler = signalHandlers.get('SIGINT');
+		expect(handler).toBeDefined();
+
+		await handler?.();
+
+		expect(mockServerClose).toHaveBeenCalledTimes(1);
+		expect(mockShutdownTracing).toHaveBeenCalledTimes(1);
+		expect(processExitSpy).toHaveBeenCalledWith(0);
+	});
+
+	test('still exits if flushing traces fails during shutdown', async () => {
+		mockShutdownTracing.mockRejectedValueOnce(new Error('export failed'));
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		let handler = signalHandlers.get('SIGTERM');
+		await handler?.();
+
+		expect(processExitSpy).toHaveBeenCalledWith(0);
+	});
+
+	test('only shuts down once for repeated signals', async () => {
+		let handler = signalHandlers.get('SIGTERM');
+
+		await handler?.();
+		await handler?.();
+
+		expect(mockShutdownTracing).toHaveBeenCalledTimes(1);
 	});
 });

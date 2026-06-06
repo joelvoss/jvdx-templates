@@ -8,8 +8,8 @@ import { secureHeaders } from 'hono/secure-headers';
 
 import { cors } from '~/lib/cors';
 import { HTTPException } from '~/lib/http-exception';
-import { logger } from '~/lib/logger';
-import { trace } from '~/lib/trace';
+import { logger, loggerMiddleware } from '~/lib/logger';
+import { shutdownTracing, traceMiddleware } from '~/lib/trace';
 import { books } from '~/routes/books';
 import type { Variables } from '~/types';
 
@@ -19,9 +19,6 @@ export function build() {
 	let app = new Hono<{ Variables: Variables }>();
 
 	// NOTE(joel): Add middlewares for all routes
-	app.use(async (_c, next) => {
-		await logger.withContext({}, next);
-	});
 	app.use(secureHeaders());
 	app.use(etag());
 	app.use(
@@ -31,21 +28,8 @@ export function build() {
 		}),
 	);
 	app.use(compress());
-	app.use(trace({ projectId: process.env.PROJECT_ID }));
-	app.use(async (c, next) => {
-		let startedAt = Date.now();
-		let method = c.req.method;
-		let path = c.req.path;
-
-		logger.info('Request started', { method, path });
-		await next();
-		logger.info('Request finished', {
-			method,
-			path,
-			status: c.res.status,
-			durationMs: Date.now() - startedAt,
-		});
-	});
+	app.use(loggerMiddleware());
+	app.use(traceMiddleware());
 
 	// NOTE(joel): Global error handler
 	app.onError((err, _c) => {
@@ -81,20 +65,40 @@ export function build() {
 /**
  * Starts the Hono app instance and listens for incoming requests.
  */
-async function start() {
+export async function start() {
 	let hostname = '0.0.0.0';
 	let port = Number(process.env.PORT || 3000);
 
 	let app = build();
 
 	try {
-		serve({
+		let server = serve({
 			fetch: app.fetch,
 			hostname,
 			port,
 		});
 
 		console.log(`Server running at ${hostname}:${port}`);
+
+		// NOTE(joel): Cloud Run sends `SIGTERM` to the container before
+		// stopping it (e.g. scale-down, redeploy). Flush any spans still
+		// buffered in the `BatchSpanProcessor` before the process exits,
+		// otherwise they are silently dropped.
+		let shuttingDown = false;
+		let onShutdownSignal = async () => {
+			if (shuttingDown) return;
+			shuttingDown = true;
+			server.close();
+			try {
+				await shutdownTracing();
+			} catch (err) {
+				console.error('Error flushing traces during shutdown', err);
+			} finally {
+				process.exit(0);
+			}
+		};
+		process.on('SIGTERM', onShutdownSignal);
+		process.on('SIGINT', onShutdownSignal);
 	} catch (err) {
 		console.error(err);
 		process.exit(1);
