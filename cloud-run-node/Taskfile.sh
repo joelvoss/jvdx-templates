@@ -1,13 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 PATH=./node_modules/.bin:$PATH
+SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
 
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
 start() {
-  setup_env "$1"
+  setup_env "$@"
 
   if [ "$1" = "prod" ]; then
     export NODE_ENV=production
@@ -23,7 +24,8 @@ start() {
     docker build --tag "${IMAGE_TAG}" .
     docker run -it --rm \
       -v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
-      -e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
+      -e "GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json" \
+      -e "OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER:-none}" \
       -p 3000:3000 \
       "${IMAGE_TAG}"
 
@@ -33,29 +35,26 @@ start() {
   fi
 }
 
-
 build() {
   echo "Building..."
+  local dist_dir
+  dist_dir="dist"
 
-  DIST_DIR=dist
-
-  rm -rf "${DIST_DIR}"
+  rm -rf "${dist_dir}"
   vite build
 
   echo "Generating package.json and lockfile for production..."
-  jq 'pick(.name, .version, .type, .dependencies)' package.json > "${DIST_DIR}/package.json"
-  (cd "${DIST_DIR}" && npm i --package-lock-only --ignore-scripts=true --omit=dev)
+  jq 'pick(.name, .version, .type, .dependencies)' package.json > "${dist_dir}/package.json"
+  (cd "${dist_dir}" && npm i --package-lock-only --ignore-scripts=true --omit=dev)
 }
 
 format() {
   echo "Running oxfmt..."
-
   oxfmt --write ./src ./tests "$@"
 }
 
 lint() {
   echo "Running oxlint..."
-  # NOTE: Use --fix to auto-fix linting errors
   oxlint ./src ./tests "$@"
 }
 
@@ -66,7 +65,7 @@ typecheck() {
 
 test() {
   if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
-    echo "Running vitest in watch mode..."
+    echo "Running vitest (watch mode)..."
     vitest
     return
   else
@@ -77,112 +76,176 @@ test() {
 
 validate() {
   typecheck
-  lint
-  test
+  lint "$@"
+  test "$@"
 }
 
-docker_smoketest() {
-  echo "Running Docker smoke test..."
+validate_otel() {
+  echo "Validating OpenTelemetry Collector configuration..."
+  setup_env docker
 
-  IMAGE="cloud-run-node-smoketest"
-  CONTAINER="cloud-run-node-smoketest"
+  local image config
+  image="us-docker.pkg.dev/cloud-ops-agents-artifacts/google-cloud-opentelemetry-collector/otelcol-google:${OTEL_COLLECTOR_VERSION}"
+  config="${SCRIPT_DIR}/config/otel-collector-config.yaml"
 
-  docker build --tag "${IMAGE}" .
-  docker run -d --rm --name "${CONTAINER}" -p 3000:3000 "${IMAGE}"
-
-  # NOTE: Wait for the container to be ready
-  echo "Waiting for the container to be ready..."
-  for i in $(seq 1 10); do
-    if curl -sf http://localhost:3000 > /dev/null 2>&1; then
-      break
-    fi
-    sleep 1
-  done
-
-  # NOTE: Run the healthcheck
-  echo "Running healthcheck..."
-  STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
-  BODY=$(curl -sf http://localhost:3000)
-
-  docker stop "${CONTAINER}" > /dev/null 2>&1
-  docker rmi "${IMAGE}" > /dev/null 2>&1
-
-  if [ "${STATUS}" = "200" ] && [ "${BODY}" = '{"message":"ok"}' ]; then
-    echo "Smoke test passed (status=${STATUS}, body=${BODY})"
-  else
-    echo "Smoke test failed (status=${STATUS}, body=${BODY})"
+  if [ ! -f "${config}" ]; then
+    echo "Collector configuration not found: ${config}"
     exit 1
   fi
+
+  if ! docker info >/dev/null 2>&1; then
+    echo "Docker daemon is required to validate the OpenTelemetry Collector configuration."
+    exit 1
+  fi
+
+  docker run --rm \
+    --volume "${config}:/etc/otelcol-google/config.yaml:ro" \
+    "${image}" \
+    validate --config=/etc/otelcol-google/config.yaml
+
+  echo "Validating OpenTelemetry Collector configuration... valid"
 }
 
-clean() {
-  rm -rf node_modules dist
+publish_images() {
+  setup_env "$@"
+
+  echo "Building application image: ${IMAGE_TAG}"
+  docker build \
+    --platform linux/amd64 \
+    --provenance=false \
+    --tag "${IMAGE_TAG}" \
+    --tag "${IMAGE_TAG%:*}:latest" \
+    .
+
+  echo "Building OTEL Collector image: ${OTEL_IMAGE_TAG}"
+  docker build \
+    --platform linux/amd64 \
+    --provenance=false \
+    --file Dockerfile.otel-collector \
+    --build-arg "OTEL_COLLECTOR_VERSION=${OTEL_COLLECTOR_VERSION}" \
+    --tag "${OTEL_IMAGE_TAG}" \
+    --tag "${OTEL_IMAGE_TAG%:*}:latest" \
+    .
+
+  gcloud --quiet auth configure-docker "${ARTIFACT_REPO_HOST}"
+  docker push "${IMAGE_TAG}"
+  docker push "${IMAGE_TAG%:*}:latest"
+  docker push "${OTEL_IMAGE_TAG}"
+  docker push "${OTEL_IMAGE_TAG%:*}:latest"
 }
 
 deploy() {
   setup_env "$@"
 
-  echo "Building Docker container..."
-  docker build --platform linux/amd64 --tag "${IMAGE_TAG}" .
-  gcloud --quiet auth configure-docker "${ARTIFACT_REPO}"
-  docker push "${IMAGE_TAG}"
+  echo "Deploying ${IMAGE_TAG}..."
 
-  echo "Deploying to Cloud Run..."
-  gcloud --quiet run deploy "${NAME}" \
-    --platform "managed" \
-    --project "${PROJECT}" \
-    --region "${REGION}" \
-    --image "${IMAGE_TAG}" \
-    --service-account "${SERVICE_ACCOUNT}" \
-    --max-instances "10" \
-    --concurrency "80" \
-    --cpu "1" \
+  base_args=(
+    run deploy "${NAME}"
+    --project "${GOOGLE_CLOUD_PROJECT}"
+    --region "${REGION}"
+    --platform "managed"
+    --service-account "${SERVICE_ACCOUNT}"
+    --min-instances "0"
+    --max-instances "10"
+    --concurrency "80"
+    --timeout "300s"
+    --cpu-throttling # Request-based billing
+    --quiet
+  )
+
+  app_container_args=(
+    --container "app"
+    --image "${IMAGE_TAG}"
+    --port "3000"
+    --cpu "1"
     --memory "512Mi"
+    --update-env-vars "NODE_ENV=production"
+    --update-env-vars "OTEL_SERVICE_NAME=${NAME}"
+    --update-env-vars "GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}"
+    --depends-on collector
+    --liveness-probe 'httpGet.path=/,httpGet.port=3000,periodSeconds=30,timeoutSeconds=30'
+    --startup-probe 'httpGet.path=/,httpGet.port=3000,periodSeconds=30,timeoutSeconds=30'
+  )
+
+  otel_container_args=(
+    --container collector
+    --image "${OTEL_IMAGE_TAG}"
+    '--args=--config=/etc/otelcol-google/config.yaml'
+    --liveness-probe 'httpGet.path=/,httpGet.port=13133,periodSeconds=30,timeoutSeconds=30'
+    --startup-probe 'httpGet.path=/,httpGet.port=13133,periodSeconds=30,timeoutSeconds=30'
+  )
+
+  gcloud \
+    "${base_args[@]}" \
+    "${app_container_args[@]}" \
+    "${otel_container_args[@]}"
 }
 
 setup_env() {
+  # shellcheck disable=SC2155
   export NAME=$(jq -r ".name" package.json)
-  export VERSION=$(jq -r ".version" package.json | tr "." "-")
+  # shellcheck disable=SC2155
+  export VERSION=$(jq -r ".version" package.json)
+  export REGION="europe-west3"
+  export OTEL_COLLECTOR_VERSION="0.160.0"
+  export OTEL_COLLECTOR_CONFIG_VERSION="1"
 
-  if [ "$1" = "prod" ]; then
-    export PROJECT="<CHANGE_ME>"
-    export REGION="europe-west3"
-    export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
-  elif [ "$1" = "dev" ] || [ "$1" = "docker" ]; then
-    export PROJECT="<CHANGE_ME>"
-    export REGION="europe-west3"
-    export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
-  else
-    echo "Unknown environment specified. Possible values: <prod|dev|docker>"
-    exit 1
-  fi
+  case "$1" in
+    prod)
+      export GOOGLE_CLOUD_PROJECT="<CHANGE-ME>"
+      export SERVICE_ACCOUNT="<CHANGE-ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
+      ;;
+    dev | docker)
+      export GOOGLE_CLOUD_PROJECT="<CHANGE-ME>"
+      export SERVICE_ACCOUNT="<CHANGE-ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
+      ;;
+    *)
+      echo "Unknown environment specified. Possible values: <prod|dev|docker>"
+      exit 1
+      ;;
+  esac
 
-  export ARTIFACT_REPO="${REGION}-docker.pkg.dev"
-  export IMAGE_TAG="${ARTIFACT_REPO}/${PROJECT}/docker/${NAME}:${VERSION}"
+  export ARTIFACT_REPO_HOST="${REGION}-docker.pkg.dev"
+  export ARTIFACT_REGISTRY_REPOSITORY="docker"
+  export IMAGE_TAG="${ARTIFACT_REPO_HOST}/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REGISTRY_REPOSITORY}/${NAME}:${VERSION}"
+  export OTEL_IMAGE_TAG="${ARTIFACT_REPO_HOST}/${GOOGLE_CLOUD_PROJECT}/${ARTIFACT_REGISTRY_REPOSITORY}/${NAME}-otel-collector:${OTEL_COLLECTOR_VERSION}-${OTEL_COLLECTOR_CONFIG_VERSION}"
 }
 
-help() {
-  echo "Usage: $0 <command>"
-  echo
-  echo "Commands:"
-  echo "  start prod        Start production server"
-  echo "  start dev         Build and start development server"
-  echo "  start docker      Build and run Docker image locally"
-  echo "  build             Build for production"
-  echo "  format            Format code"
-  echo "  typecheck         Typecheck code"
-  echo "  lint              Lint code"
-  echo "  test              Run tests"
-  echo "  validate          Validate code"
-  echo "  docker_smoketest  Build and run Docker smoke test"
-  echo "  clean             Clean temporary files/directories"
-  echo "  deploy            Deploy to Cloud Run"
-  echo "  setup_env         Setup environment variables for deployment"
-  echo "  help              Show help"
-  echo
+usage() {
+  local service_name
+  service_name=$(jq -r ".name" package.json)
+
+  cat <<EOF
+Usage: $0 <command> [options]
+
+Build and operate the ${service_name} service.
+
+Commands:
+  start <env>            Run locally: dev, prod, or docker
+  build                  Build the production bundle
+  format                 Format source and test files with oxfmt
+  typecheck              Run the TypeScript compiler without emitting files
+  lint                   Run oxlint against source and test files
+  test [options]         Run tests with Vitest
+  validate               Run typecheck, lint, and tests
+  validate_otel          Validate the baked-in OTEL Collector configuration
+  publish_images <env>   Build and push application and OTEL images
+  deploy <env>           Deploy published images to Cloud Run
+  usage                  Show this help message
+
+Test options:
+  -w, --watch            Run Vitest in watch mode
+
+Examples:
+  $0 start dev
+  $0 build
+  $0 validate
+  $0 test --watch
+  $0 deploy prod
+EOF
 }
 
 # END tasks
 # //////////////////////////////////////////////////////////////////////////////
 
-"${@:-help}"
+"${@:-usage}"

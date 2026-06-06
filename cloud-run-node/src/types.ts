@@ -5,9 +5,7 @@ declare global {
 	namespace NodeJS {
 		interface ProcessEnv {
 			PORT: string;
-			PROJECT_ID?: string;
 			GOOGLE_CLOUD_PROJECT?: string;
-			GCLOUD_PROJECT?: string;
 		}
 	}
 }

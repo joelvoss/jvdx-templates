@@ -7,3 +7,5 @@
 !vite.config.ts
 !src
 !src/**
+!config
+!config/**

@@ -1,0 +1,8 @@
+# Custom image variant for the Google-Built OpenTelemetry Collector.
+# Build from the repository root with:
+# docker build --build-arg OTEL_COLLECTOR_VERSION=0.160.0 --file Dockerfile.otel-collector --tag otel-collector:local .
+
+ARG OTEL_COLLECTOR_VERSION=0.160.0
+FROM us-docker.pkg.dev/cloud-ops-agents-artifacts/google-cloud-opentelemetry-collector/otelcol-google:${OTEL_COLLECTOR_VERSION}
+
+COPY config/otel-collector-config.yaml /etc/otelcol-google/config.yaml

@@ -1,0 +1,88 @@
+# Version: 1
+#
+# Google-Built OpenTelemetry Collector documentation:
+# https://docs.cloud.google.com/stackdriver/docs/instrumentation/google-built-otel
+# Cloud Run deployment guide:
+# https://docs.cloud.google.com/stackdriver/docs/instrumentation/opentelemetry-collector-cloud-run
+# Configuration reference and validation command:
+# https://opentelemetry.io/docs/collector/configuration/
+
+receivers:
+  # The application sends OTLP traces to the sidecar over the local container
+  # network. Only HTTP is enabled because the Node.js exporter uses OTLP/HTTP.
+  otlp:
+    protocols:
+      http:
+        endpoint: localhost:4318
+
+processors:
+  # Protect the sidecar from memory pressure during traffic spikes. The
+  # Collector drops data rather than allowing the container to be OOM-killed.
+  # This runs first in the pipeline so later processors cannot grow memory
+  # usage without a limit.
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 65
+    spike_limit_percentage: 20
+
+  # Add Google Cloud resource metadata such as project and service identity.
+  # The transform processor below depends on the attributes added here.
+  resourcedetection:
+    detectors: [gcp]
+    timeout: 10s
+
+  # Normalize equivalent resource attributes emitted by different
+  # instrumentation or resource detectors. This depends on resourcedetection
+  # having run first, but also accepts attributes supplied by the application.
+  transform/set_project_id:
+    error_mode: ignore
+    trace_statements:
+      - set(resource.attributes["gcp.project_id"], resource.attributes["gcp.project.id"]) where resource.attributes["gcp.project.id"] != nil
+      - set(resource.attributes["gcp.project_id"], resource.attributes["cloud.account.id"]) where resource.attributes["gcp.project_id"] == nil and resource.attributes["cloud.account.id"] != nil
+
+  # Group enriched, bounded trace batches to reduce export overhead while
+  # keeping delivery delay low for a request-serving Cloud Run service.
+  # This is intentionally last because it prepares spans for export.
+  batch:
+    send_batch_max_size: 200
+    send_batch_size: 200
+    timeout: 5s
+
+exporters:
+  # Send traces to Google Cloud Telemetry using the OTLP endpoint over TLS.
+  # The exporter depends on googleclientauth being enabled in service.extensions.
+  otlp:
+    endpoint: telemetry.googleapis.com:443
+    compression: none
+    balancer_name: pick_first
+    auth:
+      authenticator: googleclientauth
+
+extensions:
+  # Expose a liveness endpoint for Cloud Run health checks and local probing.
+  health_check:
+    endpoint: 0.0.0.0:13133
+  # Enables Google authentication for the OTLP exporter using the runtime
+  # service account's Application Default Credentials.
+  googleclientauth:
+
+service:
+  # Extensions must be listed here to be instantiated; defining them above is
+  # not enough to activate them.
+  extensions:
+    - health_check
+    - googleclientauth
+  pipelines:
+    # Component names here must match the definitions above. The order is
+    # intentional: protect memory, detect resources, normalize project ID,
+    # batch, and finally export to Google Cloud.
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - resourcedetection
+        - transform/set_project_id
+        - batch
+      exporters:
+        - otlp

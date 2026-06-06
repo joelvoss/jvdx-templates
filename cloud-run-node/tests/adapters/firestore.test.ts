@@ -1,3 +1,4 @@
+import { Hono } from 'hono';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -27,14 +28,16 @@ let mockCollection = vi.fn(() => {
 	};
 });
 
+let mockFirestoreConstructor = vi.fn(function () {
+	return {
+		collection: mockCollection,
+		doc: mockDoc,
+	};
+});
+
 vi.mock('@google-cloud/firestore', function () {
 	return {
-		Firestore: vi.fn(function () {
-			return {
-				collection: mockCollection,
-				doc: mockDoc,
-			};
-		}),
+		Firestore: mockFirestoreConstructor,
 	};
 });
 
@@ -57,7 +60,21 @@ describe('Firestore adapter', () => {
 	beforeEach(async () => {
 		vi.resetModules();
 		vi.resetAllMocks();
+		vi.unstubAllEnvs();
 		Firestore = (await import('~/adapters/firestore')).Firestore;
+	});
+
+	test('disables the Firestore SDK built-in OpenTelemetry auto-tracing', async () => {
+		expect(process.env.FIRESTORE_ENABLE_TRACING).toBe('OFF');
+	});
+
+	test('does not override an explicitly configured FIRESTORE_ENABLE_TRACING', async () => {
+		vi.stubEnv('FIRESTORE_ENABLE_TRACING', 'on');
+		vi.resetModules();
+
+		await import('~/adapters/firestore');
+
+		expect(process.env.FIRESTORE_ENABLE_TRACING).toBe('on');
 	});
 
 	describe('getBooks', () => {
@@ -91,6 +108,44 @@ describe('Firestore adapter', () => {
 			let result = await Firestore.getBooks();
 
 			expect(result).toEqual([]);
+		});
+
+		test('creates a child span when called inside a traced request', async () => {
+			let { traceMiddleware, tracer } = await import('~/lib/trace');
+			let app = new Hono();
+			let mockBooks = [
+				{ id: '1', title: 'Book One', author: 'Author One' },
+				{ id: '2', title: 'Book Two', author: 'Author Two' },
+			];
+			let startActiveSpan = vi.spyOn(tracer, 'startActiveSpan');
+
+			mockGet.mockResolvedValueOnce({
+				docs: mockBooks.map((book) => ({
+					id: book.id,
+					data: () => ({ title: book.title, author: book.author }),
+				})),
+			});
+
+			app.use(traceMiddleware({ projectId: 'test-project-id' }));
+			app.get('/', async () => {
+				return Response.json({ books: await Firestore.getBooks() });
+			});
+
+			let response = await app.request('/');
+
+			expect(response.status).toBe(200);
+			expect(startActiveSpan).toHaveBeenCalledWith(
+				'firestore.books.list',
+				expect.objectContaining({
+					attributes: expect.objectContaining({
+						'db.system.name': 'firestore',
+						'db.collection.name': 'books',
+						'db.operation.name': 'get',
+					}),
+				}),
+				expect.any(Function),
+			);
+			startActiveSpan.mockRestore();
 		});
 	});
 
