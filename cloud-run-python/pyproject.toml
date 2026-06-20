@@ -6,7 +6,7 @@ requires-python = ">=3.13,<4.0"
 dependencies = [
     "fastapi[standard]>=0.136.1",
     "google-cloud-firestore>=2.27.0",
-    "pydantic-settings>=2.14.0",
+    "pydantic-settings>=2.14.2",
 ]
 
 [dependency-groups]
