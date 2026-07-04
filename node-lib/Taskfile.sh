@@ -6,7 +6,7 @@ PATH=./node_modules/.bin:$PATH
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
-start_dev() {
+dev() {
   echo "Not implemented. Test package via vitest (unit tests)"
 }
 
@@ -58,7 +58,7 @@ help() {
   echo "Usage: $0 <command>"
   echo
   echo "Commands:"
-  echo "  start_dev   Start development server"
+  echo "  dev         Start development server"
   echo "  build       Build for production"
   echo "  format      Format code"
   echo "  typecheck   Typecheck code"
