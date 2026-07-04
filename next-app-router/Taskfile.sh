@@ -8,12 +8,29 @@ export NEXT_TELEMETRY_DISABLED=1
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
-start_dev() {
-	next dev
-}
-
 start() {
-	exec node standalone/server.js
+	setup_env "$1"
+
+	if [ "$1" = "prod" ]; then
+		export NODE_ENV=production
+		exec node standalone/server.js
+
+	elif [ "$1" = "dev" ]; then
+		export NODE_ENV=development
+		next dev
+
+	elif [ "$1" = "docker" ]; then
+		docker build --tag "${IMAGE_TAG}" .
+		docker run -it --rm \
+			-v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
+			-e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
+			-p 3000:3000 \
+			"${IMAGE_TAG}"
+
+	else
+		echo "Unknown environment specified. Possible values: <prod|dev|docker>"
+		exit 1
+	fi
 }
 
 format() {
@@ -112,7 +129,19 @@ setup_env() {
 	export VERSION=$(jq -r ".version" package.json | tr "." "-")
 
 	case $1 in
-		"dev")
+		"prod")
+			export PROJECT_ID="project-id"
+			export REGION="europe-west3"
+			export AR_REPO="docker"
+			export IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${NAME}:${VERSION}"
+			export CR_SERVICE_ACCOUNT="service-account@${PROJECT_ID}.iam.gserviceaccount.com"
+			export CR_MAX_INSTANCES="10"
+			export CR_CONCURRENCY="80"
+			export CR_CPU="1"
+			export CR_MEMORY="512Mi"
+			export CR_BUILD_FLAGS="--allow-unauthenticated"
+			;;
+		"dev"|"docker")
 			export PROJECT_ID="project-id"
 			export REGION="europe-west3"
 			export AR_REPO="docker"
@@ -125,7 +154,7 @@ setup_env() {
 			export CR_BUILD_FLAGS="--allow-unauthenticated"
 			;;
 		*)
-			echo "Unknown environment: $1"
+			echo "Unknown environment specified. Possible values: <prod|dev|docker>"
 			exit 1
 			;;
 	esac
@@ -133,8 +162,9 @@ setup_env() {
 
 help() {
 	echo "Available tasks:"
-	echo " ↪ start_dev     Start development server"
-	echo " ↪ start         Start production server (requires build)"
+	echo " ↪ start prod    Start production server (requires build)"
+	echo " ↪ start dev     Start development server"
+	echo " ↪ start docker  Build and run Docker image locally"
 	echo " ↪ format        Format code (Biome)"
 	echo " ↪ lint          Lint code (Biome))"
 	echo " ↪ typecheck     Typecheck code (TypeScript)"

@@ -18,7 +18,7 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: './Taskfile.sh start_dev',
+		command: './Taskfile.sh start dev',
 		url: 'http://localhost:3000',
 		reuseExistingServer: !process.env.CI,
 	},
