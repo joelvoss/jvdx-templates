@@ -13,7 +13,7 @@ vi.mock("@tanstack/react-start", async () => {
 	return {
 		...actual,
 		createServerFn: () => ({
-			inputValidator: (_validator: unknown) => ({
+			validator: (_validator: unknown) => ({
 				handler: (fn: (payload?: { data?: unknown }) => unknown) => {
 					return async (payload?: { data?: unknown } | unknown) => {
 						if (payload && typeof payload === "object" && "data" in payload) {

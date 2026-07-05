@@ -72,7 +72,7 @@ const GetMessagesSchema = v.object({
  * returns an empty object.
  */
 export const getMessagesFn = createServerFn({ method: "GET" })
-	.inputValidator(GetMessagesSchema)
+	.validator(GetMessagesSchema)
 	.handler(({ data }) => messages[data.locale as Locale] || {});
 
 ////////////////////////////////////////////////////////////////////////////////

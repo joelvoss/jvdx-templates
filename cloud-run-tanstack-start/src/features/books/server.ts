@@ -25,7 +25,7 @@ const BOOK_ISBN_INDEX_COLLECTION = "book_isbns";
  * Gets a list of books, optionally sorted by title, author, or published year.
  */
 export const getBooks = createServerFn({ method: "GET" })
-	.inputValidator(GetBooksSchema)
+	.validator(GetBooksSchema)
 	.handler(async ({ data }) => {
 		let colRef: FirebaseFirestore.Query =
 			firestore.collection(BOOKS_COLLECTION);
@@ -54,7 +54,7 @@ export const getBooks = createServerFn({ method: "GET" })
  * null.
  */
 export const getBook = createServerFn({ method: "GET" })
-	.inputValidator(GetBookSchema)
+	.validator(GetBookSchema)
 	.handler(async ({ data }) => {
 		const snap = await firestore.doc(`${BOOKS_COLLECTION}/${data.id}`).get();
 		if (!snap.exists) return null;
@@ -72,7 +72,7 @@ export const getBook = createServerFn({ method: "GET" })
  * scan.
  */
 export const createBook = createServerFn({ method: "POST" })
-	.inputValidator(CreateBookSchema)
+	.validator(CreateBookSchema)
 	.handler(async ({ data }) => {
 		const now = Date.now();
 		const book: Book = {
@@ -108,7 +108,7 @@ export const createBook = createServerFn({ method: "POST" })
  * the book does not exist, this function throws an error.
  */
 export const updateBook = createServerFn({ method: "POST" })
-	.inputValidator(UpdateBookSchema)
+	.validator(UpdateBookSchema)
 	.handler(async ({ data }) => {
 		const { id, ...updates } = data;
 		const docRef = firestore.collection(BOOKS_COLLECTION).doc(id);
@@ -153,7 +153,7 @@ export const updateBook = createServerFn({ method: "POST" })
  * nothing.
  */
 export const deleteBook = createServerFn({ method: "POST" })
-	.inputValidator(DeleteBookSchema)
+	.validator(DeleteBookSchema)
 	.handler(async ({ data }) => {
 		const docRef = firestore.doc(`${BOOKS_COLLECTION}/${data.id}`);
 

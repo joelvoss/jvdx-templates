@@ -31,6 +31,12 @@ export default defineConfig({
 		tailwindcss(),
 		tanstackStart({
 			srcDirectory: "src",
+			serverFns: {
+				// NOTE: CSRF is handled by `requestMutationGuard` in `src/start.ts`,
+				// which validates the request origin and a session-bound CSRF token
+				// (see `src/lib/auth.ts`). Disable the built-in warning accordingly.
+				disableCsrfMiddlewareWarning: true,
+			},
 		}),
 		// NOTE: React's vite plugin must come after Tanstack Start's vite plugin.
 		react(),
