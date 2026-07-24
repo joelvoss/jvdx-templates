@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "8.6.0",
-    "@hono/node-server": "2.0.8",
+    "@hono/node-server": "2.0.10",
     "hono": "4.12.27",
     "valibot": "1.4.2"
   },
