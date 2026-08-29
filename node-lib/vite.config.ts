@@ -4,7 +4,7 @@ import { dirname, parse, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { bundleDts } from "vite-plugin-bundle-dts";
-import packageJson from "./package.json";
+import packageJson from "./package.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
