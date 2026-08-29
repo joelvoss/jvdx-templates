@@ -18,6 +18,26 @@ const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Returns the session secret used for signing the anonymous session cookie. In
+ * production, this must be set via the SESSION_SECRET environment variable and
+ * be at least 32 characters long. In development, a fallback secret is used.
+ */
+function getSessionPassword() {
+	const secret = process.env.SESSION_SECRET;
+	if (process.env.NODE_ENV === "production") {
+		if (!secret || secret.length < 32) {
+			throw new Error(
+				"SESSION_SECRET must be set to at least 32 characters in production",
+			);
+		}
+		return secret;
+	}
+	return secret || SESSION_SECRET_FALLBACK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 type AppSessionData = {
 	csrfToken?: string;
 };
@@ -34,7 +54,7 @@ type AppSessionData = {
 export function useAppSession() {
 	return useSession<AppSessionData>({
 		name: SESSION_COOKIE_NAME,
-		password: process.env.SESSION_SECRET || SESSION_SECRET_FALLBACK,
+		password: getSessionPassword(),
 		maxAge: SESSION_MAX_AGE_SECONDS,
 		cookie: {
 			secure: process.env.NODE_ENV === "production",

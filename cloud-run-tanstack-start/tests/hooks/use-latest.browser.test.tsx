@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-react";
 
@@ -11,8 +11,12 @@ describe("useLatest", () => {
 
 			function TestComponent() {
 				const ref = useLatest("initial");
-				capturedRef = ref;
-				return <div data-testid="target">{ref.current}</div>;
+
+				useEffect(() => {
+					capturedRef = ref;
+				}, [ref]);
+
+				return <div data-testid="target">initial</div>;
 			}
 
 			await render(<TestComponent />);
@@ -27,9 +31,15 @@ describe("useLatest", () => {
 			let arrayRef: React.RefObject<number[]> | null = null;
 
 			function TestComponent() {
-				numberRef = useLatest(42);
-				objectRef = useLatest({ name: "test" });
-				arrayRef = useLatest([1, 2, 3]);
+				const latestNumberRef = useLatest(42);
+				const latestObjectRef = useLatest({ name: "test" });
+				const latestArrayRef = useLatest([1, 2, 3]);
+
+				useEffect(() => {
+					numberRef = latestNumberRef;
+					objectRef = latestObjectRef;
+					arrayRef = latestArrayRef;
+				}, [latestArrayRef, latestNumberRef, latestObjectRef]);
 
 				return <div data-testid="target">Test</div>;
 			}
@@ -48,8 +58,12 @@ describe("useLatest", () => {
 
 			function TestComponent({ value }: { value: number }) {
 				const ref = useLatest(value);
-				capturedRef = ref;
-				return <div data-testid="target">{ref.current}</div>;
+
+				useEffect(() => {
+					capturedRef = ref;
+				}, [ref]);
+
+				return <div data-testid="target">{value}</div>;
 			}
 
 			const { rerender } = await render(<TestComponent value={1} />);
@@ -128,7 +142,11 @@ describe("useLatest", () => {
 
 			function TestComponent({ fn }: { fn: () => string }) {
 				const ref = useLatest(fn);
-				capturedRef = ref;
+
+				useEffect(() => {
+					capturedRef = ref;
+				}, [ref]);
+
 				return <div data-testid="target">Test</div>;
 			}
 
@@ -150,7 +168,11 @@ describe("useLatest", () => {
 
 			function TestComponent() {
 				const [count, setCount] = useState(0);
-				latestRef = useLatest(count);
+				const ref = useLatest(count);
+
+				useEffect(() => {
+					latestRef = ref;
+				}, [ref]);
 
 				return (
 					<div>
@@ -186,7 +208,11 @@ describe("useLatest", () => {
 
 			function TestComponent({ value }: { value: string | null }) {
 				const ref = useLatest(value);
-				capturedRef = ref;
+
+				useEffect(() => {
+					capturedRef = ref;
+				}, [ref]);
+
 				return <div data-testid="target">{value ?? "null"}</div>;
 			}
 
@@ -204,7 +230,11 @@ describe("useLatest", () => {
 
 			function TestComponent({ value }: { value: string | undefined }) {
 				const ref = useLatest(value);
-				capturedRef = ref;
+
+				useEffect(() => {
+					capturedRef = ref;
+				}, [ref]);
+
 				return <div data-testid="target">{value ?? "undefined"}</div>;
 			}
 

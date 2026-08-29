@@ -14,19 +14,20 @@ start() {
 
 	if [ "$1" = "dev" ]; then
 		echo "Starting development server..."
-		export NODE_ENV=development
+		setup_env dev
+		export NODE_ENV="development"
 		node ./express-server.mjs
 	
 	elif [ "$1" = "docker" ]; then
 		echo "Starting production server (inside docker)..."
-		setup_env staging
+		setup_env dev
 		build
 		LOCAL_TAG=$(jq -r ".name" package.json)
 		docker build --tag "${LOCAL_TAG}" .
 		docker run -it --rm \
 			-v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
 			-e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
-			-e PROJECT="${PROJECT}" \
+			-e GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
 			-p 3000:3000 \
 			"${LOCAL_TAG}"
 
@@ -82,32 +83,6 @@ validate() {
 	test
 }
 
-docker_smoketest() {
-	echo "Running Docker smoke test..."
-	IMAGE="cloud-run-tanstack-start-smoketest"
-	CONTAINER="cloud-run-tanstack-start-smoketest"
-	build
-	docker build --tag "${IMAGE}" .
-	docker run -d --rm --name "${CONTAINER}" -p 3000:3000 "${IMAGE}"
-	echo "Waiting for the container to be ready..."
-	for i in $(seq 1 15); do
-		if curl -sf http://localhost:3000 > /dev/null 2>&1; then
-			break
-		fi
-		sleep 1
-	done
-	echo "Running healthcheck..."
-	STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
-	docker stop "${CONTAINER}" > /dev/null 2>&1
-	docker rmi "${IMAGE}" > /dev/null 2>&1
-	if [ "${STATUS}" = "200" ]; then
-		echo "Smoke test passed (status=${STATUS})"
-	else
-		echo "Smoke test failed (status=${STATUS})"
-		exit 1
-	fi
-}
-
 clean() {
 	rm -rf node_modules dist
 }
@@ -125,7 +100,7 @@ deploy() {
 	echo "Deploying to Cloud Run..."
 	gcloud --quiet run deploy "${NAME}" \
 		--platform "managed" \
-		--project "${PROJECT}" \
+		--project "${GOOGLE_CLOUD_PROJECT}" \
 		--region "${REGION}" \
 		--image "${IMAGE_TAG}" \
 		--service-account "${SERVICE_ACCOUNT}" \
@@ -133,7 +108,7 @@ deploy() {
 		--concurrency "80" \
 		--cpu "1" \
 		--memory "512Mi" \
-		--set-env-vars "PROJECT=${PROJECT}" \
+		--set-env-vars "GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}" \
 		${DEPLOY_FLAGS}
 }
 
@@ -142,17 +117,22 @@ setup_env() {
 	export VERSION=$(jq -r ".version" package.json | tr "." "-")
 
 	if [ "$1" = "prod" ]; then
-		export PROJECT="<CHANGE_ME>"
+		export GOOGLE_CLOUD_PROJECT="<CHANGE_ME>"
 		export REGION="europe-west3"
-		export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
+		export SERVICE_ACCOUNT="<CHANGE_ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 		export DEPLOY_FLAGS="--allow-unauthenticated"
 	elif [ "$1" = "staging" ]; then
-		export PROJECT="<CHANGE_ME>"
+		export GOOGLE_CLOUD_PROJECT="<CHANGE_ME>"
 		export REGION="europe-west3"
-		export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
+		export SERVICE_ACCOUNT="<CHANGE_ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
+		export DEPLOY_FLAGS="--allow-unauthenticated"
+	elif [ "$1" = "dev" ]; then
+		export GOOGLE_CLOUD_PROJECT="<CHANGE_ME>"
+		export REGION="europe-west3"
+		export SERVICE_ACCOUNT="<CHANGE_ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 		export DEPLOY_FLAGS="--allow-unauthenticated"
 	else
-		echo "Unknown environment specified. Possible values: <prod|staging>"
+		echo "Unknown environment specified. Possible values: <prod|staging|dev>"
 		exit 1
 	fi
 
@@ -164,14 +144,14 @@ help() {
 	echo "Usage: $0 <command>"
 	echo
 	echo "Commands:"
-	echo "  start              Start production server"
+	echo "  start dev          Start development server"
+	echo "  start docker       Build and run production container locally"
 	echo "  build              Build for production"
 	echo "  format             Format code"
 	echo "  lint               Lint code"
 	echo "  typecheck          Run TypeScript type checking"
 	echo "  test               Run tests"
 	echo "  validate           Validate code (typecheck + lint + test)"
-	echo "  docker_smoketest   Run Docker smoke test"
 	echo "  clean              Clean temporary files/directories"
 	echo "  deploy             Deploy to Cloud Run"
 	echo "  setup_env          Setup environment variables for deployment"

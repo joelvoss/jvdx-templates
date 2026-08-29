@@ -105,6 +105,12 @@ vi.mock("@google-cloud/firestore", () => {
 			]);
 		}
 
+		limit(count: number) {
+			const query = new Query(this._collection, this._filters, this._orders);
+			query._limit = count;
+			return query;
+		}
+
 		async get() {
 			const col = ensureCollection(this._collection);
 			let docs = Array.from(col.entries()).map(
@@ -153,8 +159,10 @@ vi.mock("@google-cloud/firestore", () => {
 				});
 			}
 
-			return new QuerySnapshot(docs);
+			return new QuerySnapshot(docs.slice(0, this._limit));
 		}
+
+		_limit = Number.POSITIVE_INFINITY;
 	}
 
 	class DocumentReference {

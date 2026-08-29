@@ -28,7 +28,7 @@ import { toMutationError, validateFormData } from "~/lib/valibot";
  */
 export const booksQueryOptions = (data: v.InferInput<typeof GetBooksSchema>) =>
 	queryOptions({
-		queryKey: ["books", data.sort],
+		queryKey: ["books", data.sort, data.limit ?? 50],
 		queryFn: () => getBooks({ data }),
 	});
 
@@ -58,20 +58,20 @@ export const createBookMutationOpts = () =>
 		{ issues: v.FlatErrors<typeof CreateBookSchema> },
 		FormData
 	>({
-		mutationFn: (payload) => {
+		mutationFn: async (payload) => {
 			const headers = getMutationHeaders();
 			const data = validateFormData(CreateBookSchema, payload, {
 				keepEmpty: false,
 			});
 
 			try {
-				return createBook({ data, headers });
+				return await createBook({ data, headers });
 			} catch (error: unknown) {
 				throw toMutationError(CreateBookSchema, error, { rootFallback: true });
 			}
 		},
 		meta: {
-			awaits: [["books"]],
+			invalidates: [["books"]],
 		},
 	});
 
@@ -88,20 +88,20 @@ export const updateBookMutationOpts = (
 		{ issues: v.FlatErrors<typeof UpdateBookSchema> },
 		FormData
 	>({
-		mutationFn: (payload) => {
+		mutationFn: async (payload) => {
 			const headers = getMutationHeaders();
 			const data = validateFormData(UpdateBookSchema, payload, {
 				keepEmpty: true,
 			});
 
 			try {
-				return updateBook({ data, headers });
+				return await updateBook({ data, headers });
 			} catch (error: unknown) {
 				throw toMutationError(UpdateBookSchema, error);
 			}
 		},
 		meta: {
-			awaits: [["books"], ["book", data.id]],
+			invalidates: [["books"], ["book", data.id]],
 		},
 	});
 
@@ -117,10 +117,15 @@ export const deleteBookMutationOpts = (
 		Awaited<ReturnType<typeof deleteBook>>,
 		{ issues: v.FlatErrors<typeof DeleteBookSchema> }
 	>({
-		mutationFn: () => deleteBook({ data, headers: getMutationHeaders() }),
+		mutationFn: async () => {
+			try {
+				return await deleteBook({ data, headers: getMutationHeaders() });
+			} catch (error: unknown) {
+				throw toMutationError(DeleteBookSchema, error, { rootFallback: true });
+			}
+		},
 		meta: {
-			awaits: [["books"]],
-			invalidates: [["book", data.id]],
+			invalidates: [["books"], ["book", data.id]],
 		},
 	});
 

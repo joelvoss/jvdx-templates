@@ -74,22 +74,13 @@ function BookListEmpty() {
 /**
  * Book list error state.
  */
-export function BookListError(props: ErrorComponentProps) {
-	const { error } = props;
+export function BookListError(_props: ErrorComponentProps) {
 	const t = useTranslations("routes.books.list");
 
 	return (
 		<div className="rounded-lg bg-white py-6 text-center shadow">
 			<p className="text-lg text-gray-500">{t("errorTitle")}</p>
 			<p className="text-sm text-gray-400">{t("errorSubtitle")}</p>
-			{error ? (
-				<p className="mt-4 text-sm text-gray-400">
-					{t("errorMessageLabel")}{" "}
-					<code className="rounded py-0.5 px-1 border border-gray-200">
-						{error.message}
-					</code>
-				</p>
-			) : null}
 		</div>
 	);
 }

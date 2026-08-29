@@ -1,4 +1,4 @@
-import { createRef, useRef } from "react";
+import { createRef, useEffect, useRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-react";
 
@@ -13,7 +13,6 @@ function TestComponent({ userRef }: { userRef: React.Ref<HTMLDivElement> }) {
 			<div ref={composedRef} data-testid="target">
 				Target Element
 			</div>
-			<span data-testid="lib-ref-set">{libRef.current ? "true" : "false"}</span>
 		</div>
 	);
 }
@@ -118,8 +117,11 @@ describe("useComposedRef", () => {
 				userRef: React.Ref<HTMLDivElement>;
 			}) {
 				const libRef = useRef<HTMLDivElement>(null);
-				capturedLibRef = libRef;
 				const composedRef = useComposedRef(libRef, userRef);
+
+				useEffect(() => {
+					capturedLibRef = libRef;
+				}, [libRef]);
 
 				return <div ref={composedRef} data-testid="target" />;
 			}

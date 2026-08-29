@@ -15,9 +15,7 @@ interface ErrorComponentProps<TError = Error> {
  * We don't include the default layout components here because this component
  * is rendered within the normal route tree.
  */
-export function ErrorComponent(props: ErrorComponentProps) {
-	const { error } = props;
-
+export function ErrorComponent(_props: ErrorComponentProps) {
 	const t = useTranslations("shared.error");
 
 	const isRoot = useMatch({
@@ -32,7 +30,7 @@ export function ErrorComponent(props: ErrorComponentProps) {
 				<h2 className="mb-4 text-2xl font-semibold text-gray-700">
 					{t("title")}
 				</h2>
-				<p className="mb-8 text-gray-600">{error.message || t("message")}</p>
+				<p className="mb-8 text-gray-600">{t("message")}</p>
 				{isRoot ? (
 					<Link
 						to="/{-$locale}"

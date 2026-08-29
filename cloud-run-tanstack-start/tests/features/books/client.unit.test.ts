@@ -15,27 +15,28 @@ describe("features/books/client", () => {
 		expect(booksQueryOptions({ sort: undefined }).queryKey).toEqual([
 			"books",
 			undefined,
+			50,
 		]);
 		expect(booksQueryOptions({ sort: "title" }).queryKey).toEqual([
 			"books",
 			"title",
+			50,
 		]);
 		expect(bookQueryOptions({ id: "123" }).queryKey).toEqual(["book", "123"]);
 	});
 
-	it("wires mutation meta await keys", () => {
+	it("wires mutation invalidation keys", () => {
 		const createOpts = createBookMutationOpts();
-		expect(createOpts.meta).toEqual({ awaits: [["books"]] });
+		expect(createOpts.meta).toEqual({ invalidates: [["books"]] });
 
 		const updateOpts = updateBookMutationOpts({ id: "1" });
 		expect(updateOpts.meta).toEqual({
-			awaits: [["books"], ["book", "1"]],
+			invalidates: [["books"], ["book", "1"]],
 		});
 
 		const deleteOpts = deleteBookMutationOpts({ id: "1" });
 		expect(deleteOpts.meta).toEqual({
-			awaits: [["books"]],
-			invalidates: [["book", "1"]],
+			invalidates: [["books"], ["book", "1"]],
 		});
 	});
 

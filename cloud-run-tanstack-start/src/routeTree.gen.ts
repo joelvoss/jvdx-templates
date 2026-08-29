@@ -13,8 +13,8 @@ import { Route as Char123LocaleChar125RouteRouteImport } from './routes/{-$local
 import { Route as Char123LocaleChar125IndexRouteImport } from './routes/{-$locale}/index'
 import { Route as Char123LocaleChar125BooksIndexRouteImport } from './routes/{-$locale}/books/index'
 import { Route as Char123LocaleChar125BooksIdRouteRouteImport } from './routes/{-$locale}/books/$id/route'
-import { Route as Char123LocaleChar125BooksNewIndexRouteImport } from './routes/{-$locale}/books/new/index'
 import { Route as Char123LocaleChar125BooksIdIndexRouteImport } from './routes/{-$locale}/books/$id/index'
+import { Route as Char123LocaleChar125BooksNewIndexRouteImport } from './routes/{-$locale}/books/new/index'
 import { Route as Char123LocaleChar125BooksIdEditIndexRouteImport } from './routes/{-$locale}/books/$id/edit/index'
 
 const Char123LocaleChar125RouteRoute =
@@ -41,17 +41,17 @@ const Char123LocaleChar125BooksIdRouteRoute =
     path: '/books/$id',
     getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
-const Char123LocaleChar125BooksNewIndexRoute =
-  Char123LocaleChar125BooksNewIndexRouteImport.update({
-    id: '/books/new/',
-    path: '/books/new/',
-    getParentRoute: () => Char123LocaleChar125RouteRoute,
-  } as any)
 const Char123LocaleChar125BooksIdIndexRoute =
   Char123LocaleChar125BooksIdIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => Char123LocaleChar125BooksIdRouteRoute,
+  } as any)
+const Char123LocaleChar125BooksNewIndexRoute =
+  Char123LocaleChar125BooksNewIndexRouteImport.update({
+    id: '/books/new/',
+    path: '/books/new/',
+    getParentRoute: () => Char123LocaleChar125RouteRoute,
   } as any)
 const Char123LocaleChar125BooksIdEditIndexRoute =
   Char123LocaleChar125BooksIdEditIndexRouteImport.update({
@@ -148,19 +148,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125BooksIdRouteRouteImport
       parentRoute: typeof Char123LocaleChar125RouteRoute
     }
-    '/{-$locale}/books/new/': {
-      id: '/{-$locale}/books/new/'
-      path: '/books/new'
-      fullPath: '/{-$locale}/books/new/'
-      preLoaderRoute: typeof Char123LocaleChar125BooksNewIndexRouteImport
-      parentRoute: typeof Char123LocaleChar125RouteRoute
-    }
     '/{-$locale}/books/$id/': {
       id: '/{-$locale}/books/$id/'
       path: '/'
       fullPath: '/{-$locale}/books/$id/'
       preLoaderRoute: typeof Char123LocaleChar125BooksIdIndexRouteImport
       parentRoute: typeof Char123LocaleChar125BooksIdRouteRoute
+    }
+    '/{-$locale}/books/new/': {
+      id: '/{-$locale}/books/new/'
+      path: '/books/new'
+      fullPath: '/{-$locale}/books/new/'
+      preLoaderRoute: typeof Char123LocaleChar125BooksNewIndexRouteImport
+      parentRoute: typeof Char123LocaleChar125RouteRoute
     }
     '/{-$locale}/books/$id/edit/': {
       id: '/{-$locale}/books/$id/edit/'

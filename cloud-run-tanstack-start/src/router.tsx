@@ -1,7 +1,5 @@
 import {
-	matchQuery,
 	MutationCache,
-	type Query,
 	QueryClient,
 	type QueryKey,
 } from "@tanstack/react-query";
@@ -34,38 +32,26 @@ import { NotFoundComponent } from "~/shared/not-found";
  */
 export async function getRouter() {
 	// NOTE(joel): Setup a shared QueryClient instance for the router context.
-	const queryClient = new QueryClient({
+	const queryClient: QueryClient = new QueryClient({
 		defaultOptions: {
 			queries: {
 				refetchOnWindowFocus: false,
 			},
 		},
 		mutationCache: new MutationCache({
-			onSuccess: (_data, _variables, _context, mutation) => {
-				// NOTE(joel): Invalidate all matching tags at once or everything if no
-				// meta is provided.
-				void queryClient.invalidateQueries({
-					predicate: (query: Query) =>
-						mutation.meta?.invalidates?.some((queryKey) =>
-							matchQuery({ queryKey }, query),
-						) ?? true,
-					refetchType: "all",
-				});
-
-				// NOTE(joel): Await all matching tags at once.
-				if (mutation.meta?.awaits && mutation.meta.awaits.length > 0) {
-					let promises: Promise<void>[] = [];
-					for (let queryKey of mutation.meta.awaits) {
-						promises.push(
-							queryClient.invalidateQueries(
-								{ queryKey, refetchType: "all" },
-								{ cancelRefetch: false },
-							),
-						);
-					}
-					return Promise.all(promises);
-				}
-			},
+			// NOTE(joel): Mutations declare the query keys they affect so every
+			// caller gets consistent refetching after the server has committed the
+			// change. The returned Promise also waits for those invalidations to
+			// finish.
+			onSuccess: (_data, _variables, _context, mutation) =>
+				Promise.all(
+					(mutation.meta?.invalidates ?? []).map((queryKey) =>
+						queryClient.invalidateQueries(
+							{ queryKey, refetchType: "all" },
+							{ cancelRefetch: false },
+						),
+					),
+				),
 		}),
 	});
 
@@ -179,7 +165,6 @@ declare module "@tanstack/react-query" {
 	interface Register {
 		mutationMeta: {
 			invalidates?: Array<QueryKey>;
-			awaits?: Array<QueryKey>;
 		};
 	}
 }
