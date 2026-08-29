@@ -33,22 +33,31 @@
 	},
 	"books": {
 		"title": "Books | template-next-app",
+		"eyebrow": "Library",
 		"heading": "Book List",
 		"add-book": "Add book",
+		"mutations": {
+			"saved": "Saved",
+			"saving": "Saving..."
+		},
 		"table": {
 			"header": {
 				"title": "Title",
 				"author": "Author",
-				"year": "Year"
+				"year": "Year",
+				"actions": "Actions"
 			},
 			"actions": {
 				"edit": "Edit",
-				"delete": "Delete"
+				"delete": "Delete",
+				"deleting": "Deleting..."
 			},
 			"empty": "No books found"
 		},
 		"errors": {
-			"delete": "Error deleting book"
+			"create": "Error creating book",
+			"delete": "Error deleting book",
+			"update": "Error updating book"
 		},
 		"dialog": {
 			"edit-title": "Edit Book",

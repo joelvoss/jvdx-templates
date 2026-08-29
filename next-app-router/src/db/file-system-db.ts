@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 class FileSystemDBClient {
 	private dbPath = resolve('.', 'tmp');
 	private dbFile = resolve(this.dbPath, 'file-system-db.json');
+	private mutationQueue = Promise.resolve();
 
 	private _init() {
 		if (!fs.existsSync(this.dbPath)) {
@@ -43,11 +44,18 @@ class FileSystemDBClient {
 		return this._readDB();
 	}
 
-	async updateItems(data: any) {
-		const currentData = await this._readDB();
-		const updatedData = { ...currentData, ...data };
-		await this._writeDB(updatedData);
-		return this.getItems();
+	async updateItems<T>(mutation: (data: any) => T | Promise<T>): Promise<T> {
+		const result = this.mutationQueue.then(async () => {
+			const currentData = await this._readDB();
+			const updatedData = await mutation(currentData);
+			await this._writeDB(updatedData);
+			return updatedData as T;
+		});
+		this.mutationQueue = result.then(
+			() => undefined,
+			() => undefined,
+		);
+		return result;
 	}
 }
 
