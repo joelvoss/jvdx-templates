@@ -41,6 +41,21 @@ describe('createLogger', () => {
 		]);
 	});
 
+	test('serializes Error context with diagnostic details', () => {
+		let consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+		let logger = createLogger();
+		let error = new Error('Task failed');
+
+		logger.error('Job failed', { error });
+
+		let entry = JSON.parse(consoleSpy.mock.calls[0][0]);
+		expect(entry.error).toEqual({
+			name: 'Error',
+			message: 'Task failed',
+			stack: error.stack,
+		});
+	});
+
 	test('adds persistent context to later log entries', () => {
 		let consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 		let logger = createLogger();

@@ -5,12 +5,14 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 let mockCollection = vi.fn();
 let mockGet = vi.fn();
+let mockTerminate = vi.fn();
 let mockInfo = vi.fn();
 
 vi.mock('@google-cloud/firestore', () => ({
 	Firestore: vi.fn(function () {
 		return {
 			collection: mockCollection,
+			terminate: mockTerminate,
 		};
 	}),
 }));
@@ -32,6 +34,7 @@ describe('Firestore adapter', () => {
 		vi.clearAllMocks();
 
 		mockCollection.mockReturnValue({ get: mockGet });
+		mockTerminate.mockResolvedValue(undefined);
 		Firestore = (await import('../../src/adapters/firestore')).Firestore;
 	});
 
@@ -82,6 +85,12 @@ describe('Firestore adapter', () => {
 			mockGet.mockRejectedValue(error);
 
 			await expect(Firestore.listBooks()).rejects.toThrow(error);
+		});
+
+		test('closes the Firestore client', async () => {
+			await Firestore.close();
+
+			expect(mockTerminate).toHaveBeenCalledTimes(1);
 		});
 	});
 });

@@ -28,8 +28,16 @@ async function listBooks() {
 	return books as Book[];
 }
 
+/**
+ * Close the Firestore client connection.
+ */
+async function close() {
+	await client.terminate();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export let Firestore = {
 	listBooks,
+	close,
 };

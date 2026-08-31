@@ -14,11 +14,45 @@ interface LogContext {
 	[key: string]: unknown;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Serialize an Error object into a plain object for logging purposes.
+ */
+function serializeError(error: Error) {
+	return {
+		name: error.name,
+		message: error.message,
+		stack: error.stack,
+	};
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Serialize the log context, converting any Error objects into plain objects.
+ */
+function serializeContext(context: LogContext) {
+	return Object.fromEntries(
+		Object.entries(context).map(([key, value]) => {
+			return [key, value instanceof Error ? serializeError(value) : value];
+		}),
+	);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Create a logger that supports structured logging with context.
+ */
 export function createLogger() {
 	const asyncLocalStorage = new AsyncLocalStorage<LogContext>();
 
 	function log(severity: string, message: string, context: LogContext = {}) {
-		const metadata = { ...asyncLocalStorage.getStore(), ...context };
+		const metadata = serializeContext({
+			...asyncLocalStorage.getStore(),
+			...context,
+		});
 		console.log(JSON.stringify({ ...metadata, severity, message }));
 	}
 
