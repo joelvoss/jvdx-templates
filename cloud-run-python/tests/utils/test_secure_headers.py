@@ -104,7 +104,7 @@ async def test_cross_origin_policies_isolate_the_origin(client):
 # Non-HTTP scopes pass through unmodified
 
 
-async def test_non_http_scope_is_forwarded_without_header_injection():
+async def test_non_http_scope_is_forwarded_without_header_injection() -> None:
     """
     WebSocket and lifespan scopes must not be intercepted by the middleware.
     """

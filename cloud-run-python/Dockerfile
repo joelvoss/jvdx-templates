@@ -8,7 +8,7 @@ WORKDIR /app/
 
 # Install uv.
 # @see https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.7 /uv /uvx /bin/
 
 # Compile bytecode.
 # @see https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode

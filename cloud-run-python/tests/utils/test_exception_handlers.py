@@ -42,7 +42,7 @@ def make_validation_exc(*field_errors: dict) -> RequestValidationError:
 # handle_validation_exception
 
 
-async def test_handle_validation_exception_returns_400():
+async def test_handle_validation_exception_returns_400() -> None:
     class M(BaseModel):
         x: int
 

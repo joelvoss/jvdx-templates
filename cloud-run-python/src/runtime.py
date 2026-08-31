@@ -1,7 +1,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -34,12 +34,12 @@ def create_runtime(runtime_settings: Settings | None = None) -> FastAPI:
     active_settings = runtime_settings or settings
 
     @asynccontextmanager
-    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        firestore.init_client()
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        app.state.firestore_client = firestore.init_client()
         try:
             yield
         finally:
-            firestore.close_client()
+            await firestore.close_client(app.state.firestore_client)
 
     app = FastAPI(
         title=active_settings.NAME,
@@ -65,8 +65,9 @@ def create_runtime(runtime_settings: Settings | None = None) -> FastAPI:
         allow_headers=["*"],
     )
 
-    @app.get("/", tags=["health"])
-    async def health() -> JSONResponse:
+    @app.get("/", tags=["health"], status_code=200)
+    async def health(request: Request) -> JSONResponse:
+        await firestore.check_connection(request.app.state.firestore_client)
         return JSONResponse({"message": "ok"}, status_code=200)
 
     router = APIRouter()

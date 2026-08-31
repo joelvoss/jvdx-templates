@@ -1,8 +1,5 @@
 #!/usr/bin/env uv run
-"""
-Script to update dependencies in pyproject.toml based on uv tree --outdated output.
-Usage: ./update_dependencies.py
-"""
+"""Update direct dependency declarations and regenerate the uv lock file."""
 
 import re
 import subprocess
@@ -10,11 +7,12 @@ import sys
 from pathlib import Path
 
 
-def run_uv_outdated() -> str:
+def run_uv_outdated(project_dir: Path) -> str:
     """Run uv tree --outdated -d1 and return the output."""
     try:
         result = subprocess.run(
             ["uv", "tree", "--outdated", "-d1"],
+            cwd=project_dir,
             capture_output=True,
             text=True,
             check=True,
@@ -118,16 +116,16 @@ def write_pyproject_toml(file_path: Path, content: str) -> None:
         sys.exit(1)
 
 
-def main():
+def main() -> None:
     """Main function to orchestrate the dependency update process."""
     print("🔍 Checking for outdated dependencies...")
 
     # Get the current directory and pyproject.toml path
-    current_dir = Path.cwd()
+    current_dir = Path(__file__).resolve().parents[1]
     pyproject_path = current_dir / "pyproject.toml"
 
     # Run uv tree --outdated to get the list of outdated packages
-    outdated_output = run_uv_outdated()
+    outdated_output = run_uv_outdated(current_dir)
 
     # Parse the output to extract package names and latest versions
     outdated_packages = parse_outdated_output(outdated_output)
@@ -162,17 +160,15 @@ def main():
 
     print("\n📝 Updated pyproject.toml saved!")
 
-    # Delete and recreate the lock file to ensure transitive dependencies are
-    # compatible
-    lock_path = current_dir / "uv.lock"
-    if lock_path.exists():
-        print("�️  Removing existing lock file...")
-        lock_path.unlink()
-
-    print("🔄 Recreating lock file from scratch...")
+    print("Recreating lock file...")
     try:
-        subprocess.run(["uv", "lock"], capture_output=True, text=True, check=True)
-        print("✅ Lock file recreated successfully!")
+        subprocess.run(
+            ["uv", "lock", "--project", str(current_dir)],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        print("Lock file recreated successfully!")
     except subprocess.CalledProcessError as e:
         print(f"❌ Error recreating lock file: {e}")
         print(f"Output: {e.stdout}")

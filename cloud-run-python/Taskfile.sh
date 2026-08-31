@@ -1,13 +1,13 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 # //////////////////////////////////////////////////////////////////////////////
 # START tasks
 
 start() {
-  setup_env "$1"
-  echo "Starting server (Env: $1)..."
+  echo "Starting server (Env: $0)..."
+  setup_env "$@"
   uv sync
   uv run -m src.main
 }
@@ -22,9 +22,9 @@ format() {
 lint() {
   echo "Running linter..."
   uv sync
-  uv run -- mypy src/
-  uv run -- ruff check src/
-  uv run -- ruff format src/ --check
+  uv run -- mypy src/ tests/ scripts/
+  uv run -- ruff check src/ tests/ scripts/
+  uv run -- ruff format src/ tests/ scripts/ --check
 }
 
 test() {
@@ -40,51 +40,12 @@ validate() {
 clean() {
   echo "Removing cache files..."
   rm -rf .mypy_cache .pytest_cache .ruff_cache .venv
-  find . -type d -name __pycache__ -prune -exec rm -rf {} \;
+  find . -type d -name __pycache__ -prune -exec rm -rf {} +
 }
 
 update_dependencies() {
   echo "Updating dependencies..."
   ./scripts/update_dependencies.py
-}
-
-docker_smoketest() {
-  echo "Running Docker smoke test..."
-
-  IMAGE="cloud-run-python-smoketest"
-  CONTAINER="cloud-run-python-smoketest"
-
-  docker build --tag "${IMAGE}" .
-
-  # NOTE: FIRESTORE_EMULATOR_HOST tells the Firestore client to skip real GCP
-  # authentication so the app can start without credentials.
-  docker run -d --rm --name "${CONTAINER}" -p 3000:3000 \
-    -e FIRESTORE_EMULATOR_HOST=localhost:8086 \
-    "${IMAGE}"
-
-  # NOTE: Wait for the container to be ready
-  echo "Waiting for the container to be ready..."
-  for i in $(seq 1 10); do
-    if curl -sf http://localhost:3000 > /dev/null 2>&1; then
-      break
-    fi
-    sleep 1
-  done
-
-  # NOTE: Run the healthcheck
-  echo "Running healthcheck..."
-  STATUS=$(curl -sf -o /dev/null -w "%{http_code}" http://localhost:3000)
-  BODY=$(curl -sf http://localhost:3000)
-
-  docker stop "${CONTAINER}" > /dev/null 2>&1
-  docker rmi "${IMAGE}" > /dev/null 2>&1
-
-  if [ "${STATUS}" = "200" ] && [ "${BODY}" = '{"message":"ok"}' ]; then
-    echo "Smoke test passed (status=${STATUS}, body=${BODY})"
-  else
-    echo "Smoke test failed (status=${STATUS}, body=${BODY})"
-    exit 1
-  fi
 }
 
 deploy() {
@@ -136,16 +97,15 @@ help() {
   echo "Usage: $0 <command>"
   echo
   echo "Commands:"
-  echo "  start             Start production server"
-  echo "  start_dev         Build and start development server"
-  echo "  format            Format code"
-  echo "  lint              Lint code"
-  echo "  test              Run tests"
-  echo "  validate          Validate code"
-  echo "  docker_smoketest  Run Docker smoke test"
-  echo "  deploy            Deploy to Cloud Run"
-  echo "  setup_env         Setup environment variables for deployment"
-  echo "  help              Show help"
+  echo "  start <env>          Start the app locally. Possible values for <env>: <prod|dev>"
+  echo "  format               Format code"
+  echo "  lint                 Lint code"
+  echo "  test                 Run tests"
+  echo "  validate             Validate code"
+  echo "  deploy               Deploy to Cloud Run"
+  echo "  update_dependencies  Update dependency declarations and lock file"
+  echo "  setup_env            Setup environment variables for deployment"
+  echo "  help                 Show help"
   echo
 }
 

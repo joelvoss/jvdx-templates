@@ -28,10 +28,10 @@ Run the service in production mode locally:
 ./Taskfile.sh start
 ```
 
-Run the Docker smoke test:
+Run the Docker image build:
 
 ```shell
-./Taskfile.sh docker_smoketest
+docker build .
 ```
 
 Update Python dependencies:

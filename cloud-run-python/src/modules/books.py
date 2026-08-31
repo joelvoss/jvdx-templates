@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from src.adapter import firestore
 
@@ -35,16 +35,22 @@ class BookList(BaseModel):
     total: int
 
 
-async def list_books() -> BookList:
+async def list_books(
+    client: firestore.FirestoreClient,
+    limit: int = 50,
+    page_token: str | None = None,
+) -> BookList:
     """
     List all books in the database.
 
     Returns:
         BookList: A list of books and the total count.
     """
-    client = firestore.get_client()
     books: list[Book] = []
-    async for doc in client.collection("books").stream():
+    query = client.collection("books").order_by("__name__").limit(limit)
+    if page_token:
+        query = query.start_after({"__name__": page_token})
+    async for doc in query.stream():
         data = doc.to_dict() or {}
         books.append(
             Book(
@@ -59,7 +65,7 @@ async def list_books() -> BookList:
 # //////////////////////////////////////////////////////////////////////////////
 
 
-async def get_book(book_id: str) -> Book:
+async def get_book(client: firestore.FirestoreClient, book_id: str) -> Book:
     """
     Retrieve a book by its ID.
 
@@ -70,7 +76,6 @@ async def get_book(book_id: str) -> Book:
     Raises:
         BookNotFound: If no book with the given ID exists.
     """
-    client = firestore.get_client()
     doc = await client.collection("books").document(book_id).get()
     if not doc.exists:
         raise BookNotFound(book_id)
@@ -86,11 +91,11 @@ async def get_book(book_id: str) -> Book:
 
 
 class CreateBook(BaseModel):
-    title: str | None = None
-    author: str | None = None
+    title: str = Field(min_length=1, max_length=200)
+    author: str = Field(min_length=1, max_length=200)
 
 
-async def create_book(payload: CreateBook) -> Book:
+async def create_book(client: firestore.FirestoreClient, payload: CreateBook) -> Book:
     """
     Create a new book record in the database.
 
@@ -99,12 +104,11 @@ async def create_book(payload: CreateBook) -> Book:
     Returns:
         Book: The created book with its assigned ID.
     """
-    client = firestore.get_client()
     book_id = str(uuid.uuid4())
     book = Book(
         id=book_id,
-        title=payload.title or f"Title {book_id}",
-        author=payload.author or f"Author {book_id}",
+        title=payload.title.strip(),
+        author=payload.author.strip(),
     )
     await client.document("books", book.id).set(book.model_dump())
     return book
@@ -114,11 +118,19 @@ async def create_book(payload: CreateBook) -> Book:
 
 
 class UpdateBook(BaseModel):
-    title: str | None = None
-    author: str | None = None
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    author: str | None = Field(default=None, min_length=1, max_length=200)
+
+    @model_validator(mode="after")
+    def require_update(self) -> "UpdateBook":
+        if self.title is None and self.author is None:
+            raise ValueError("At least one book field must be provided")
+        return self
 
 
-async def update_book(book_id: str, payload: UpdateBook) -> Book:
+async def update_book(
+    client: firestore.FirestoreClient, book_id: str, payload: UpdateBook
+) -> Book:
     """
     Update an existing book record in the database. Every invocation fetches at
     least the current book data to ensure the returned book reflects the latest
@@ -130,7 +142,6 @@ async def update_book(book_id: str, payload: UpdateBook) -> Book:
     Returns:
         Book: The updated book.
     """
-    client = firestore.get_client()
     doc_ref = client.document("books", book_id)
     doc = await doc_ref.get()
     if not doc.exists:
@@ -138,6 +149,7 @@ async def update_book(book_id: str, payload: UpdateBook) -> Book:
 
     current = doc.to_dict() or {}
     updates = payload.model_dump(exclude_unset=True, exclude_none=True)
+    updates = {key: value.strip() for key, value in updates.items()}
     if updates:
         await doc_ref.update(updates)
 
@@ -151,7 +163,7 @@ async def update_book(book_id: str, payload: UpdateBook) -> Book:
 # //////////////////////////////////////////////////////////////////////////////
 
 
-async def delete_book(book_id: str) -> None:
+async def delete_book(client: firestore.FirestoreClient, book_id: str) -> None:
     """
     Delete a book record from the database. If the book does not exist, this
     function will succeed without error.
@@ -159,5 +171,4 @@ async def delete_book(book_id: str) -> None:
     Args:
         id (str): The ID of the book to delete.
     """
-    client = firestore.get_client()
     await client.document("books", book_id).delete()

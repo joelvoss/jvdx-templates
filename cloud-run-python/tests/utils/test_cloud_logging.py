@@ -202,7 +202,7 @@ def test_parse_xcloud_trace_span_id_non_numeric_is_excluded(middleware):
 # CloudLoggingMiddleware.dispatch
 
 
-async def test_dispatch_sets_trace_context_from_traceparent():
+async def test_dispatch_sets_trace_context_from_traceparent() -> None:
     """Middleware propagates W3C traceparent to the trace_context ContextVar."""
     captured: dict = {}
 
