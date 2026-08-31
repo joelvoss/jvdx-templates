@@ -1,7 +1,7 @@
 import { useRouterState } from "@tanstack/react-router";
 
 import { clsx } from "~/lib/clsx";
-import { getCurrentLocale, shouldIgnorePath } from "~/lib/i18n";
+import { getCurrentLocale, shouldIgnorePath, type Locale } from "~/lib/i18n";
 import { useTranslations } from "~/shared/i18n";
 import { defaultLocale, supportedLocales } from "~/translations";
 
@@ -17,8 +17,11 @@ export function LanguageSwitcher() {
 	const { locale } = getCurrentLocale();
 	const location = useRouterState({ select: (s) => s.location });
 
-	const pathname = location.publicHref || "/";
-	const basePathname = stripAnyLocalePrefix(pathname);
+	// NOTE(joel): Use a fixed base because only pathname, search, and hash are
+	// returned to the anchor. This keeps URL construction safe during server
+	// rendering.
+	const currentUrl = new URL(location.publicHref || "/", "http://localhost");
+	const basePathname = stripAnyLocalePrefix(currentUrl.pathname);
 
 	// NOTE(joel): If we are on an ignored path (e.g. /api), don't try to
 	// localize it. This component normally won't render there, but keep it safe.
@@ -26,10 +29,10 @@ export function LanguageSwitcher() {
 		return null;
 	}
 
-	const hrefs = [
-		{ locale: "en", pathname: addLocalePrefix(basePathname, "en") },
-		{ locale: "de", pathname: addLocalePrefix(basePathname, "de") },
-	];
+	const hrefs = supportedLocales.map((targetLocale) => ({
+		locale: targetLocale,
+		href: addLocalePrefix(basePathname, targetLocale, currentUrl),
+	}));
 
 	return (
 		<div
@@ -40,7 +43,7 @@ export function LanguageSwitcher() {
 			{hrefs.map((href) => (
 				<a
 					key={href.locale}
-					href={href.pathname}
+					href={href.href}
 					aria-current={href.locale === locale ? "page" : undefined}
 					className={clsx(
 						"rounded-sm px-2 py-1 text-xs font-medium transition-colors",
@@ -62,7 +65,7 @@ export function LanguageSwitcher() {
  * Checks if the given pathname has the specified locale prefix.
  */
 function hasLocalePrefix(pathname: string, locale: string) {
-	return pathname === `/${locale}` || pathname.startsWith(`/${locale}`);
+	return pathname === `/${locale}` || pathname.startsWith(`/${locale}/`);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,10 +88,14 @@ function stripAnyLocalePrefix(pathname: string) {
 /**
  * Adds locale prefix to the pathname if not already present.
  */
-function addLocalePrefix(pathname: string, locale: string) {
-	if (locale === defaultLocale) return pathname;
-	if (hasLocalePrefix(pathname, locale)) return pathname;
-
-	if (pathname === "/") return `/${locale}`;
-	return `/${locale}${pathname}`;
+function addLocalePrefix(pathname: string, locale: Locale, currentUrl: URL) {
+	const localizedPath =
+		locale === defaultLocale
+			? pathname
+			: pathname === "/"
+				? `/${locale}`
+				: `/${locale}${pathname}`;
+	const url = new URL(currentUrl);
+	url.pathname = localizedPath;
+	return url.pathname + url.search + url.hash;
 }

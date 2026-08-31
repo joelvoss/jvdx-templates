@@ -87,7 +87,7 @@ async def handle_general_exception(_: Request, exc: Exception) -> JSONResponse:
     Returns:
         Response: Response with code and message.
     """
-    logger.error("Handled server error: %s", exc)
+    logger.exception("Handled server error", exc_info=exc)
     return JSONResponse(
         content={"code": 500, "message": "Internal Server Error"},
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

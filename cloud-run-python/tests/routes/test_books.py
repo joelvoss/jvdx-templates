@@ -82,21 +82,15 @@ async def test_create_book_returns_created_book(async_client):
         response = await async_client.post(
             "/v1/books", json={"title": "New Book", "author": "New Author"}
         )
-    assert response.status_code == 200
+    assert response.status_code == 201
     body = response.json()
     assert body["id"] == "new-id"
     assert body["title"] == "New Book"
 
 
 async def test_create_book_with_empty_body_uses_defaults(async_client):
-    default_book = Book(id="gen-id", title="Title gen-id", author="Author gen-id")
-    with patch(
-        "src.modules.books.create_book",
-        new=AsyncMock(return_value=default_book),
-    ):
-        response = await async_client.post("/v1/books", json={})
-    assert response.status_code == 200
-    assert response.json()["id"] == "gen-id"
+    response = await async_client.post("/v1/books", json={})
+    assert response.status_code == 400
 
 
 # //////////////////////////////////////////////////////////////////////////////
@@ -153,6 +147,11 @@ async def test_update_book_returns_404_when_not_found(async_client):
     assert "gone" in body["message"]
 
 
+async def test_update_book_rejects_empty_body(async_client):
+    response = await async_client.patch("/v1/books/abc", json={})
+    assert response.status_code == 400
+
+
 # //////////////////////////////////////////////////////////////////////////////
 # DELETE /v1/books/{id}
 
@@ -163,7 +162,7 @@ async def test_delete_book_returns_200(async_client):
         new=AsyncMock(return_value=None),
     ):
         response = await async_client.delete("/v1/books/abc")
-    assert response.status_code == 200
+    assert response.status_code == 204
 
 
 # //////////////////////////////////////////////////////////////////////////////

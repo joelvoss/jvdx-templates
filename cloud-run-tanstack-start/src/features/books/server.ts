@@ -42,9 +42,12 @@ export const getBooks = createServerFn({ method: "GET" })
 					break;
 			}
 		}
+		colRef = colRef.limit(data?.limit ?? 50);
 
 		const snap = await colRef.get();
-		return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Book);
+		return snap.docs.map((doc) =>
+			v.parse(BookSchema, { id: doc.id, ...doc.data() }),
+		);
 	});
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +61,7 @@ export const getBook = createServerFn({ method: "GET" })
 	.handler(async ({ data }) => {
 		const snap = await firestore.doc(`${BOOKS_COLLECTION}/${data.id}`).get();
 		if (!snap.exists) return null;
-		return { id: snap.id, ...snap.data() } as Book;
+		return v.parse(BookSchema, { id: snap.id, ...snap.data() });
 	});
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,13 +133,17 @@ export const updateBook = createServerFn({ method: "POST" })
 			const nextIsbnKey = normalizeISBN(book.isbn);
 
 			if (currentIsbnKey !== nextIsbnKey) {
+				const currentIsbnRef = getBookIsbnRef(currentBook.isbn);
+				const currentIsbn = await transaction.get(currentIsbnRef);
 				const nextIsbnRef = getBookIsbnRef(book.isbn);
 				const nextIsbn = await transaction.get(nextIsbnRef);
 				if (nextIsbn.exists) {
 					throw new Error("A book with this ISBN already exists.");
 				}
 
-				transaction.delete(getBookIsbnRef(currentBook.isbn));
+				if (currentIsbn.data()?.bookId === id) {
+					transaction.delete(currentIsbnRef);
+				}
 				transaction.set(nextIsbnRef, { bookId: id });
 			}
 

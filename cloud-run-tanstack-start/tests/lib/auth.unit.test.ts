@@ -56,6 +56,16 @@ describe("lib/auth", () => {
 		);
 	});
 
+	it("requires a strong session secret in production", async () => {
+		process.env.NODE_ENV = "production";
+		mocks.useSession.mockResolvedValue({ data: {}, update: vi.fn() });
+		const auth = await importAuth();
+
+		await expect(auth.ensureAnonymousSession()).rejects.toThrow(
+			"SESSION_SECRET must be set",
+		);
+	});
+
 	it("reuses the csrf token already stored in the signed session", async () => {
 		const update = vi.fn(async () => undefined);
 		mocks.useSession.mockResolvedValue({
@@ -138,6 +148,8 @@ describe("lib/auth", () => {
 
 	it("marks the readable csrf cookie secure in production", async () => {
 		process.env.NODE_ENV = "production";
+		process.env.SESSION_SECRET =
+			"test-session-secret-that-is-at-least-32-chars";
 		mocks.useSession.mockResolvedValue({
 			data: { csrfToken: "csrf-token" },
 			update: vi.fn(async () => undefined),

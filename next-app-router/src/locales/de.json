@@ -33,22 +33,31 @@
 	},
 	"books": {
 		"title": "Bücher | template-next-app",
+		"eyebrow": "Bibliothek",
 		"heading": "Bücherliste",
 		"add-book": "Buch hinzufügen",
+		"mutations": {
+			"saved": "Gespeichert",
+			"saving": "Wird gespeichert..."
+		},
 		"table": {
 			"header": {
 				"title": "Titel",
 				"author": "Autor",
-				"year": "Jahr"
+				"year": "Jahr",
+				"actions": "Aktionen"
 			},
 			"actions": {
 				"edit": "Bearbeiten",
-				"delete": "Löschen"
+				"delete": "Löschen",
+				"deleting": "Wird gelöscht..."
 			},
 			"empty": "Keine Bücher gefunden"
 		},
 		"errors": {
-			"delete": "Fehler beim Löschen des Buches"
+			"create": "Fehler beim Erstellen des Buches",
+			"delete": "Fehler beim Löschen des Buches",
+			"update": "Fehler beim Aktualisieren des Buches"
 		},
 		"dialog": {
 			"edit-title": "Buch bearbeiten",

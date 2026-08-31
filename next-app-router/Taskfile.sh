@@ -113,7 +113,7 @@ deploy() {
 	# NOTE(joel): Deploy to Cloud Run
 	gcloud -q run deploy "${NAME}" \
 		--platform="managed" \
-		--project="${PROJECT_ID}" \
+		--project="${GOOGLE_CLOUD_PROJECT}" \
 		--region="${REGION}" \
 		--service-account="${CR_SERVICE_ACCOUNT}" \
 		--image="${IMAGE_TAG}" \
@@ -130,11 +130,11 @@ setup_env() {
 
 	case $1 in
 		"prod")
-			export PROJECT_ID="project-id"
+			export GOOGLE_CLOUD_PROJECT="project-id"
 			export REGION="europe-west3"
 			export AR_REPO="docker"
-			export IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${NAME}:${VERSION}"
-			export CR_SERVICE_ACCOUNT="service-account@${PROJECT_ID}.iam.gserviceaccount.com"
+			export IMAGE_TAG="${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${AR_REPO}/${NAME}:${VERSION}"
+			export CR_SERVICE_ACCOUNT="service-account@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 			export CR_MAX_INSTANCES="10"
 			export CR_CONCURRENCY="80"
 			export CR_CPU="1"
@@ -142,11 +142,11 @@ setup_env() {
 			export CR_BUILD_FLAGS="--allow-unauthenticated"
 			;;
 		"dev"|"docker")
-			export PROJECT_ID="project-id"
+			export GOOGLE_CLOUD_PROJECT="project-id"
 			export REGION="europe-west3"
 			export AR_REPO="docker"
-			export IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${NAME}:${VERSION}"
-			export CR_SERVICE_ACCOUNT="service-account@${PROJECT_ID}.iam.gserviceaccount.com"
+			export IMAGE_TAG="${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/${AR_REPO}/${NAME}:${VERSION}"
+			export CR_SERVICE_ACCOUNT="service-account@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
 			export CR_MAX_INSTANCES="10"
 			export CR_CONCURRENCY="80"
 			export CR_CPU="1"

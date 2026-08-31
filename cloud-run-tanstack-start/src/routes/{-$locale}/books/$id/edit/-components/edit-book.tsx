@@ -137,22 +137,13 @@ export function EditBookSkeleton() {
  * Edit Book Error Component.
  * Displays an error message when book details fail to load.
  */
-export function EditBookError(props: ErrorComponentProps) {
-	const { error } = props;
+export function EditBookError(_props: ErrorComponentProps) {
 	const t = useTranslations("routes.books.details");
 
 	return (
 		<div className="space-y-6 rounded-lg bg-white p-6 shadow-md py-6 text-center">
 			<p className="text-lg text-gray-500">{t("errorTitle")}</p>
 			<p className="text-sm text-gray-400">{t("errorSubtitle")}</p>
-			{error ? (
-				<p className="mt-4 text-sm text-gray-400">
-					{t("errorMessageLabel")}{" "}
-					<code className="rounded py-0.5 px-1 border border-gray-200">
-						{error.message}
-					</code>
-				</p>
-			) : null}
 		</div>
 	);
 }

@@ -16,10 +16,9 @@ start() {
 
   elif [ "$1" = "docker" ]; then
     docker build --tag "${IMAGE_TAG}" .
-    docker run -it --rm \
+    docker run --rm \
       -v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
       -e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
-      -p 3000:3000 \
       "${IMAGE_TAG}"
 
   else
@@ -88,7 +87,7 @@ deploy() {
 
   echo "Deploying to Cloud Run Job..."
   gcloud --quiet run jobs deploy "${NAME}" \
-    --project "${PROJECT}" \
+    --project "${GOOGLE_CLOUD_PROJECT}" \
     --region "${REGION}" \
     --image "${IMAGE_TAG}" \
     --service-account "${SERVICE_ACCOUNT}" \
@@ -105,7 +104,7 @@ execute() {
 
   echo "Executing Cloud Run Job..."
   gcloud --quiet run jobs execute "${NAME}" \
-    --project "${PROJECT}" \
+    --project "${GOOGLE_CLOUD_PROJECT}" \
     --region "${REGION}" \
     --wait
 }
@@ -115,20 +114,20 @@ setup_env() {
   export VERSION=$(jq -r ".version" package.json | tr "." "-")
 
   if [ "$1" = "prod" ]; then
-    export PROJECT="<CHANGE_ME>"
+    export GOOGLE_CLOUD_PROJECT="<CHANGE_ME>"
     export REGION="europe-west3"
-    export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
+    export SERVICE_ACCOUNT="<CHANGE_ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
   elif [ "$1" = "dev" ] || [ "$1" = "docker" ]; then
-    export PROJECT="<CHANGE_ME>"
+    export GOOGLE_CLOUD_PROJECT="jvoss-base-prod"
     export REGION="europe-west3"
-    export SERVICE_ACCOUNT="<CHANGE_ME>@${PROJECT}.iam.gserviceaccount.com"
+    export SERVICE_ACCOUNT="<CHANGE_ME>@${GOOGLE_CLOUD_PROJECT}.iam.gserviceaccount.com"
   else
     echo "Unknown environment specified. Possible values: <prod|dev|docker>"
     exit 1
   fi
 
   export ARTIFACT_REPO="${REGION}-docker.pkg.dev"
-  export IMAGE_TAG="${ARTIFACT_REPO}/${PROJECT}/docker/${NAME}:${VERSION}"
+  export IMAGE_TAG="${ARTIFACT_REPO}/${GOOGLE_CLOUD_PROJECT}/docker/${NAME}:${VERSION}"
 }
 
 help() {

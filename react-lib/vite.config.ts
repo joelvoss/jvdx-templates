@@ -6,7 +6,7 @@ import react from "@vitejs/plugin-react";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vite";
 import { bundleDts } from "vite-plugin-bundle-dts";
-import packageJson from "./package.json";
+import packageJson from "./package.json" with { type: "json" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

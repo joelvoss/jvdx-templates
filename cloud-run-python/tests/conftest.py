@@ -1,6 +1,6 @@
 """Shared pytest fixtures for the test suite."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -23,11 +23,13 @@ def app(mock_firestore_client: MagicMock):
     are required and the lifespan runs cleanly in tests.
     """
     with (
-        patch("src.adapter.firestore.init_client"),
-        patch("src.adapter.firestore.get_client", return_value=mock_firestore_client),
-        patch("src.adapter.firestore.close_client"),
+        patch("src.adapter.firestore.init_client", return_value=mock_firestore_client),
+        patch("src.adapter.firestore.check_connection", new=AsyncMock()),
+        patch("src.adapter.firestore.close_client", new=AsyncMock()),
     ):
-        yield create_runtime()
+        application = create_runtime()
+        application.state.firestore_client = mock_firestore_client
+        yield application
 
 
 @pytest.fixture

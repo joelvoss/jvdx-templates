@@ -20,6 +20,16 @@ export type Book = v.InferOutput<typeof BookSchema>;
 
 export const GetBooksSchema = v.object({
 	sort: v.optional(v.picklist(["title", "author", "year"]), undefined),
+	limit: v.optional(
+		v.pipe(
+			v.union([v.string(), v.number()]),
+			v.toNumber(),
+			v.integer(),
+			v.minValue(1),
+			v.maxValue(50),
+		),
+		50,
+	),
 });
 
 ////////////////////////////////////////////////////////////////////////////////

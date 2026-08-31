@@ -6,28 +6,46 @@ import { logger } from '~/lib/logger';
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * The main entry point for the Cloud Run job. This function is responsible for
- * setting up any necessary context for the job, running the main logic, and
- * logging the results.
+ * Runs the job itself and lets errors propagate to the caller. Keeping the job
+ * logic separate from process-level error handling also makes it easy to test.
  */
-async function main() {
-	logger.addContext({
-		taskIndex: process.env.CLOUD_RUN_TASK_INDEX ?? 0,
-		taskAttempt: process.env.CLOUD_RUN_TASK_ATTEMPT ?? 0,
-	});
+export async function main() {
+	try {
+		logger.addContext({
+			taskIndex: Number(process.env.CLOUD_RUN_TASK_INDEX ?? 0),
+			taskAttempt: Number(process.env.CLOUD_RUN_TASK_ATTEMPT ?? 0),
+		});
 
-	logger.info('Cloud Run job started');
-	const books = await Firestore.listBooks();
-	logger.info('Cloud Run job finished', {
-		processedBooks: books.length,
-	});
+		logger.info('Cloud Run job started');
+		const books = await Firestore.listBooks();
+		logger.info('Cloud Run job finished', {
+			processedBooks: books.length,
+		});
+	} finally {
+		await Firestore.close();
+	}
 }
 
-// NOTE(joel): Run the job if this file is the entry point.
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-	main().catch((error) => {
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Adapts job failures to the process boundary used by Cloud Run by logging the
+ * error and setting the exit code to 1. The entrypoint calls this wrapper,
+ * while tests can call main() directly and observe its rejected errors.
+ */
+export async function run() {
+	try {
+		await main();
+	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Unknown error';
 		logger.error(message, { error });
 		process.exitCode = 1;
-	});
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// NOTE(joel): Run the job if this file is the entry point.
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+	run();
 }

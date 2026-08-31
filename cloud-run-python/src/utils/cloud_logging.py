@@ -89,14 +89,17 @@ class CloudLoggingMiddleware(BaseHTTPMiddleware):
             header = request.headers.get("X-Cloud-Trace-Context")
             trace_id, span_id, trace_sampled = self.parse_xcloud_trace(header)
 
-        trace_context.set(
+        token = trace_context.set(
             {
                 "trace_id": trace_id,
                 "span_id": span_id,
                 "trace_sampled": trace_sampled,
             }
         )
-        return await call_next(request)
+        try:
+            return await call_next(request)
+        finally:
+            trace_context.reset(token)
 
     def parse_trace_parent(
         self, header: str | None
@@ -116,23 +119,14 @@ class CloudLoggingMiddleware(BaseHTTPMiddleware):
         trace_id = span_id = None
         trace_sampled = False
         if header:
-            try:
-                VERSION_PART = r"(?!ff)[a-f\d]{2}"
-                TRACE_ID_PART = r"(?![0]{32})[a-f\d]{32}"
-                PARENT_ID_PART = r"(?![0]{16})[a-f\d]{16}"
-                FLAGS_PART = r"[a-f\d]{2}"
-                regex = f"^\\s?({VERSION_PART})-({TRACE_ID_PART})-({PARENT_ID_PART})-({FLAGS_PART})(-.*)?\\s?$"
-                match = re.match(regex, header)
-                trace_id = match.group(2)  # type: ignore[union-attr]
-                span_id = match.group(3)  # type: ignore[union-attr]
-                # NOTE: trace-flag component is an 8-bit bit field. Read as an int.
-                int_flag = int(match.group(4), 16)  # type: ignore[union-attr]
-                # NOTE: trace_sampled is set if the right-most bit in flag
-                # component is set.
-                trace_sampled = bool(int_flag & 1)
-            except (IndexError, AttributeError):
-                # Could not parse header as expected. Return None.
-                pass
+            match = re.fullmatch(
+                r"(?!ff)[0-9a-f]{2}-(?!0{32})[0-9a-f]{32}-(?!0{16})[0-9a-f]{16}-[0-9a-f]{2}",
+                header,
+            )
+            if match:
+                parts = header.split("-")
+                trace_id, span_id = parts[1], parts[2]
+                trace_sampled = bool(int(parts[3], 16) & 1)
         return trace_id, span_id, trace_sampled
 
     def parse_xcloud_trace(
@@ -162,23 +156,13 @@ class CloudLoggingMiddleware(BaseHTTPMiddleware):
         #   * span_id (optional, 16-bit hex string): "0000000000000001"
         #   * trace_sampled (optional, bool): true
         if header:
-            try:
-                regexp = r"([\w-]+)?(\/?([\w-]+))?(;?o=(\d))?"
-                match = re.match(regexp, header)
-                trace_id = match.group(1)  # type: ignore[union-attr]
-                span_id = match.group(3)  # type: ignore[union-attr]
-                trace_sampled = match.group(5) == "1"  # type: ignore[union-attr]
-
-                # NOTE: Convert the span ID to 16-bit hexadecimal instead of decimal
-                try:
-                    span_id_int = int(span_id)
-                    if span_id_int > 0 and span_id_int < 2**64:
-                        span_id = f"{span_id_int:016x}"
-                    else:
-                        span_id = None
-                except (ValueError, TypeError):
-                    span_id = None
-
-            except IndexError:
-                pass
+            match = re.fullmatch(
+                r"([0-9a-f]{32})(?:/([1-9][0-9]{0,19}))?(?:;o=([01]))?", header
+            )
+            if match:
+                trace_id = match.group(1)
+                span_id_value = match.group(2)
+                trace_sampled = match.group(3) == "1"
+                if span_id_value is not None and int(span_id_value) < 2**64:
+                    span_id = f"{int(span_id_value):016x}"
         return trace_id, span_id, trace_sampled

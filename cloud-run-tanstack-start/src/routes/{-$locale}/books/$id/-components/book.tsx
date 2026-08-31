@@ -1,9 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { bookQueryOptions } from "~/features/books/client";
 import type { Book as BookRecord } from "~/features/books/schema";
+import { getCurrentLocale } from "~/lib/i18n";
 import { ErrorComponentProps } from "~/shared/error-boundary";
 import { useTranslations } from "~/shared/i18n";
 
@@ -119,18 +120,26 @@ function BookHeader(props: { book: BookRecord }) {
  * Displays creation and last updated dates.
  */
 function BookMetadata(props: { book: BookRecord }) {
-	const [isClient, setIsClient] = useState(false);
+	// NOTE(joel): Keep the server-rendered date stable, then use the browser
+	// locale after hydration.
+	const isClient = useSyncExternalStore(
+		() => () => {},
+		() => true,
+		() => false,
+	);
 	const t = useTranslations("routes.books.details");
-
-	useEffect(() => {
-		setIsClient(true);
-	}, []);
+	const { locale } = getCurrentLocale();
 
 	const formatDate = (date: number) => {
-		if (isClient) {
-			return new Date(date).toLocaleDateString();
-		}
-		return new Date(date).toISOString().split("T")[0];
+		const options: Intl.DateTimeFormatOptions = {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+			timeZone: "UTC",
+		};
+		return new Intl.DateTimeFormat(isClient ? locale : "en-CA", options).format(
+			new Date(date),
+		);
 	};
 
 	return (
@@ -207,22 +216,13 @@ export function BookSkeleton() {
  * Book Error Component.
  * Displays an error message when book details fail to load.
  */
-export function BookError(props: ErrorComponentProps) {
-	const { error } = props;
+export function BookError(_props: ErrorComponentProps) {
 	const t = useTranslations("routes.books.details");
 
 	return (
 		<div className="rounded-lg bg-white py-6 text-center shadow">
 			<p className="text-lg text-gray-500">{t("errorTitle")}</p>
 			<p className="text-sm text-gray-400">{t("errorSubtitle")}</p>
-			{error ? (
-				<p className="mt-4 text-sm text-gray-400">
-					{t("errorMessageLabel")}{" "}
-					<code className="rounded py-0.5 px-1 border border-gray-200">
-						{error.message}
-					</code>
-				</p>
-			) : null}
 		</div>
 	);
 }
