@@ -12,7 +12,7 @@ RUN ["npm", "ci"]
 
 COPY src ./src
 
-RUN ["sh", "./Taskfile.sh", "build"]
+RUN ["bash", "./Taskfile.sh", "build"]
 
 ################################################################################
 

@@ -34,3 +34,6 @@ jobs:
 
       - name: ▶️ Run `validate` script
         run: ./Taskfile.sh validate
+
+      - name: ▶️ Validate OpenTelemetry Collector configuration
+        run: ./Taskfile.sh validate_otel
