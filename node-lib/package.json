@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.12.0"
   },
   "type": "module",
   "files": [
@@ -26,12 +26,12 @@
     "prepublishOnly": "./Taskfile.sh build"
   },
   "devDependencies": {
-    "@types/node": "26.4.0",
-    "oxfmt": "0.65.0",
-    "oxlint": "1.80.0",
+    "@types/node": "26.6.5",
+    "oxfmt": "0.74.0",
+    "oxlint": "1.89.0",
     "typescript": "7.0.2",
-    "vite": "8.2.2",
-    "vite-plugin-bundle-dts": "0.5.0",
-    "vitest": "4.1.11"
+    "vite": "8.3.5",
+    "vite-plugin-bundle-dts": "0.6.0",
+    "vitest": "5.0.5"
   }
 }
