@@ -17,7 +17,7 @@ test.describe('Home Page', () => {
 		await expect(page).toHaveTitle(/.+/); // Title should not be empty
 		await expect(page.locator('body')).toBeVisible();
 		// Check for home page description in English or German (not regex, but as substring)
-		const bodyText = await page.locator('body').innerText();
+		const bodyText = (await page.locator('body').textContent()) ?? '';
 		expect(bodyText.includes(descEn) || bodyText.includes(descDe)).toBeTruthy();
 	});
 
