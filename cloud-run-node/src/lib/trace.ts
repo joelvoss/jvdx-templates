@@ -160,9 +160,7 @@ export function traceMiddleware(
 ): MiddlewareHandler<{
 	Variables: TraceVariables;
 }> {
-	const projectId =
-		options.projectId ||
-		process.env.GOOGLE_CLOUD_PROJECT;
+	const projectId = options.projectId || process.env.GOOGLE_CLOUD_PROJECT;
 
 	return async function (c, next) {
 		// NOTE(joel): Extract trace context from incoming request headers and
