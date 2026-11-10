@@ -12,7 +12,6 @@ import { csrfCookieName, csrfHeaderName } from "~/lib/cookies";
 // changed before deploying to production.
 const SESSION_SECRET_FALLBACK = "dev-only-session-secret-change-me-1234567890";
 const SESSION_COOKIE_NAME = "__app_session";
-const SERVER_FN_HEADER = "x-tsr-serverfn";
 const CSRF_BYTES = 24;
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
@@ -123,24 +122,12 @@ export function ensureAnonymousSession() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export function validateMutationRequestForServerFn(
-	request: Request,
-	csrfToken?: string,
-) {
-	if (request.headers.get(SERVER_FN_HEADER) !== "true") return null;
-	if (request.method === "GET") return null;
-
-	return validateMutationRequest(request, csrfToken);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Validates the incoming mutation request against the session's CSRF token and
  * the request's origin. Returns a string describing the violation if invalid,
  * or null if the request is valid.
  */
-function validateMutationRequest(request: Request, csrfToken?: string) {
+export function validateMutationRequest(request: Request, csrfToken?: string) {
 	if (!csrfToken) return "Missing session";
 
 	if (!isAllowedOrigin(request)) return "Invalid origin";

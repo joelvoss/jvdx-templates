@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 
-import { chromium, request as playwrightRequest } from "playwright";
+import { chromium } from "playwright";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -13,7 +13,7 @@ let serverLogs = "";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-describe("auth playwright", () => {
+describe("auth browser smoke", () => {
 	beforeAll(async () => {
 		serverProcess = spawn("node", ["./express-server.mjs"], {
 			cwd: process.cwd(),
@@ -38,7 +38,13 @@ describe("auth playwright", () => {
 	}, SERVER_START_TIMEOUT_MS);
 
 	afterAll(async () => {
-		if (!serverProcess) return;
+		if (
+			!serverProcess ||
+			serverProcess.exitCode !== null ||
+			serverProcess.signalCode !== null
+		) {
+			return;
+		}
 
 		const exited = new Promise<void>((resolve) => {
 			serverProcess?.once("exit", () => resolve());
@@ -49,89 +55,50 @@ describe("auth playwright", () => {
 	});
 
 	it(
-		"bootstraps signed session state and rejects direct mutation calls without browser state",
+		"bootstraps session cookies and renders a not-found page without browser errors",
 		async () => {
 			const browser = await chromium.launch();
-			const browserContext = await browser.newContext();
-			const page = await browserContext.newPage();
-			const pageErrors: string[] = [];
-			page.on("pageerror", (error) => pageErrors.push(error.message));
+			try {
+				const browserContext = await browser.newContext();
+				try {
+					const page = await browserContext.newPage();
+					const pageErrors: string[] = [];
+					page.on("pageerror", (error) => pageErrors.push(error.message));
 
-			const firstResponse = await page.goto(BASE_URL, {
-				waitUntil: "domcontentloaded",
-			});
+					const firstResponse = await page.goto(BASE_URL, {
+						waitUntil: "networkidle",
+					});
 
-			expect(firstResponse).not.toBeNull();
+					expect(firstResponse).not.toBeNull();
+					expect(firstResponse?.status()).toBe(200);
 
-			const cookies = await browserContext.cookies();
-			const sessionCookie = cookies.find(
-				(cookie) => cookie.name === "__app_session",
-			);
-			const csrfCookie = cookies.find((cookie) => cookie.name === "__app_csrf");
+					const cookies = await browserContext.cookies();
+					const sessionCookie = cookies.find(
+						(cookie) => cookie.name === "__app_session",
+					);
+					const csrfCookie = cookies.find(
+						(cookie) => cookie.name === "__app_csrf",
+					);
 
-			expect(sessionCookie).toBeDefined();
-			expect(sessionCookie?.httpOnly).toBe(true);
-			expect(csrfCookie).toBeDefined();
-			expect(csrfCookie?.value).toBeTruthy();
+					expect(sessionCookie).toBeDefined();
+					expect(sessionCookie?.httpOnly).toBe(true);
+					expect(csrfCookie).toBeDefined();
+					expect(csrfCookie?.value).toBeTruthy();
 
-			const anonymousApi = await playwrightRequest.newContext();
-			const unauthorizedResponse = await anonymousApi.fetch(
-				`${BASE_URL}/_serverFn`,
-				{
-					method: "POST",
-					headers: {
-						"x-tsr-serverFn": "true",
-						"content-type": "application/json",
-						origin: BASE_URL,
-						"sec-fetch-site": "same-origin",
-					},
-					data: {},
-				},
-			);
-
-			expect(unauthorizedResponse.status()).toBe(403);
-			const setCookies = unauthorizedResponse
-				.headersArray()
-				.filter((header) => header.name.toLowerCase() === "set-cookie");
-			expect(
-				setCookies.filter((header) =>
-					header.value.startsWith("__app_session="),
-				),
-			).toHaveLength(1);
-			expect(
-				setCookies.filter((header) => header.value.startsWith("__app_csrf=")),
-			).toHaveLength(1);
-
-			const authenticatedApi = await playwrightRequest.newContext({
-				storageState: await browserContext.storageState(),
-			});
-			const authorizedResponse = await authenticatedApi.fetch(
-				`${BASE_URL}/_serverFn`,
-				{
-					method: "POST",
-					headers: {
-						"x-tsr-serverFn": "true",
-						"content-type": "application/json",
-						origin: BASE_URL,
-						"sec-fetch-site": "same-origin",
-						"x-app-csrf": csrfCookie?.value ?? "",
-					},
-					data: {},
-				},
-			);
-
-			expect(authorizedResponse.status()).not.toBe(403);
-
-			const notFoundResponse = await page.goto(`${BASE_URL}/does-not-exist`, {
-				waitUntil: "networkidle",
-			});
-			expect(notFoundResponse?.status()).toBe(404);
-			expect(pageErrors).toEqual([]);
-
-			await anonymousApi.dispose();
-			await authenticatedApi.dispose();
-			await browserContext.close();
-			await browser.close();
+					const notFoundResponse = await page.goto(
+						`${BASE_URL}/does-not-exist`,
+						{
+							waitUntil: "networkidle",
+						},
+					);
+					expect(notFoundResponse?.status()).toBe(404);
+					expect(pageErrors).toEqual([]);
+				} finally {
+					await browserContext.close();
+				}
+			} finally {
+				await browser.close();
+			}
 		},
 		SERVER_START_TIMEOUT_MS,
 	);

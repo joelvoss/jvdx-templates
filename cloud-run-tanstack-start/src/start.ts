@@ -1,10 +1,7 @@
 import { createMiddleware, createStart } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 
-import {
-	ensureAnonymousSession,
-	validateMutationRequestForServerFn,
-} from "~/lib/auth";
+import { ensureAnonymousSession, validateMutationRequest } from "~/lib/auth";
 import { i18nMiddleware } from "~/lib/i18n";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -35,11 +32,10 @@ export const requestSessionMiddleware = createMiddleware().server(
 
 export const requestMutationGuard = createMiddleware()
 	.middleware([requestSessionMiddleware])
-	.server(async ({ next, request, context }) => {
-		const violation = validateMutationRequestForServerFn(
-			request,
-			context.csrfToken,
-		);
+	.server(async ({ next, request, context, handlerType }) => {
+		if (handlerType !== "serverFn" || request.method === "GET") return next();
+
+		const violation = validateMutationRequest(request, context.csrfToken);
 		if (violation) {
 			return new Response(violation, { status: 403 });
 		}

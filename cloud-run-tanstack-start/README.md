@@ -30,7 +30,7 @@ Execution flow:
    such as:
    - `Cross-Origin-Resource-Policy`
    - `Cross-Origin-Opener-Policy`
-   - `Strict-Transport-Security`
+   - `Strict-Transport-Security` outside development
    - `X-Frame-Options`
    - `X-Content-Type-Options`
 3. In development, it creates a Vite dev server in middleware mode.
@@ -50,26 +50,26 @@ When the browser opens `http://localhost:3000`, the first request reaches
 Files involved:
 
 - `src/server.ts`
-- `src/lib/i18n.ts`
+- `src/lib/i18n/runtime.ts`
 - `src/start.ts`
 - `src/lib/auth.ts`
 
 Execution flow:
 
-1. `src/server.ts` runs `i18nMiddleware(request)` from `src/lib/i18n.ts`.
-2. The i18n middleware may:
+1. `src/server.ts` delegates the request to TanStack Start's server-entry handler.
+2. TanStack Start loads the global request middleware from `src/start.ts`.
+3. `requestI18nMiddleware` runs `i18nMiddleware(request)` from `src/lib/i18n/runtime.ts`.
+   It may:
    - redirect locale-prefixed URLs like `/en/...` to canonical URLs
    - persist a locale cookie when the URL locale changes
-3. If there is no redirect, TanStack Start takes over request handling.
-4. TanStack Start loads the global middleware from `src/start.ts`.
-5. `requestSessionMiddleware` runs first and calls `ensureAnonymousSession()`
-   from `src/lib/auth.ts`.
-6. `ensureAnonymousSession()` loads or creates the signed anonymous session and
+4. If there is no redirect, `requestSessionMiddleware` calls `ensureAnonymousSession()`
+   from `src/lib/auth.ts` and passes the session's CSRF token in middleware context.
+5. `ensureAnonymousSession()` loads or creates the signed anonymous session and
    ensures a CSRF token exists for that session.
-7. `ensureAnonymousSession()` also sets the readable `__app_csrf` cookie so
+6. `ensureAnonymousSession()` also sets the readable `__app_csrf` cookie so
    browser code can later echo it in mutation requests.
-8. `requestMutationGuard` also runs, but it does nothing for a normal page
-   request because the request is not a mutation server-function call.
+7. `requestMutationGuard` only validates requests classified by TanStack Start as
+   `handlerType === 'serverFn'` with a method other than `GET`; page requests bypass it.
 
 ## 3. Router Creation And SSR Render
 
@@ -82,14 +82,14 @@ Files involved:
 - `src/routes/__root.tsx`
 - `src/routes/{-$locale}/route.tsx`
 - `src/routes/{-$locale}/index.tsx`
-- `src/shared/i18n.tsx`
+- `src/shared/i18n/`
 
 Execution flow:
 
 1. `src/router.tsx` runs `getRouter()`.
 2. `getRouter()` creates a shared `QueryClient`.
 3. It reads the current locale and translation messages using helpers from
-   `src/lib/i18n.ts`.
+   `src/lib/i18n/runtime.ts`.
 4. It creates the TanStack Router from `src/routeTree.gen.ts`.
 5. It configures:
    - React Query SSR integration
@@ -113,8 +113,8 @@ Once the HTML is loaded and client scripts run:
 Files involved:
 
 - `src/router.tsx`
-- `src/mutation/books.ts`
-- `src/query/books.ts`
+- `src/features/books/client.ts`
+- `src/features/books/server.ts`
 
 Behavior:
 
@@ -128,16 +128,18 @@ Behavior:
 
 ## Session Cookie
 
-The main session cookie is configured in `src/lib/auth.ts` via TanStack Start
-`useSession(...)`.
+The main session cookie is implemented in `src/lib/auth.ts` using custom HMAC-SHA256
+signing and TanStack Start's `getCookie(...)` and `setCookie(...)` helpers, not `useSession(...)`.
 
 Current properties:
 
 - cookie name: `__app_session`
-- signed and sealed by TanStack Start using `SESSION_SECRET`
+- base64url-encoded JSON payload signed with HMAC-SHA256 using `SESSION_SECRET`
+- signed, not encrypted or sealed
 - `HttpOnly`
 - `SameSite=Lax`
 - `Secure` in production
+- seven-day expiry in both the cookie and signed payload
 
 Purpose:
 
@@ -145,8 +147,9 @@ Purpose:
 - stores session state the client cannot forge or tamper with
 - currently stores the authoritative CSRF token in signed session data
 
-This is the trust anchor. The client cannot invent or modify the session
-payload because TanStack seals it cryptographically.
+This is the trust anchor. The server verifies the signature, payload shape, and expiry
+before accepting session state. A client cannot forge valid state without `SESSION_SECRET`,
+but the signed payload is not confidential; it contains a CSRF token and expiry timestamp.
 
 ## CSRF Cookie
 
@@ -199,10 +202,10 @@ When the browser sends a `POST` server-function request:
 
 1. The request reaches TanStack Start.
 2. `requestSessionMiddleware` ensures the anonymous signed session exists.
-3. `requestMutationGuard` calls `validateMutationRequestForServerFn(request)`.
-4. The validator rejects the request unless all of the following are true:
-   - the request is a TanStack server-function request (`x-tsr-serverfn: true`)
-   - the request method is not `GET`
+3. `requestMutationGuard` checks TanStack Start's framework-provided `handlerType`.
+   Only `handlerType === 'serverFn'` requests with `request.method !== 'GET'` are guarded.
+4. The guard calls `validateMutationRequest(request, context.csrfToken)` from `src/lib/auth.ts`.
+   The validator rejects the request unless all of the following are true:
    - the session contains a CSRF token
    - the `Origin` header matches the request origin
    - `Sec-Fetch-Site` is either absent or `same-origin`
@@ -210,9 +213,13 @@ When the browser sends a `POST` server-function request:
 5. If validation fails, middleware returns `403`.
 6. If validation succeeds, the mutation handler runs.
 
-Client-side mutation code sends the header from:
+The `x-tsr-serverfn` header has no security role: omitting it or setting it to `false`
+does not bypass the guard or invalidate a request with valid session, origin, and CSRF state.
+`GET` server functions and requests handled as pages or server routes bypass this guard.
 
-- `src/mutation/books.ts`
+Client-side mutation code sends the CSRF header from:
+
+- `src/features/books/client.ts`
 
 It reads `__app_csrf` from `document.cookie` and sends it as `x-app-csrf`.
 
@@ -225,17 +232,17 @@ Implemented in `express-server.mjs`:
 - `X-Frame-Options: SAMEORIGIN`
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: no-referrer`
-- `Strict-Transport-Security`
+- `Strict-Transport-Security` outside development
 - `Cross-Origin-Resource-Policy: same-origin`
 - `Cross-Origin-Opener-Policy: same-origin`
 - removal of `X-Powered-By`
 
 ## At The Routing / Request Layer
 
-Implemented in `src/server.ts`, `src/start.ts`, and `src/lib/i18n.ts`:
+Implemented in `src/start.ts` and `src/lib/i18n/runtime.ts`:
 
 - locale canonicalization and locale cookie management
-- anonymous signed session bootstrap on every request
+- anonymous signed session bootstrap on requests that pass locale middleware
 - mutation-only request blocking via request middleware
 - same-origin checks for mutation requests
 
@@ -243,7 +250,7 @@ Implemented in `src/server.ts`, `src/start.ts`, and `src/lib/i18n.ts`:
 
 Implemented in `src/lib/auth.ts`:
 
-- signed session cookie using TanStack Start sessions
+- custom HMAC-SHA256 signed session cookie with validated payload and expiry
 - CSRF token stored in signed session state
 - readable CSRF mirror cookie for browser mutation requests
 - timing-safe token comparison
@@ -252,7 +259,8 @@ Implemented in `src/lib/auth.ts`:
 
 ## At The Data / API Layer
 
-Implemented across `src/mutation/books.ts`, `src/query/books.ts`, and `src/schemas/*.ts`:
+Implemented across `src/features/books/client.ts`, `src/features/books/server.ts`, and
+`src/features/books/schema.ts`:
 
 - schema validation using Valibot
 - read operations exposed as public `GET` server functions

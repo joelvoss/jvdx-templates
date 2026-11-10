@@ -69,11 +69,12 @@ typecheck() {
 test() {
 	if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
 		echo "Running vitest in watch mode..."
-		vitest
+		shift
+		vitest "$@"
 		return
 	else
 		echo "Running vitest..."
-		vitest run
+		vitest run "$@"
 	fi
 }
 

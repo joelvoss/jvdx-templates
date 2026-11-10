@@ -102,32 +102,6 @@ describe("lib/auth", () => {
 		);
 	});
 
-	it("allows public server function reads without mutation checks", async () => {
-		const auth = await importAuth();
-
-		const result = await auth.validateMutationRequestForServerFn(
-			new Request("https://example.com/_serverFn", {
-				method: "GET",
-				headers: { "x-tsr-serverFn": "true" },
-			}),
-		);
-
-		expect(result).toBeNull();
-		expect(mocks.getCookie).not.toHaveBeenCalled();
-		expect(mocks.setCookie).not.toHaveBeenCalled();
-	});
-
-	it("ignores non-server-function requests without touching cookies", async () => {
-		const auth = await importAuth();
-		expect(
-			auth.validateMutationRequestForServerFn(
-				new Request("https://example.com", { method: "POST" }),
-			),
-		).toBeNull();
-		expect(mocks.getCookie).not.toHaveBeenCalled();
-		expect(mocks.setCookie).not.toHaveBeenCalled();
-	});
-
 	it.each([
 		["https://evil.example", "same-origin"],
 		["http://example.com", "same-origin"],
@@ -142,11 +116,10 @@ describe("lib/auth", () => {
 			const csrfToken = await setUpSignedSession();
 			const auth = await importAuth();
 
-			const result = await auth.validateMutationRequestForServerFn(
+			const result = await auth.validateMutationRequest(
 				new Request("https://example.com/_serverFn", {
 					method: "POST",
 					headers: {
-						"x-tsr-serverFn": "true",
 						...(origin ? { origin } : {}),
 						"sec-fetch-site": fetchSite!,
 						"x-app-csrf": csrfToken,
@@ -165,11 +138,10 @@ describe("lib/auth", () => {
 			const csrfToken = await setUpSignedSession();
 			const auth = await importAuth();
 
-			const result = await auth.validateMutationRequestForServerFn(
+			const result = await auth.validateMutationRequest(
 				new Request("https://example.com/_serverFn", {
 					method: "POST",
 					headers: {
-						"x-tsr-serverFn": "true",
 						origin: "https://example.com",
 						...(fetchSite ? { "sec-fetch-site": fetchSite } : {}),
 						"x-app-csrf": csrfToken,
@@ -196,25 +168,21 @@ describe("lib/auth", () => {
 			const request = new Request("https://example.com/_serverFn", {
 				method: "POST",
 				headers: {
-					"x-tsr-serverFn": "true",
 					origin: "https://example.com",
 					...(header ? { "x-app-csrf": header } : {}),
 				},
 			});
-			expect(auth.validateMutationRequestForServerFn(request, csrfToken)).toBe(
-				violation,
-			);
+			expect(auth.validateMutationRequest(request, csrfToken)).toBe(violation);
 		},
 	);
 
 	it("rejects a mutation without initialized session state", async () => {
 		const auth = await importAuth();
 		expect(
-			auth.validateMutationRequestForServerFn(
+			auth.validateMutationRequest(
 				new Request("https://example.com/_serverFn", {
 					method: "POST",
 					headers: {
-						"x-tsr-serverFn": "true",
 						origin: "https://example.com",
 						"x-app-csrf": "forged-token",
 					},
@@ -251,11 +219,10 @@ describe("lib/auth", () => {
 			expect(result.csrfToken).not.toBe(csrfToken);
 			expect(mocks.setCookie).toHaveBeenCalledTimes(2);
 			expect(
-				auth.validateMutationRequestForServerFn(
+				auth.validateMutationRequest(
 					new Request("https://example.com/_serverFn", {
 						method: "POST",
 						headers: {
-							"x-tsr-serverFn": "true",
 							origin: "https://example.com",
 							"x-app-csrf": csrfToken,
 						},

@@ -2,7 +2,7 @@ import { createServer, request as httpRequest, type Server } from "node:http";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { validateMutationRequestForServerFn } from "~/lib/auth";
+import { validateMutationRequest } from "~/lib/auth";
 
 const mocks = vi.hoisted(() => ({
 	app: undefined as import("express").Express | undefined,
@@ -35,10 +35,7 @@ vi.mock("vite", () => ({
 				fetch: (request: Request) =>
 					Response.json({
 						url: request.url,
-						violation: validateMutationRequestForServerFn(
-							request,
-							"csrf-token",
-						),
+						violation: validateMutationRequest(request, "csrf-token"),
 					}),
 			},
 		}),
@@ -127,7 +124,6 @@ describe("Express srvx proxy boundary", () => {
 								"x-forwarded-proto": "http, https",
 								"x-forwarded-host": "evil.example",
 								"x-forwarded-for": "9.9.9.9",
-								"x-tsr-serverFn": "true",
 								"x-app-csrf": "csrf-token",
 								"sec-fetch-site": "same-origin",
 							},
