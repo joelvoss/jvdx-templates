@@ -11,10 +11,14 @@ const mocks = vi.hoisted(() => {
 
 vi.mock("@tanstack/react-start", () => {
 	return {
-		createMiddleware: () => ({
-			server: (middleware: unknown) => middleware,
-		}),
-		createStart: (factory: () => unknown) => factory(),
+		createMiddleware: () => {
+			const builder = {
+				middleware: (_dependencies: unknown[]) => builder,
+				server: (middleware: unknown) => middleware,
+			};
+			return builder;
+		},
+		createStart: (factory: () => unknown) => ({ getOptions: factory }),
 	};
 });
 
@@ -46,12 +50,14 @@ async function importStart() {
 function asMiddleware(
 	middleware: unknown,
 ): (args: {
-	next: () => Promise<Response>;
+	next: (options?: { context: { csrfToken: string } }) => Promise<Response>;
 	request: Request;
+	context?: { csrfToken: string };
 }) => Promise<Response> {
 	return middleware as (args: {
-		next: () => Promise<Response>;
+		next: (options?: { context: { csrfToken: string } }) => Promise<Response>;
 		request: Request;
+		context?: { csrfToken: string };
 	}) => Promise<Response>;
 }
 
@@ -62,7 +68,8 @@ describe("start middleware", () => {
 		mocks.setResponseHeader.mockReset();
 		mocks.validateMutationRequestForServerFn.mockReset();
 		mocks.i18nMiddleware.mockReturnValue({});
-		mocks.validateMutationRequestForServerFn.mockResolvedValue(null);
+		mocks.ensureAnonymousSession.mockReturnValue({ csrfToken: "csrf-token" });
+		mocks.validateMutationRequestForServerFn.mockReturnValue(null);
 	});
 
 	it("runs i18n before session and mutation middleware", async () => {
@@ -70,13 +77,14 @@ describe("start middleware", () => {
 			requestI18nMiddleware,
 			requestMutationGuard,
 			requestSessionMiddleware,
+			startInstance,
 		} = await importStart();
 
-		expect([
+		expect((await startInstance.getOptions()).requestMiddleware).toEqual([
 			requestI18nMiddleware,
 			requestSessionMiddleware,
 			requestMutationGuard,
-		]).toHaveLength(3);
+		]);
 	});
 
 	it("returns i18n redirects without calling later middleware", async () => {
@@ -119,5 +127,46 @@ describe("start middleware", () => {
 			setCookie,
 		);
 		expect(next).toHaveBeenCalledTimes(1);
+	});
+
+	it("initializes one session and passes its token to the mutation guard", async () => {
+		const { requestSessionMiddleware, requestMutationGuard } =
+			await importStart();
+		const request = new Request("https://example.com/_serverFn", {
+			method: "POST",
+		});
+		const next = vi.fn(async () => new Response("ok"));
+		const response = await asMiddleware(requestSessionMiddleware)({
+			request,
+			next: async (options) =>
+				asMiddleware(requestMutationGuard)({
+					request,
+					next,
+					context: options?.context,
+				}),
+		});
+		expect(response.status).toBe(200);
+		expect(mocks.ensureAnonymousSession).toHaveBeenCalledTimes(1);
+		expect(
+			mocks.validateMutationRequestForServerFn,
+		).toHaveBeenCalledExactlyOnceWith(request, "csrf-token");
+		expect(next).toHaveBeenCalledTimes(1);
+	});
+
+	it("rejects a mutation violation without running downstream handlers", async () => {
+		mocks.validateMutationRequestForServerFn.mockReturnValue(
+			"Invalid CSRF token",
+		);
+		const { requestMutationGuard } = await importStart();
+		const next = vi.fn(async () => new Response("ok"));
+		const response = await asMiddleware(requestMutationGuard)({
+			request: new Request("https://example.com/_serverFn", { method: "POST" }),
+			context: { csrfToken: "csrf-token" },
+			next,
+		});
+		expect(response.status).toBe(403);
+		expect(await response.text()).toBe("Invalid CSRF token");
+		expect(next).not.toHaveBeenCalled();
+		expect(mocks.ensureAnonymousSession).not.toHaveBeenCalled();
 	});
 });

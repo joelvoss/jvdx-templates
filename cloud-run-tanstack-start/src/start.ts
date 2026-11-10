@@ -26,23 +26,26 @@ export const requestI18nMiddleware = createMiddleware().server(
 
 export const requestSessionMiddleware = createMiddleware().server(
 	async ({ next }) => {
-		await ensureAnonymousSession();
-		return next();
+		const { csrfToken } = ensureAnonymousSession();
+		return next({ context: { csrfToken } });
 	},
 );
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const requestMutationGuard = createMiddleware().server(
-	async ({ next, request }) => {
-		const violation = await validateMutationRequestForServerFn(request);
+export const requestMutationGuard = createMiddleware()
+	.middleware([requestSessionMiddleware])
+	.server(async ({ next, request, context }) => {
+		const violation = validateMutationRequestForServerFn(
+			request,
+			context.csrfToken,
+		);
 		if (violation) {
 			return new Response(violation, { status: 403 });
 		}
 
 		return next();
-	},
-);
+	});
 
 ////////////////////////////////////////////////////////////////////////////////
 

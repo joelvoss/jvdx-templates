@@ -21,6 +21,7 @@ describe("auth playwright", () => {
 				...process.env,
 				NODE_ENV: "development",
 				PORT: "3100",
+				K_SERVICE: "",
 			},
 			stdio: ["ignore", "pipe", "pipe"],
 		});
@@ -53,6 +54,8 @@ describe("auth playwright", () => {
 			const browser = await chromium.launch();
 			const browserContext = await browser.newContext();
 			const page = await browserContext.newPage();
+			const pageErrors: string[] = [];
+			page.on("pageerror", (error) => pageErrors.push(error.message));
 
 			const firstResponse = await page.goto(BASE_URL, {
 				waitUntil: "domcontentloaded",
@@ -87,6 +90,17 @@ describe("auth playwright", () => {
 			);
 
 			expect(unauthorizedResponse.status()).toBe(403);
+			const setCookies = unauthorizedResponse
+				.headersArray()
+				.filter((header) => header.name.toLowerCase() === "set-cookie");
+			expect(
+				setCookies.filter((header) =>
+					header.value.startsWith("__app_session="),
+				),
+			).toHaveLength(1);
+			expect(
+				setCookies.filter((header) => header.value.startsWith("__app_csrf=")),
+			).toHaveLength(1);
 
 			const authenticatedApi = await playwrightRequest.newContext({
 				storageState: await browserContext.storageState(),
@@ -107,6 +121,12 @@ describe("auth playwright", () => {
 			);
 
 			expect(authorizedResponse.status()).not.toBe(403);
+
+			const notFoundResponse = await page.goto(`${BASE_URL}/does-not-exist`, {
+				waitUntil: "networkidle",
+			});
+			expect(notFoundResponse?.status()).toBe(404);
+			expect(pageErrors).toEqual([]);
 
 			await anonymousApi.dispose();
 			await authenticatedApi.dispose();

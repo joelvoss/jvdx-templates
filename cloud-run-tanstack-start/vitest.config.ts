@@ -1,6 +1,5 @@
-import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 
@@ -16,10 +15,7 @@ export default defineConfig({
 	},
 	plugins: [
 		tailwindcss(),
-		react(),
-		babel({
-			presets: [reactCompilerPreset()],
-		}),
+		react({ compiler: true }),
 	],
 	optimizeDeps: {
 		include: ["@tanstack/react-router", "react-aria-components"],

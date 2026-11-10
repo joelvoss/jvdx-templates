@@ -1,12 +1,13 @@
-import { Link, rootRouteId, useMatch } from "@tanstack/react-router";
+import {
+	Link,
+	rootRouteId,
+	type ErrorComponentProps,
+	useMatch,
+} from "@tanstack/react-router";
 
 import { useTranslations } from "~/shared/i18n";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-interface ErrorComponentProps<TError = Error> {
-	error: TError;
-}
 
 /**
  * Error Component.

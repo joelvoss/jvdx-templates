@@ -4,6 +4,8 @@ import { toNodeHandler } from "srvx/node";
 ////////////////////////////////////////////////////////////////////////////////
 
 const DEVELOPMENT = process.env.NODE_ENV === "development";
+const CLOUD_RUN = Boolean(process.env.K_SERVICE);
+const NODE_ADAPTER_OPTIONS = { trustProxy: CLOUD_RUN };
 const PORT = Number.parseInt(process.env.PORT || "3000");
 const SECURITY_HEADERS = new Map([
 	["Cross-Origin-Resource-Policy", "same-origin"],
@@ -33,6 +35,17 @@ app.use((_req, res, next) => {
 	next();
 });
 
+if (CLOUD_RUN) {
+	app.use((req, _res, next) => {
+		// Cloud Run terminates HTTPS before the container. Preserve Host rather
+		// than trusting client-supplied forwarded host/IP headers.
+		delete req.headers["x-forwarded-host"];
+		delete req.headers["x-forwarded-for"];
+		req.headers["x-forwarded-proto"] = "https";
+		next();
+	});
+}
+
 if (DEVELOPMENT) {
 	// NOTE(joel): In development, we use Vite's middleware to serve the app and
 	// handle SSR.
@@ -46,7 +59,7 @@ if (DEVELOPMENT) {
 		try {
 			const { default: serverEntry } =
 				await viteDevServer.ssrLoadModule("./src/server.ts");
-			const handler = toNodeHandler(serverEntry.fetch);
+			const handler = toNodeHandler(serverEntry.fetch, NODE_ADAPTER_OPTIONS);
 			await handler(req, res);
 		} catch (error) {
 			if (typeof error === "object" && error instanceof Error) {
@@ -59,7 +72,7 @@ if (DEVELOPMENT) {
 	// NOTE(joel): In production, we can directly import the server entry since
 	// it's already built.
 	const { default: handler } = await import("./server/server.js");
-	const nodeHandler = toNodeHandler(handler.fetch);
+	const nodeHandler = toNodeHandler(handler.fetch, NODE_ADAPTER_OPTIONS);
 	app.use(
 		express.static("client", {
 			maxAge: "1y",
