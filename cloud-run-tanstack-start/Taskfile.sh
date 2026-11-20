@@ -23,11 +23,13 @@ start() {
 		setup_env dev
 		build
 		LOCAL_TAG=$(jq -r ".name" package.json)
+		LOCAL_SESSION_SECRET="${SESSION_SECRET:-dev-only-session-secret-change-me-1234567890}"
 		docker build --tag "${LOCAL_TAG}" .
 		docker run -it --rm \
 			-v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
 			-e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
 			-e GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
+			-e SESSION_SECRET="${LOCAL_SESSION_SECRET}" \
 			-p 3000:3000 \
 			"${LOCAL_TAG}"
 
@@ -138,7 +140,7 @@ setup_env() {
 	fi
 
 	export ARTIFACT_REPO="${REGION}-docker.pkg.dev"
-	export IMAGE_TAG="${ARTIFACT_REPO}/${PROJECT}/docker/${NAME}:${VERSION}"
+	export IMAGE_TAG="${ARTIFACT_REPO}/${GOOGLE_CLOUD_PROJECT}/docker/${NAME}:${VERSION}"
 }
 
 help() {
