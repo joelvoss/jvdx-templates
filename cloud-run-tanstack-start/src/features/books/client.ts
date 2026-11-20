@@ -1,5 +1,5 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { isNotFound, notFound } from "@tanstack/react-router";
+import { isNotFound, notFound, rootRouteId } from "@tanstack/react-router";
 import * as v from "valibot";
 
 import {
@@ -41,7 +41,7 @@ export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 		queryKey: ["book", data.id],
 		queryFn: async () => {
 			const book = await getBook({ data });
-			if (!book) throw notFound();
+			if (!book) throw notFound({ routeId: rootRouteId });
 			return book;
 		},
 		retry: (failureCount, error) =>
