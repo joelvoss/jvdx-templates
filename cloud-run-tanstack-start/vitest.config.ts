@@ -45,6 +45,14 @@ export default defineConfig({
 					},
 				},
 			},
+			{
+				extends: true,
+				test: {
+					include: ["tests/**/*.integration.{test,spec}.{tsx,ts}"],
+					name: "integration-browser",
+					environment: "node",
+				},
+			},
 		],
 	},
 });
