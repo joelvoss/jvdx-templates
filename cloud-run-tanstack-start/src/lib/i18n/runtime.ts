@@ -68,7 +68,7 @@ const GetMessagesSchema = v.object({
  * Server function to retrieve the messages for a specific locale. It takes a
  * locale as input and returns the corresponding messages from the `messages`
  * object. If the requested locale does not exist in the `messages` object, it
- * returns an empty object.
+ * falls back to the default locale messages.
  */
 export const getMessagesFn = createServerFn({ method: "GET" })
 	.validator(GetMessagesSchema)

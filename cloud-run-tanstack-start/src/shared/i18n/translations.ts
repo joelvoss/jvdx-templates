@@ -20,20 +20,6 @@ type MarkupTranslationValues = Record<
 	((chunks: string) => string) | TranslationValue
 >;
 
-/**
- * The `Translations` interface defines the shape of the translation function
- * returned by the `translations` factory function. It includes:
- * - A callable signature that takes a translation key and optional values,
- *   returning a formatted string.
- * - A `rich` method for handling rich text translations, which can return a
- *   ReactNode or an array of strings and ReactNodes.
- * - A `markup` method for handling translations that include markup, returning
- *   a string.
- * - A `raw` method for retrieving the raw translation value without any
- *   formatting.
- * This interface allows for flexible translation handling, supporting both
- * simple string replacements and more complex rich text scenarios.
- */
 export type NamespacePaths<T> = {
 	[K in keyof T & string]: T[K] extends Record<string, unknown>
 		? K | `${K}.${NamespacePaths<T[K]>}`
@@ -59,11 +45,25 @@ export type ValueAtPath<
 		? T[P]
 		: never;
 
-export type ScopedMessageKeys<T, N extends NamespacePaths<T> | undefined> =
-	N extends NamespacePaths<T>
-		? MessagePaths<ValueAtPath<T, N>>
-		: MessagePaths<T>;
+export type ScopedMessageKeys<
+	T,
+	N extends string | undefined = undefined,
+> = N extends string ? MessagePaths<ValueAtPath<T, N>> : MessagePaths<T>;
 
+/**
+ * The `Translations` interface defines the shape of the translation function
+ * returned by the `translations` factory function. It includes:
+ * - A callable signature that takes a translation key and optional values,
+ *   returning a formatted string.
+ * - A `rich` method for handling rich text translations, which can return a
+ *   ReactNode or an array of strings and ReactNodes.
+ * - A `markup` method for handling translations that include markup, returning
+ *   a string.
+ * - A `raw` method for retrieving the raw translation value without any
+ *   formatting.
+ * This interface allows for flexible translation handling, supporting both
+ * simple string replacements and more complex rich text scenarios.
+ */
 export interface Translations<K extends string = string> {
 	(key: K, values?: TranslationValues): string;
 	rich(key: K, values?: RichTranslationValues): ReactNode;
@@ -81,18 +81,13 @@ export interface Translations<K extends string = string> {
  */
 export function translations<
 	M extends AbstractIntlMessages = AbstractIntlMessages,
-	N extends string | undefined = undefined,
+	N extends (string extends keyof M ? string : NamespacePaths<M>) | undefined =
+		undefined,
 >(
 	messages: M,
 	locale: string,
 	namespace?: N,
-): Translations<
-	string extends keyof M
-		? string
-		: N extends NamespacePaths<M> | undefined
-			? ScopedMessageKeys<M, N>
-			: string
-> {
+): Translations<string extends keyof M ? string : ScopedMessageKeys<M, N>> {
 	const namespaceMessages = namespace
 		? getNestedMessage(messages, namespace)
 		: messages;

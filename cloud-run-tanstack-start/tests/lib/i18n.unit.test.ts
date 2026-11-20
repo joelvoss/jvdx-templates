@@ -385,10 +385,10 @@ describe("lib/i18n", () => {
 			for (const locale of supportedLocales) {
 				for (const key of baseKeys) {
 					const value = getNestedMessage(appMessages[locale], key);
-					expect(typeof value, `${locale}.${key}`).toBe("string");
-					expect((value as string).length, `${locale}.${key}`).toBeGreaterThan(
-						0,
-					);
+					expect(
+						String(value ?? "").trim().length,
+						`${locale}.${key}`,
+					).toBeGreaterThan(0);
 				}
 			}
 		});

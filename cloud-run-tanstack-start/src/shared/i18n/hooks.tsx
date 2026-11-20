@@ -24,8 +24,6 @@ export function useTranslations<
 	const { messages, locale } = context;
 
 	return useMemo(() => {
-		return translations(messages, locale, namespace) as Translations<
-			ScopedMessageKeys<AppMessages, N>
-		>;
+		return translations(messages, locale, namespace);
 	}, [messages, locale, namespace]);
 }
