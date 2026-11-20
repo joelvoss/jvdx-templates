@@ -6,8 +6,10 @@ import { bookQueryOptions } from "~/features/books/client";
 
 export const Route = createFileRoute("/{-$locale}/books/$id")({
 	component: RouteComponent,
-	loader: ({ context, params }) => {
-		void context.queryClient.prefetchQuery(bookQueryOptions({ id: params.id }));
+	loader: async ({ context, params }) => {
+		await context.queryClient.ensureQueryData(
+			bookQueryOptions({ id: params.id }),
+		);
 	},
 });
 

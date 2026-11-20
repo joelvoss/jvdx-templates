@@ -1,5 +1,5 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { notFound } from "@tanstack/react-router";
+import { isNotFound, notFound } from "@tanstack/react-router";
 import * as v from "valibot";
 
 import {
@@ -44,6 +44,7 @@ export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 			if (!book) throw notFound();
 			return book;
 		},
+		retry: (failureCount, error) => !isNotFound(error) && failureCount < 3,
 	});
 
 ////////////////////////////////////////////////////////////////////////////////

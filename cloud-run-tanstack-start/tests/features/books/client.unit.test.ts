@@ -1,16 +1,20 @@
+import { QueryClient } from "@tanstack/react-query";
+import { isNotFound } from "@tanstack/react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { createBookMock, updateBookMock, deleteBookMock } = vi.hoisted(() => ({
-	createBookMock: vi.fn(),
-	updateBookMock: vi.fn(),
-	deleteBookMock: vi.fn(),
-}));
+const { createBookMock, updateBookMock, deleteBookMock, getBookMock } =
+	vi.hoisted(() => ({
+		createBookMock: vi.fn(),
+		updateBookMock: vi.fn(),
+		deleteBookMock: vi.fn(),
+		getBookMock: vi.fn(),
+	}));
 
 vi.mock("~/features/books/server", () => ({
 	createBook: createBookMock,
 	updateBook: updateBookMock,
 	deleteBook: deleteBookMock,
-	getBook: vi.fn(),
+	getBook: getBookMock,
 	getBooks: vi.fn(),
 }));
 
@@ -21,6 +25,7 @@ import {
 	deleteBookMutationOpts,
 	updateBookMutationOpts,
 } from "~/features/books/client";
+import { Route as BookRoute } from "~/routes/{-$locale}/books/$id/route";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -29,6 +34,7 @@ describe("features/books/client", () => {
 		createBookMock.mockReset();
 		updateBookMock.mockReset();
 		deleteBookMock.mockReset();
+		getBookMock.mockReset();
 	});
 	it("builds stable query keys", () => {
 		expect(booksQueryOptions({ sort: undefined }).queryKey).toEqual([
@@ -140,5 +146,27 @@ describe("features/books/client", () => {
 		).rejects.toEqual({
 			issues: { root: ["Forbidden"] },
 		});
+	});
+
+	it("throws notFound from book route loader when the book does not exist", async () => {
+		getBookMock.mockResolvedValueOnce(null);
+
+		const queryClient = new QueryClient();
+		const loader = BookRoute.options.loader;
+		expect(loader).toBeTypeOf("function");
+		if (typeof loader !== "function") return;
+
+		let thrown: unknown;
+		try {
+			await loader({
+				context: { queryClient },
+				params: { id: "missing-book" },
+			} as any);
+		} catch (error) {
+			thrown = error;
+		}
+
+		expect(isNotFound(thrown)).toBe(true);
+		expect(getBookMock).toHaveBeenCalledTimes(1);
 	});
 });
