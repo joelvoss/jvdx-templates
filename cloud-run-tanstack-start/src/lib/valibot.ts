@@ -57,7 +57,19 @@ function parseSchemaIssues<
 >(error: unknown) {
 	try {
 		const parsed: unknown = JSON.parse(getErrorMessage(error));
-		if (!Array.isArray(parsed) || parsed.length === 0) return null;
+		if (
+			!Array.isArray(parsed) ||
+			parsed.length === 0 ||
+			!parsed.every(
+				(issue) =>
+					typeof issue === "object" &&
+					issue !== null &&
+					"message" in issue &&
+					typeof issue.message === "string",
+			)
+		) {
+			return null;
+		}
 		return v.flatten<TSchema>(
 			parsed as [v.BaseIssue<unknown>, ...v.BaseIssue<unknown>[]],
 		);

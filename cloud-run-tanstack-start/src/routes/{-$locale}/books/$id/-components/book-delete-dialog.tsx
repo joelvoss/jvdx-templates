@@ -55,7 +55,13 @@ export function BookDeleteDialog() {
 		});
 	};
 
-	const globalErrors = error?.issues?.root;
+	const globalErrors = error?.issues
+		? [
+				...(error.issues.root ?? []),
+				...(error.issues.other ?? []),
+				...Object.values(error.issues.nested ?? {}).flat(),
+			]
+		: undefined;
 
 	return (
 		<Modal isDismissable isOpen={showDelete} onOpenChange={closeModal}>

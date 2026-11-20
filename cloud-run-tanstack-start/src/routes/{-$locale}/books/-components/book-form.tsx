@@ -1,22 +1,15 @@
 import { Link } from "@tanstack/react-router";
+import type * as v from "valibot";
 
-import type { Book } from "~/features/books/schema";
+import type {
+	Book,
+	CreateBookSchema,
+	UpdateBookSchema,
+} from "~/features/books/schema";
 import { FormField } from "~/shared/form-field";
 import { useTranslations } from "~/shared/i18n";
 
 ////////////////////////////////////////////////////////////////////////////////
-
-export type BookFormIssues = {
-	root?: [string, ...string[]];
-	nested?: {
-		title?: [string, ...string[]];
-		author?: [string, ...string[]];
-		isbn?: [string, ...string[]];
-		publishedYear?: [string, ...string[]];
-		description?: [string, ...string[]];
-		coverImageUrl?: [string, ...string[]];
-	};
-};
 
 interface BookFormProps {
 	id?: string;
@@ -30,7 +23,9 @@ interface BookFormProps {
 		| "description"
 		| "coverImageUrl"
 	>;
-	issues?: BookFormIssues;
+	issues?:
+		| v.FlatErrors<typeof CreateBookSchema>
+		| v.FlatErrors<typeof UpdateBookSchema>;
 	globalErrorTitle: string;
 	submitLabel: string;
 	isPending: boolean;

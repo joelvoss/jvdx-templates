@@ -44,7 +44,8 @@ export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 			if (!book) throw notFound();
 			return book;
 		},
-		retry: (failureCount, error) => !isNotFound(error) && failureCount < 3,
+		retry: (failureCount, error) =>
+			typeof window !== "undefined" && !isNotFound(error) && failureCount < 3,
 	});
 
 ////////////////////////////////////////////////////////////////////////////////

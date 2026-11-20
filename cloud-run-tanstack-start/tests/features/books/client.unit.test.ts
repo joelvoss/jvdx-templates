@@ -1,5 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { isNotFound } from "@tanstack/react-router";
+import { isNotFound, notFound } from "@tanstack/react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { createBookMock, updateBookMock, deleteBookMock, getBookMock } =
@@ -148,7 +148,17 @@ describe("features/books/client", () => {
 		});
 	});
 
-	it("throws notFound from book route loader when the book does not exist", async () => {
+	it("falls back to root issues when an error message is a non-Valibot JSON array", async () => {
+		deleteBookMock.mockRejectedValueOnce(new Error('[{"error":"bad"}]'));
+
+		await expect(
+			(deleteBookMutationOpts({ id: "book-1" }) as any).mutationFn(),
+		).rejects.toEqual({
+			issues: { root: ['[{"error":"bad"}]'] },
+		});
+	});
+
+	it("throws notFound from book route loader and only retries non-404 errors in the browser", async () => {
 		getBookMock.mockResolvedValueOnce(null);
 
 		const queryClient = new QueryClient();
@@ -168,5 +178,22 @@ describe("features/books/client", () => {
 
 		expect(isNotFound(thrown)).toBe(true);
 		expect(getBookMock).toHaveBeenCalledTimes(1);
+
+		const retry = bookQueryOptions({ id: "missing-book" }).retry;
+		expect(retry).toBeTypeOf("function");
+		if (typeof retry !== "function") return;
+
+		const notFoundError = notFound() as unknown as Error;
+		expect(retry(0, new Error("Transient"))).toBe(false);
+		expect(retry(0, notFoundError)).toBe(false);
+
+		vi.stubGlobal("window", {});
+		try {
+			expect(retry(0, notFoundError)).toBe(false);
+			expect(retry(0, new Error("Transient"))).toBe(true);
+			expect(retry(3, new Error("Transient"))).toBe(false);
+		} finally {
+			vi.unstubAllGlobals();
+		}
 	});
 });
