@@ -138,7 +138,7 @@ export function getDateTimeFormatter(
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Replaces unescaped `#` placeholders with the formatted plural value,
+ * Replaces top-level `#` placeholders with the formatted plural value,
  * skipping any nested `{...}` ICU blocks so inner expressions stay intact.
  */
 function replacePluralHash(text: string, formattedNum: string): string {
@@ -173,7 +173,7 @@ function replacePluralHash(text: string, formattedNum: string): string {
  * messages that may contain further ICU syntax.
  */
 export interface ICUFormatHandlers<T> {
-	handleValue(value: unknown, position: number): T;
+	handleValue(value: unknown): T;
 	recurse(raw: string, values: Record<string, unknown> | undefined): T;
 }
 
@@ -268,7 +268,7 @@ export function processICU<T>(
 					formatter.format(new Date((value as string | number | Date) || 0)),
 				);
 			} else {
-				result.push(handlers.handleValue(value, i));
+				result.push(handlers.handleValue(value));
 			}
 
 			i = closeIndex + 1;

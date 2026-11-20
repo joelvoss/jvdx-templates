@@ -152,9 +152,31 @@ describe("lib/i18n", () => {
 			expect(formatMessage(msg, { n: 1 }, "en")).toBe("only you");
 			expect(formatMessage(msg, { n: 2 }, "en")).toBe("you and 1 other");
 			expect(formatMessage(msg, { n: 3 }, "en")).toBe("you and 2 others");
+
+			expect(
+				formatMessage(
+					"{n, plural, other {# authors with {m, plural, one {# book} other {# books}}}}",
+					{ n: 2, m: 1 },
+					"en",
+				),
+			).toBe("2 authors with 1 book");
+			expect(
+				formatMessage(
+					"{n, plural, other {#{suffix}}}",
+					{ n: 2, suffix: "!" },
+					"en",
+				),
+			).toBe("2!");
+			expect(
+				formatMessage(
+					"{n, plural, other {Use offset: 2 for # items}}",
+					{ n: 3 },
+					"en",
+				),
+			).toBe("Use offset: 2 for 3 items");
 		});
 
-		it("supports rich tags inside ICU plural branches and nested same-name tags", () => {
+		it("supports rich tags inside ICU plural branches, nested tags, and unique keys", () => {
 			const pluralMsg =
 				"{n, plural, one {<strong>#</strong> book} other {<strong>#</strong> books}}";
 			const pluralOut = formatRichMessage(
@@ -173,6 +195,24 @@ describe("lib/i18n", () => {
 			expect((pluralOut[0] as any).props.children).toBe("2");
 			expect(pluralOut[1]).toBe(" books");
 
+			const multiOut = formatRichMessage(
+				"{a, plural, other {<strong>#</strong>}} and {b, plural, other {<strong>#</strong>}}",
+				{
+					a: 1,
+					b: 2,
+					strong: (chunks: any) => createElement("strong", null, chunks),
+				},
+				"en",
+			);
+			expect(Array.isArray(multiOut)).toBe(true);
+			if (!Array.isArray(multiOut)) return;
+			const multiKeys = multiOut
+				.filter((seg) => isValidElement(seg))
+				.map((el) => el.key);
+			expect(multiKeys).toHaveLength(2);
+			expect(new Set(multiKeys).size).toBe(2);
+			expect(multiKeys.every((key) => key !== null)).toBe(true);
+
 			const nestedMsg = "<box>outer <box>inner</box></box>";
 			const nestedOut = formatRichMessage(
 				nestedMsg,
@@ -183,6 +223,16 @@ describe("lib/i18n", () => {
 				"en",
 			);
 			expect(nestedOut).toBe("[outer [inner]]");
+
+			const unbalancedOut = formatRichMessage(
+				"Hello <box>outer <box>inner</box>",
+				{
+					box: (chunks: any) =>
+						`[${Array.isArray(chunks) ? chunks.join("") : chunks}]`,
+				},
+				"en",
+			);
+			expect(unbalancedOut).toBe("Hello <box>outer [inner]");
 		});
 
 		it("supports rich tag rendering via formatRichMessage", () => {

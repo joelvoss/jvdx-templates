@@ -9,10 +9,8 @@ import {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Collapses adjacent string segments into a single string and ensures that if
- * the result is a single string, it returns just that string instead of an
- * array. This helps optimize the output of `formatRichMessage` by reducing
- * unnecessary array nesting and concatenating string literals where possible.
+ * Flattens nested segment arrays, collapses adjacent strings, and assigns
+ * unique React keys to sibling elements in the resulting array.
  */
 function collapseSegments(segments: (string | ReactNode)[]) {
 	if (segments.length === 0) return "";
@@ -30,7 +28,11 @@ function collapseSegments(segments: (string | ReactNode)[]) {
 		) {
 			collapsed[collapsed.length - 1] += seg;
 		} else {
-			collapsed.push(seg);
+			collapsed.push(
+				isValidElement(seg)
+					? cloneElement(seg, { key: collapsed.length })
+					: seg,
+			);
 		}
 	};
 
@@ -48,43 +50,22 @@ function collapseSegments(segments: (string | ReactNode)[]) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Pushes a segment into the result array. If the segment is an array, it
- * spreads its contents into the result; otherwise, it pushes the segment
- * directly.
- */
-function pushSegment(result: (string | ReactNode)[], segment: unknown) {
-	if (Array.isArray(segment)) {
-		result.push(...segment);
-	} else {
-		result.push(segment as string | ReactNode);
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-/**
  * Resolves a self-closing tag by looking up the corresponding render function
- * in the values object. If the render function exists and returns a valid React
- * element, it clones the element with a unique key and returns it. If the
- * render function does not exist, it returns the original tag as a string. If
- * any error occurs during rendering, it logs the error and returns the original
- * tag as a fallback.
+ * or React element in the values object. Falls back to the raw tag string if
+ * missing or if rendering throws.
  */
 function resolveSelfClosingTag(
 	fullTag: string,
 	tagName: string,
 	values: Record<string, unknown> | undefined,
-	position: number,
-) {
+): (string | ReactNode)[] {
 	const renderFn = values?.[tagName];
 	try {
 		if (typeof renderFn === "function") {
-			const node = renderFn(undefined);
-			if (isValidElement(node)) return [cloneElement(node, { key: position })];
-			return [node];
+			return [renderFn(undefined) as ReactNode];
 		}
 		if (isValidElement(renderFn)) {
-			return [cloneElement(renderFn, { key: position })];
+			return [renderFn];
 		}
 		if (!renderFn) return [`<${fullTag}>`];
 		return [];
@@ -97,43 +78,27 @@ function resolveSelfClosingTag(
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Resolves a wrapping tag by processing its inner content and looking up the
- * corresponding render function in the values object. If the render function
- * exists and returns a valid React element, it clones the element with a
- * unique key and returns it. If the render function does not exist, it returns
- * the processed inner content. If any error occurs during rendering, it logs
- * the error and returns the processed inner content as a fallback.
+ * Resolves a wrapping tag by formatting its inner content and passing the
+ * result to the corresponding render function if provided.
  */
 function resolveWrappingTag(
 	tagName: string,
 	innerContent: string,
 	values: Record<string, unknown> | undefined,
 	locale: string,
-	position: number,
-) {
+): (string | ReactNode)[] {
 	const children = formatRichMessage(innerContent, values, locale);
 	const renderFn = values?.[tagName];
 
 	try {
-		if (typeof renderFn === "function") {
-			const node = renderFn(children);
-			if (isValidElement(node)) return [cloneElement(node, { key: position })];
-			return [node];
-		}
-		if (Array.isArray(children)) {
-			return children.map((child, index) =>
-				isValidElement(child)
-					? cloneElement(child, { key: `${position}-${index}` })
-					: child,
-			);
-		}
-		if (isValidElement(children)) {
-			return [cloneElement(children, { key: position })];
-		}
-		return [children];
+		return [
+			typeof renderFn === "function"
+				? (renderFn(children) as ReactNode)
+				: children,
+		];
 	} catch (error) {
 		console.error(`Error rendering tag <${tagName}>:`, error);
-		return Array.isArray(children) ? children : [children];
+		return [children];
 	}
 }
 
@@ -201,16 +166,9 @@ export function formatRichMessage(
 	if (!message) return "";
 
 	const handlers: ICUFormatHandlers<ReactNode> = {
-		handleValue(value, position) {
-			if (isValidElement(value)) {
-				return cloneElement(value, { key: position });
-			}
-			if (Array.isArray(value)) {
-				return value.map((item, index) =>
-					isValidElement(item)
-						? cloneElement(item, { key: `${position}-${index}` })
-						: item,
-				);
+		handleValue(value) {
+			if (isValidElement(value) || Array.isArray(value)) {
+				return value as ReactNode;
 			}
 			return String(value !== undefined ? value : "");
 		},
@@ -250,48 +208,39 @@ export function formatRichMessage(
 			continue;
 		}
 
+		const isSelfClosing = fullTag.endsWith("/");
+		const tagName = fullTag.replace("/", "").trim();
+		const closingTag = `</${tagName}>`;
+		const closingIndex = isSelfClosing
+			? -1
+			: findClosingTag(message, tagName, endTagStart + 1);
+
+		if (!isSelfClosing && closingIndex === -1) {
+			i++;
+			continue;
+		}
+
 		if (i > pos) {
-			pushSegment(
-				result,
-				collapseSegments(
-					processICU(message.slice(pos, i), values, locale, handlers),
-				),
+			result.push(
+				...processICU(message.slice(pos, i), values, locale, handlers),
 			);
 		}
 
-		const isSelfClosing = fullTag.endsWith("/");
-		const tagName = fullTag.replace("/", "").trim();
-
 		if (isSelfClosing) {
-			result.push(...resolveSelfClosingTag(fullTag, tagName, values, i));
+			result.push(...resolveSelfClosingTag(fullTag, tagName, values));
 			pos = endTagStart + 1;
 			i = pos;
 			continue;
 		}
 
-		const closingTag = `</${tagName}>`;
-		const closingIndex = findClosingTag(message, tagName, endTagStart + 1);
-
-		if (closingIndex === -1) {
-			i++;
-			continue;
-		}
-
 		const innerContent = message.slice(endTagStart + 1, closingIndex);
-		result.push(
-			...resolveWrappingTag(tagName, innerContent, values, locale, i),
-		);
+		result.push(...resolveWrappingTag(tagName, innerContent, values, locale));
 		pos = closingIndex + closingTag.length;
 		i = pos;
 	}
 
 	if (pos < message.length) {
-		pushSegment(
-			result,
-			collapseSegments(
-				processICU(message.slice(pos), values, locale, handlers),
-			),
-		);
+		result.push(...processICU(message.slice(pos), values, locale, handlers));
 	}
 
 	return collapseSegments(result);
