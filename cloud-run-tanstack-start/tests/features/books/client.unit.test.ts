@@ -1,4 +1,18 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { createBookMock, updateBookMock, deleteBookMock } = vi.hoisted(() => ({
+	createBookMock: vi.fn(),
+	updateBookMock: vi.fn(),
+	deleteBookMock: vi.fn(),
+}));
+
+vi.mock("~/features/books/server", () => ({
+	createBook: createBookMock,
+	updateBook: updateBookMock,
+	deleteBook: deleteBookMock,
+	getBook: vi.fn(),
+	getBooks: vi.fn(),
+}));
 
 import {
 	bookQueryOptions,
@@ -11,6 +25,11 @@ import {
 ////////////////////////////////////////////////////////////////////////////////
 
 describe("features/books/client", () => {
+	beforeEach(() => {
+		createBookMock.mockReset();
+		updateBookMock.mockReset();
+		deleteBookMock.mockReset();
+	});
 	it("builds stable query keys", () => {
 		expect(booksQueryOptions({ sort: undefined }).queryKey).toEqual([
 			"books",
@@ -84,6 +103,42 @@ describe("features/books/client", () => {
 			issues: {
 				nested: expect.any(Object),
 			},
+		});
+	});
+
+	it("maps server errors consistently to root issues across create, update, and delete", async () => {
+		createBookMock.mockRejectedValueOnce(
+			new Error("A book with this ISBN already exists."),
+		);
+		updateBookMock.mockRejectedValueOnce(new Error("Book not found"));
+		deleteBookMock.mockRejectedValueOnce(new Error("Forbidden"));
+
+		const createFd = new FormData();
+		createFd.set("title", "New Book");
+		createFd.set("author", "Someone");
+		createFd.set("isbn", "978-1111111111");
+		createFd.set("publishedYear", "2024");
+
+		const updateFd = new FormData();
+		updateFd.set("id", "book-1");
+		updateFd.set("title", "Updated");
+
+		await expect(
+			(createBookMutationOpts() as any).mutationFn(createFd),
+		).rejects.toEqual({
+			issues: { root: ["A book with this ISBN already exists."] },
+		});
+
+		await expect(
+			(updateBookMutationOpts({ id: "book-1" }) as any).mutationFn(updateFd),
+		).rejects.toEqual({
+			issues: { root: ["Book not found"] },
+		});
+
+		await expect(
+			(deleteBookMutationOpts({ id: "book-1" }) as any).mutationFn(),
+		).rejects.toEqual({
+			issues: { root: ["Forbidden"] },
 		});
 	});
 });

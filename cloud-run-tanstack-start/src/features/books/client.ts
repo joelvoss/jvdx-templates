@@ -67,7 +67,7 @@ export const createBookMutationOpts = () =>
 			try {
 				return await createBook({ data, headers });
 			} catch (error: unknown) {
-				throw toMutationError(CreateBookSchema, error, { rootFallback: true });
+				throw toMutationError(CreateBookSchema, error);
 			}
 		},
 		meta: {
@@ -121,7 +121,7 @@ export const deleteBookMutationOpts = (
 			try {
 				return await deleteBook({ data, headers: getMutationHeaders() });
 			} catch (error: unknown) {
-				throw toMutationError(DeleteBookSchema, error, { rootFallback: true });
+				throw toMutationError(DeleteBookSchema, error);
 			}
 		},
 		meta: {

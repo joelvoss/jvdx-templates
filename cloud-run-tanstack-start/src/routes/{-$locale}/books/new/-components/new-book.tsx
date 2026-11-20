@@ -42,43 +42,14 @@ export function NewBook() {
 		mutate(data);
 	};
 
-	const fieldIssues = error?.issues?.nested;
-	const globalErrors = error?.issues?.root;
-	const currentYear = new Date().getFullYear();
-
 	return (
-		<>
-			{globalErrors ? (
-				<div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-					<p className="font-medium">{t("globalErrorTitle")}</p>
-					<ul className="mt-2 list-disc space-y-1 pl-5">
-						{globalErrors.map((e, i) => (
-							<li key={i}>{e}</li>
-						))}
-					</ul>
-				</div>
-			) : null}
-
-			<BookForm
-				onSubmit={handleSubmit}
-				isPending={isPending}
-				submitLabel={t("actions.create")}
-				cancelTo="/{-$locale}/books"
-				issues={{
-					title: fieldIssues?.title ? t("validation.titleMin") : undefined,
-					author: fieldIssues?.author ? t("validation.authorMin") : undefined,
-					isbn: fieldIssues?.isbn ? t("validation.isbnInvalid") : undefined,
-					publishedYear: fieldIssues?.publishedYear
-						? t("validation.publishedYearRange", { year: currentYear })
-						: undefined,
-					description: fieldIssues?.description
-						? t("validation.descriptionMin")
-						: undefined,
-					coverImageUrl: fieldIssues?.coverImageUrl
-						? t("validation.coverImageUrlInvalid")
-						: undefined,
-				}}
-			/>
-		</>
+		<BookForm
+			onSubmit={handleSubmit}
+			isPending={isPending}
+			globalErrorTitle={t("createErrorTitle")}
+			submitLabel={t("actions.create")}
+			cancelTo="/{-$locale}/books"
+			issues={error?.issues}
+		/>
 	);
 }

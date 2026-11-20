@@ -92,6 +92,8 @@ const routes = {
 		deleteDialog: {
 			toastTitle: "Buch gelöscht",
 			toastDescription: 'Das Buch "{title}" wurde erfolgreich gelöscht.',
+			errorTitle:
+				"Das Löschen des Buchs ist fehlgeschlagen. Bitte versuche es erneut:",
 			title: "Buch löschen",
 			confirm:
 				'Möchtest du "<strong>{title}</strong>" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
@@ -106,8 +108,10 @@ const routes = {
 				updatedTitle: "Buch aktualisiert",
 				updatedDescription: "Das Buch wurde erfolgreich aktualisiert.",
 			},
-			globalErrorTitle:
+			createErrorTitle:
 				"Das Erstellen des Buchs ist fehlgeschlagen. Bitte korrigiere den folgenden Fehler:",
+			updateErrorTitle:
+				"Das Aktualisieren des Buchs ist fehlgeschlagen. Bitte korrigiere den folgenden Fehler:",
 			fields: {
 				title: "Titel",
 				author: "Autor",

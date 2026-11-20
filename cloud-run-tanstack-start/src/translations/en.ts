@@ -89,6 +89,7 @@ const routes = {
 		deleteDialog: {
 			toastTitle: "Book Deleted",
 			toastDescription: 'The book "{title}" has been successfully deleted.',
+			errorTitle: "Book deletion failed. Please try again:",
 			title: "Delete Book",
 			confirm:
 				'Are you sure you want to delete "<strong>{title}</strong>"? This action cannot be undone.',
@@ -103,8 +104,10 @@ const routes = {
 				updatedTitle: "Book Updated",
 				updatedDescription: "The book has been successfully updated.",
 			},
-			globalErrorTitle:
+			createErrorTitle:
 				"Book creation failed. Please correct the following error:",
+			updateErrorTitle:
+				"Book update failed. Please correct the following error:",
 			fields: {
 				title: "Title",
 				author: "Author",
