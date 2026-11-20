@@ -32,6 +32,7 @@ vi.mock("@tanstack/react-start", async () => {
 
 vi.mock("@google-cloud/firestore", () => {
 	const store = new Map<string, Map<string, Record<string, unknown>>>();
+	let autoIdCounter = 3;
 
 	const ensureCollection = (name: string) => {
 		let col = store.get(name);
@@ -202,8 +203,11 @@ vi.mock("@google-cloud/firestore", () => {
 	}
 
 	class CollectionReference extends Query {
-		doc(id: string) {
-			return new DocumentReference(this._collection, id);
+		doc(id?: string) {
+			return new DocumentReference(
+				this._collection,
+				id ?? `book-${autoIdCounter++}`,
+			);
 		}
 	}
 
@@ -245,6 +249,7 @@ vi.mock("@google-cloud/firestore", () => {
 		Firestore,
 		__resetMockData() {
 			store.clear();
+			autoIdCounter = 3;
 		},
 		__seedMockData(
 			collection: string,
@@ -254,16 +259,6 @@ vi.mock("@google-cloud/firestore", () => {
 			for (const doc of docs) {
 				col.set(doc.id, { ...doc });
 			}
-		},
-	};
-});
-
-vi.mock("~/lib/uid", () => {
-	let counter = 3;
-	return {
-		uid: () => `book-${counter++}`,
-		__resetUid() {
-			counter = 3;
 		},
 	};
 });
@@ -313,11 +308,6 @@ async function seedBooks(books = seededBooks) {
 			bookId: book.id,
 		})),
 	);
-
-	const uidMock = (await import("~/lib/uid")) as unknown as {
-		__resetUid: () => void;
-	};
-	uidMock.__resetUid();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
