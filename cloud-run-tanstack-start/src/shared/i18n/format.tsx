@@ -1,6 +1,10 @@
 import { cloneElement, isValidElement, type ReactNode } from "react";
 
-import { type ICUFormatHandlers, processICU } from "~/lib/i18n/format";
+import {
+	findClosingBrace,
+	type ICUFormatHandlers,
+	processICU,
+} from "~/lib/i18n/format";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +18,11 @@ function collapseSegments(segments: (string | ReactNode)[]) {
 	if (segments.length === 0) return "";
 
 	const collapsed: (string | ReactNode)[] = [];
-	for (const seg of segments) {
+	const pushFlat = (seg: string | ReactNode) => {
+		if (Array.isArray(seg)) {
+			for (const item of seg) pushFlat(item);
+			return;
+		}
 		if (
 			typeof seg === "string" &&
 			collapsed.length > 0 &&
@@ -24,6 +32,10 @@ function collapseSegments(segments: (string | ReactNode)[]) {
 		} else {
 			collapsed.push(seg);
 		}
+	};
+
+	for (const seg of segments) {
+		pushFlat(seg);
 	}
 
 	if (collapsed.length === 1 && typeof collapsed[0] === "string") {
@@ -130,6 +142,49 @@ function resolveWrappingTag(
 const TAG_RE = /^[a-zA-Z0-9_-]+(\/)?$/;
 
 /**
+ * Finds the index of the matching closing tag for `tagName`, accounting for
+ * nested tags with the same name and skipping `{...}` ICU blocks.
+ */
+function findClosingTag(
+	message: string,
+	tagName: string,
+	fromIndex: number,
+): number {
+	const openTag = `<${tagName}>`;
+	const closeTag = `</${tagName}>`;
+	let depth = 1;
+	let i = fromIndex;
+
+	while (i < message.length) {
+		const code = message.charCodeAt(i);
+		if (code === 123) {
+			const closeBrace = findClosingBrace(message, i + 1);
+			if (closeBrace !== -1) {
+				i = closeBrace + 1;
+				continue;
+			}
+		}
+
+		if (message.startsWith(closeTag, i)) {
+			depth--;
+			if (depth === 0) return i;
+			i += closeTag.length;
+			continue;
+		}
+
+		if (message.startsWith(openTag, i)) {
+			depth++;
+			i += openTag.length;
+			continue;
+		}
+
+		i++;
+	}
+
+	return -1;
+}
+
+/**
  * Formats a rich message by parsing the input string for custom tags,
  * processing any ICU syntax, and replacing tags with corresponding React
  * elements based on the provided values. It handles both self-closing and
@@ -169,7 +224,16 @@ export function formatRichMessage(
 	let i = 0;
 
 	while (i < message.length) {
-		if (message.charCodeAt(i) !== 60) {
+		const code = message.charCodeAt(i);
+		if (code === 123) {
+			const closeBrace = findClosingBrace(message, i + 1);
+			if (closeBrace !== -1) {
+				i = closeBrace + 1;
+				continue;
+			}
+		}
+
+		if (code !== 60) {
 			i++;
 			continue;
 		}
@@ -206,7 +270,7 @@ export function formatRichMessage(
 		}
 
 		const closingTag = `</${tagName}>`;
-		const closingIndex = message.indexOf(closingTag, endTagStart);
+		const closingIndex = findClosingTag(message, tagName, endTagStart + 1);
 
 		if (closingIndex === -1) {
 			i++;

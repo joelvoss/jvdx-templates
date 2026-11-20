@@ -138,6 +138,34 @@ export function getDateTimeFormatter(
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
+ * Replaces unescaped `#` placeholders with the formatted plural value,
+ * skipping any nested `{...}` ICU blocks so inner expressions stay intact.
+ */
+function replacePluralHash(text: string, formattedNum: string): string {
+	let out = "";
+	let depth = 0;
+
+	for (let i = 0; i < text.length; i++) {
+		const ch = text[i];
+		if (ch === "{") {
+			depth++;
+			out += ch;
+		} else if (ch === "}") {
+			if (depth > 0) depth--;
+			out += ch;
+		} else if (ch === "#" && depth === 0) {
+			out += formattedNum;
+		} else {
+			out += ch;
+		}
+	}
+
+	return out;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/**
  * Interface defining handlers for processing ICU messages. It includes a
  * method to handle individual values and a method to recursively process
  * nested ICU messages. The `handleValue` method is called for simple
@@ -199,10 +227,13 @@ export function processICU<T>(
 			const value = values?.[key];
 
 			if (type === "plural" || type === "selectordinal") {
-				const offsetMatch = rest.match(/offset:\s*(\d+)/);
+				const offsetMatch = rest.match(/^\s*offset:\s*(\d+)/);
 				const offset = offsetMatch ? parseInt(offsetMatch[1], 10) : 0;
-				const numValue = (typeof value === "number" ? value : 0) - offset;
-				const cleanRest = rest.replace(/offset:\s*\d+/, "");
+				const rawNum = typeof value === "number" ? value : 0;
+				const numValue = rawNum - offset;
+				const cleanRest = offsetMatch
+					? rest.slice(offsetMatch[0].length)
+					: rest;
 				const options = parseICUOptions(cleanRest);
 
 				const pluralType = type === "selectordinal" ? "ordinal" : "cardinal";
@@ -215,16 +246,13 @@ export function processICU<T>(
 					// Fall back to the default branch.
 				}
 
-				let selectedRaw =
-					options[`=${numValue}`] ?? options[rule] ?? options.other ?? "";
+				const selectedRaw =
+					options[`=${rawNum}`] ?? options[rule] ?? options.other ?? "";
 
 				const formattedNum = getNumberFormatter(locale).format(numValue);
-				selectedRaw = selectedRaw.replace(
-					/(^|[^{])#(?=([^{]|$))/g,
-					`$1${formattedNum}`,
-				);
+				const resolvedRaw = replacePluralHash(selectedRaw, formattedNum);
 
-				result.push(handlers.recurse(selectedRaw, values));
+				result.push(handlers.recurse(resolvedRaw, values));
 			} else if (type === "select") {
 				const options = parseICUOptions(rest);
 				const selectedRaw = options[String(value)] ?? options.other ?? "";

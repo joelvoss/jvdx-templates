@@ -144,11 +144,44 @@ describe("lib/i18n", () => {
 			expect(formatMessage(msg, { n: 2 }, "en")).toBe("2 guests");
 		});
 
-		it("supports plural offset", () => {
+		it("supports plural offset with explicit matches before offset subtraction", () => {
 			const msg =
-				"{n, plural, offset:1 =0 {no guests} one {# guest} other {# guests}}";
-			expect(formatMessage(msg, { n: 1 }, "en")).toBe("no guests");
-			expect(formatMessage(msg, { n: 2 }, "en")).toBe("1 guest");
+				"{n, plural, offset:1 =0 {nobody} =1 {only you} one {you and # other} other {you and # others}}";
+			expect(formatMessage(msg, { n: 0 }, "en")).toBe("nobody");
+			expect(formatMessage(msg, { n: 1 }, "en")).toBe("only you");
+			expect(formatMessage(msg, { n: 2 }, "en")).toBe("you and 1 other");
+			expect(formatMessage(msg, { n: 3 }, "en")).toBe("you and 2 others");
+		});
+
+		it("supports rich tags inside ICU plural branches and nested same-name tags", () => {
+			const pluralMsg =
+				"{n, plural, one {<strong>#</strong> book} other {<strong>#</strong> books}}";
+			const pluralOut = formatRichMessage(
+				pluralMsg,
+				{
+					n: 2,
+					strong: (chunks: any) =>
+						createElement("strong", { "data-testid": "strong" }, chunks),
+				},
+				"en",
+			);
+
+			expect(Array.isArray(pluralOut)).toBe(true);
+			if (!Array.isArray(pluralOut)) return;
+			expect(isValidElement(pluralOut[0])).toBe(true);
+			expect((pluralOut[0] as any).props.children).toBe("2");
+			expect(pluralOut[1]).toBe(" books");
+
+			const nestedMsg = "<box>outer <box>inner</box></box>";
+			const nestedOut = formatRichMessage(
+				nestedMsg,
+				{
+					box: (chunks: any) =>
+						`[${Array.isArray(chunks) ? chunks.join("") : chunks}]`,
+				},
+				"en",
+			);
+			expect(nestedOut).toBe("[outer [inner]]");
 		});
 
 		it("supports rich tag rendering via formatRichMessage", () => {
