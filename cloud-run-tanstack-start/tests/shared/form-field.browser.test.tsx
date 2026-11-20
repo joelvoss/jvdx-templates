@@ -22,6 +22,7 @@ describe("FormField", () => {
 		await expect.element(input).toHaveAttribute("id", "book-isbn-input");
 		await expect.element(input).toHaveAttribute("name", "isbn");
 		await expect.element(input).toHaveAttribute("autocomplete", "off");
+		await expect.element(input).toHaveAttribute("data-testid", "isbn-input");
 		await expect.element(input).toBeDisabled();
 	});
 

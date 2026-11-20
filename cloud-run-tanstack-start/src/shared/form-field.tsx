@@ -39,7 +39,7 @@ type TextAreaFieldProps = BaseFormFieldProps &
 	};
 
 type InputFieldProps = BaseFormFieldProps &
-	Omit<React.InputHTMLAttributes<HTMLInputElement>, "name" | "type"> & {
+	Omit<React.ComponentProps<"input">, "name" | "type"> & {
 		type?: InputType;
 	};
 
@@ -75,24 +75,28 @@ export function FormField(props: FormFieldProps) {
 ////////////////////////////////////////////////////////////////////////////////
 
 function renderControl(props: FormFieldProps, id: string, required: boolean) {
+	const controlClassName = clsx(
+		"w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
+		props.issue ? "border-red-500" : null,
+		props.className,
+	);
+
 	if (props.type === "textarea") {
 		const {
-			name,
 			label: _label,
-			issue,
+			issue: _issue,
 			id: _id,
 			type: _type,
 			required: _required,
 			rows,
 			style,
-			className,
+			className: _className,
 			...rest
 		} = props;
 
 		return (
 			<TextArea
 				{...rest}
-				name={name}
 				id={id}
 				required={required}
 				rows={rows}
@@ -102,23 +106,18 @@ function renderControl(props: FormFieldProps, id: string, required: boolean) {
 				// it's provided. We have to use the style prop since tailwind
 				// doesn't support dynamic runtime values.
 				style={rows ? { minHeight: `calc(${rows}lh + 1rem)`, ...style } : style}
-				className={clsx(
-					"field-sizing-content w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
-					issue ? "border-red-500" : null,
-					className,
-				)}
+				className={clsx("field-sizing-content", controlClassName)}
 			/>
 		);
 	}
 
 	const {
-		name,
 		label: _label,
-		issue,
+		issue: _issue,
 		id: _id,
 		type = "text",
 		required: _required,
-		className,
+		className: _className,
 		...rest
 	} = props;
 
@@ -126,14 +125,9 @@ function renderControl(props: FormFieldProps, id: string, required: boolean) {
 		<input
 			{...rest}
 			type={type}
-			name={name}
 			id={id}
 			required={required}
-			className={clsx(
-				"w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
-				issue ? "border-red-500" : null,
-				className,
-			)}
+			className={controlClassName}
 		/>
 	);
 }
