@@ -1,5 +1,4 @@
 import {
-	type AbstractIntlMessages,
 	defaultLocale,
 	type Locale,
 	supportedLocales,
@@ -10,6 +9,12 @@ import en from "./en";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export const messages: Record<Locale, AbstractIntlMessages> = { en, de };
+type MessageShape<T> = {
+	[K in keyof T]: T[K] extends string ? string : MessageShape<T[K]>;
+};
+
+export type AppMessages = MessageShape<typeof en>;
+
+export const messages: Record<Locale, AppMessages> = { en, de };
 
 export { defaultLocale, supportedLocales };

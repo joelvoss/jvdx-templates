@@ -26,7 +26,7 @@ const shared = {
 	notfound: {
 		code: "404",
 		title: "Seite nicht gefunden",
-		goback: "Zurück gehen",
+		goBack: "Zurück gehen",
 	},
 	error: {
 		code: "500",

@@ -10,7 +10,6 @@ import {
 	defaultLocale,
 	I18N_COOKIE_NAME,
 	I18N_WINDOW_KEY,
-	type AbstractIntlMessages,
 	type Locale,
 } from "~/lib/i18n/config";
 import {
@@ -19,7 +18,7 @@ import {
 	parseLocaleCookie,
 	shouldIgnorePath,
 } from "~/lib/i18n/locale";
-import { messages } from "~/translations";
+import { type AppMessages, messages } from "~/translations";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,7 +72,9 @@ const GetMessagesSchema = v.object({
  */
 export const getMessagesFn = createServerFn({ method: "GET" })
 	.validator(GetMessagesSchema)
-	.handler(({ data }) => messages[data.locale as Locale] || {});
+	.handler(
+		({ data }) => messages[data.locale as Locale] ?? messages[defaultLocale],
+	);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -92,7 +93,7 @@ export const getCurrentMessages = createIsomorphicFn()
 	})
 	.client(async (locale) => {
 		if (I18N_WINDOW_KEY in window && window[I18N_WINDOW_KEY]) {
-			return window[I18N_WINDOW_KEY] as AbstractIntlMessages;
+			return window[I18N_WINDOW_KEY] as AppMessages;
 		}
 
 		return getMessagesFn({ data: { locale } });

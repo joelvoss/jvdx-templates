@@ -17,6 +17,7 @@ import {
 	serializeMessagesForScript,
 	translations,
 } from "~/shared/i18n";
+import { messages as appMessages, supportedLocales } from "~/translations";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -228,7 +229,7 @@ describe("lib/i18n", () => {
 		it("falls back to key when missing", () => {
 			const messages = { ns: { greet: "hi" } };
 			const t = translations(messages, "en", "ns");
-			expect(t("missing")).toBe("ns.missing");
+			expect(t("missing" as never)).toBe("ns.missing");
 		});
 	});
 
@@ -301,6 +302,45 @@ describe("lib/i18n", () => {
 			});
 			const result = i18nMiddleware(request);
 			expect(result).toEqual({});
+		});
+	});
+
+	describe("translation catalogs", () => {
+		function collectLeafKeys(
+			obj: Record<string, unknown>,
+			prefix = "",
+		): string[] {
+			return Object.entries(obj)
+				.flatMap(([key, value]) => {
+					const path = prefix ? `${prefix}.${key}` : key;
+					if (typeof value === "string") return [path];
+					if (value && typeof value === "object") {
+						return collectLeafKeys(value as Record<string, unknown>, path);
+					}
+					return [];
+				})
+				.sort();
+		}
+
+		it("keeps identical non-empty leaf keys across all locale catalogs", () => {
+			const [baseLocale, ...otherLocales] = supportedLocales;
+			const baseKeys = collectLeafKeys(appMessages[baseLocale]);
+			expect(baseKeys).toContain("shared.notfound.goBack");
+
+			for (const locale of otherLocales) {
+				const localeKeys = collectLeafKeys(appMessages[locale]);
+				expect(localeKeys).toEqual(baseKeys);
+			}
+
+			for (const locale of supportedLocales) {
+				for (const key of baseKeys) {
+					const value = getNestedMessage(appMessages[locale], key);
+					expect(typeof value, `${locale}.${key}`).toBe("string");
+					expect((value as string).length, `${locale}.${key}`).toBeGreaterThan(
+						0,
+					);
+				}
+			}
 		});
 	});
 });

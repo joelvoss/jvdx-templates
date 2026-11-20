@@ -92,6 +92,9 @@ describe("auth browser smoke", () => {
 						},
 					);
 					expect(notFoundResponse?.status()).toBe(404);
+					expect(
+						await page.getByRole("button", { name: "Go back" }).isVisible(),
+					).toBe(true);
 					expect(pageErrors).toEqual([]);
 				} finally {
 					await browserContext.close();
