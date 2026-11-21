@@ -68,7 +68,6 @@ const routes = {
 			errorTitle: "There was an unexpected error loading the books.",
 			errorSubtitle:
 				"Please try again later or contact support if the problem persists.",
-			errorMessageLabel: "Error message:",
 		},
 		details: {
 			edit: "Edit",
@@ -84,7 +83,6 @@ const routes = {
 			errorTitle: "There was an unexpected error loading this book.",
 			errorSubtitle:
 				"Please try again later or contact support if the problem persists.",
-			errorMessageLabel: "Error message:",
 		},
 		deleteDialog: {
 			toastTitle: "Book Deleted",

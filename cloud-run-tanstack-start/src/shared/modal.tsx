@@ -18,7 +18,7 @@ export function Modal(props: ModalOverlayProps) {
 		<ModalOverlay
 			{...overlayProps}
 			{...rest}
-			className="diration-200 absolute top-0 left-0 isolate z-20 h-(--page-height) w-full bg-black/50 text-center backdrop-blur-lg entering:ease-out entering:animate-in entering:fade-in exiting:ease-in exiting:animate-out exiting:fade-out"
+			className="duration-200 absolute top-0 left-0 isolate z-20 h-(--page-height) w-full bg-black/50 text-center backdrop-blur-lg entering:ease-out entering:animate-in entering:fade-in exiting:ease-in exiting:animate-out exiting:fade-out"
 		>
 			<div className="sticky top-0 left-0 w-full h-(--visual-viewport-height) flex items-center justify-center box-border">
 				<RACModal

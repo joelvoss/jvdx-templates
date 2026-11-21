@@ -43,7 +43,7 @@ export function findClosingBrace(text: string, startIndex: number): number {
  * mapping keys to their corresponding values, which can be used for processing
  * pluralization and selection in ICU messages.
  */
-export function parseICUOptions(text: string): Record<string, string> {
+function parseICUOptions(text: string): Record<string, string> {
 	const options: Record<string, string> = {};
 
 	let i = 0;
@@ -105,7 +105,7 @@ const numberFormatCache = new Map<string, Intl.NumberFormat>();
  * instance for the specified locale does not exist in the cache, it creates a
  * new one, stores it in the cache, and returns it.
  */
-export function getNumberFormatter(locale: string) {
+function getNumberFormatter(locale: string) {
 	if (!numberFormatCache.has(locale)) {
 		numberFormatCache.set(locale, new Intl.NumberFormat(locale));
 	}
@@ -124,7 +124,7 @@ const dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
  * does not exist in the cache, it creates a new one, stores it in the cache,
  * and returns it.
  */
-export function getDateTimeFormatter(
+function getDateTimeFormatter(
 	locale: string,
 	options?: Intl.DateTimeFormatOptions,
 ) {

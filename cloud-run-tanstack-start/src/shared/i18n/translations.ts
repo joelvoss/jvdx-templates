@@ -26,7 +26,7 @@ export type NamespacePaths<T> = {
 		: never;
 }[keyof T & string];
 
-export type MessagePaths<T> = {
+type MessagePaths<T> = {
 	[K in keyof T & string]: T[K] extends string
 		? K
 		: T[K] extends Record<string, unknown>
@@ -34,10 +34,7 @@ export type MessagePaths<T> = {
 			: never;
 }[keyof T & string];
 
-export type ValueAtPath<
-	T,
-	P extends string,
-> = P extends `${infer Head}.${infer Rest}`
+type ValueAtPath<T, P extends string> = P extends `${infer Head}.${infer Rest}`
 	? Head extends keyof T
 		? ValueAtPath<T[Head], Rest>
 		: never

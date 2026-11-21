@@ -70,7 +70,6 @@ const routes = {
 				"Beim Laden der Bücher ist ein unerwarteter Fehler aufgetreten.",
 			errorSubtitle:
 				"Bitte versuche es später erneut oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-			errorMessageLabel: "Fehlermeldung:",
 		},
 		details: {
 			edit: "Bearbeiten",
@@ -87,7 +86,6 @@ const routes = {
 				"Beim Laden dieses Buchs ist ein unerwarteter Fehler aufgetreten.",
 			errorSubtitle:
 				"Bitte versuche es später erneut oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-			errorMessageLabel: "Fehlermeldung:",
 		},
 		deleteDialog: {
 			toastTitle: "Buch gelöscht",

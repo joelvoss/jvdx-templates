@@ -6,15 +6,11 @@ import { LanguageSwitcher } from "~/shared/language-switcher";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-interface NavigationProps {
-	hideLinks?: boolean;
-}
-
 /**
  * Navigation Component.
  * Renders a responsive navigation bar with links and a language switcher.
  */
-export function Navigation(props: NavigationProps) {
+export function Navigation() {
 	const t = useTranslations("shared.navigation");
 
 	return (
@@ -25,11 +21,9 @@ export function Navigation(props: NavigationProps) {
 						<Link to="/{-$locale}" className="text-2xl font-bold text-sky-600">
 							{t("title")}
 						</Link>
-						{props.hideLinks ? null : (
-							<div className="ml-10 flex space-x-8">
-								<NavLink to="/{-$locale}/books">{t("nav.books")}</NavLink>
-							</div>
-						)}
+						<div className="ml-10 flex space-x-8">
+							<NavLink to="/{-$locale}/books">{t("nav.books")}</NavLink>
+						</div>
 					</div>
 
 					<div className="flex items-center">

@@ -8,10 +8,6 @@
 		@apply text-gray-900 bg-gray-50;
 	}
 
-	.using-mouse * {
-		outline: none !important;
-	}
-
 	::view-transition-new(.toast):only-child {
 		animation: slide-in 400ms;
 	}
