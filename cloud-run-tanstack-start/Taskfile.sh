@@ -17,7 +17,7 @@ start() {
 		setup_env dev
 		export NODE_ENV="development"
 		node ./express-server.mjs
-	
+
 	elif [ "$1" = "docker" ]; then
 		echo "Starting production server (inside docker)..."
 		setup_env dev
@@ -43,13 +43,13 @@ start() {
 build() {
 	echo "Building for production..."
 	DIST_DIR=dist
-	
+
 	rm -rf "${DIST_DIR}"
-	
+
 	vite build
-	
+
 	cp express-server.mjs "${DIST_DIR}/"
-	jq '{name, version, type, dependencies}' package.json > "${DIST_DIR}/package.json"
+	jq '{name, version, type, dependencies}' package.json >"${DIST_DIR}/package.json"
 	cp package-lock.json "${DIST_DIR}/package-lock.json"
 }
 
@@ -69,11 +69,33 @@ typecheck() {
 }
 
 test() {
-	if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
-		echo "Running vitest in watch mode..."
+	MODE="run"
+	case "$1" in
+	unit)
 		shift
+		if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+			MODE="watch"
+			shift
+		fi
+		set -- --project unit-node --project unit-browser "$@"
+		;;
+	integration)
+		shift
+		if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+			MODE="watch"
+			shift
+		fi
+		set -- --project integration "$@"
+		;;
+	-w | --watch)
+		MODE="watch"
+		shift
+		;;
+	esac
+
+	if [ "${MODE}" = "watch" ]; then
+		echo "Running vitest in watch mode..."
 		vitest "$@"
-		return
 	else
 		echo "Running vitest..."
 		vitest run "$@"
@@ -153,7 +175,8 @@ help() {
 	echo "  format             Format code"
 	echo "  lint               Lint code"
 	echo "  typecheck          Run TypeScript type checking"
-	echo "  test               Run tests"
+	echo "  test [unit|integration] [-w|--watch]"
+	echo "                     Run tests"
 	echo "  validate           Validate code (typecheck + lint + test)"
 	echo "  clean              Clean temporary files/directories"
 	echo "  deploy             Deploy to Cloud Run"
