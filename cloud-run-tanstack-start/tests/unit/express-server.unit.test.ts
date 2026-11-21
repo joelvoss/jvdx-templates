@@ -4,28 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { validateMutationRequest } from "~/lib/auth";
 
-const mocks = vi.hoisted(() => ({
-	app: undefined as import("express").Express | undefined,
-}));
-
-vi.mock("express", async (importOriginal) => {
-	const { default: express } = await importOriginal<{
-		default: typeof import("express");
-	}>();
-	return {
-		default: Object.assign(
-			() => {
-				const app = express();
-				app.listen = vi.fn(() => ({
-					close: vi.fn(),
-				})) as unknown as typeof app.listen;
-				mocks.app = app;
-				return app;
-			},
-			{ static: express.static },
-		),
-	};
-});
+import { createExpressApp } from "../../express-server.mjs";
 
 vi.mock("vite", () => ({
 	createServer: async () => ({
@@ -43,18 +22,11 @@ vi.mock("vite", () => ({
 }));
 
 let server: Server | undefined;
-let signalListeners: Map<"SIGINT" | "SIGTERM", Set<unknown>>;
 
 describe("Express srvx proxy boundary", () => {
 	beforeEach(() => {
 		vi.stubEnv("NODE_ENV", "development");
 		vi.stubEnv("K_SERVICE", "");
-		signalListeners = new Map(
-			["SIGINT", "SIGTERM"].map((signal) => [
-				signal as "SIGINT" | "SIGTERM",
-				new Set(process.listeners(signal)),
-			]),
-		);
 	});
 
 	afterEach(async () => {
@@ -64,11 +36,6 @@ describe("Express srvx proxy boundary", () => {
 				currentServer.close((error) => (error ? reject(error) : resolve())),
 			);
 			server = undefined;
-		}
-		for (const [signal, original] of signalListeners) {
-			for (const listener of process.listeners(signal)) {
-				if (!original.has(listener)) process.removeListener(signal, listener);
-			}
 		}
 		vi.unstubAllEnvs();
 	});
@@ -103,9 +70,8 @@ describe("Express srvx proxy boundary", () => {
 		"uses service %s and rejects/accepts origin %s",
 		async (service, origin, url, violation) => {
 			vi.stubEnv("K_SERVICE", service);
-			vi.resetModules();
-			await import("../express-server.mjs");
-			server = createServer(mocks.app!);
+			const app = await createExpressApp();
+			server = createServer(app);
 			await new Promise<void>((resolve) =>
 				server!.listen(0, "127.0.0.1", resolve),
 			);

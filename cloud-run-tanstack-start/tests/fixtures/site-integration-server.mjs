@@ -1,27 +1,13 @@
-import { createServer as createHttpServer } from "node:http";
 import path from "node:path";
 
-import express from "express";
-import { toNodeHandler } from "srvx/node";
 import { createServer } from "vite";
+
+import { createExpressApp } from "../../express-server.mjs";
 
 const REAL_FIRESTORE_PATH = path.resolve("./src/lib/firestore.ts");
 const FAKE_FIRESTORE_PATH = path.resolve(
 	"./tests/fixtures/in-memory-firestore.ts",
 );
-
-const SECURITY_HEADERS = new Map([
-	["Cross-Origin-Resource-Policy", "same-origin"],
-	["Cross-Origin-Opener-Policy", "same-origin"],
-	["Origin-Agent-Cluster", "?1"],
-	["Referrer-Policy", "no-referrer"],
-	["X-Content-Type-Options", "nosniff"],
-	["X-DNS-Prefetch-Control", "off"],
-	["X-Download-Options", "noopen"],
-	["X-Frame-Options", "SAMEORIGIN"],
-	["X-Permitted-Cross-Domain-Policies", "none"],
-	["X-XSS-Protection", "0"],
-]);
 
 const fakeFirestorePlugin = {
 	name: "test-in-memory-firestore",
@@ -38,11 +24,8 @@ const fakeFirestorePlugin = {
 	},
 };
 
-const app = express();
-const server = createHttpServer(app);
-
 const vite = await createServer({
-	server: { middlewareMode: true, hmr: { server } },
+	server: { middlewareMode: true, hmr: false },
 	plugins: [fakeFirestorePlugin],
 });
 
@@ -50,27 +33,9 @@ const firestoreFixture = await vite.ssrLoadModule(
 	"./tests/fixtures/in-memory-firestore.ts",
 );
 
-app.use((_req, res, next) => {
-	res.setHeaders(SECURITY_HEADERS);
-	res.removeHeader("X-Powered-By");
-	next();
-});
-app.use(vite.middlewares);
-app.use(async (req, res, next) => {
-	try {
-		const { default: serverEntry } =
-			await vite.ssrLoadModule("./src/server.ts");
-		const handler = toNodeHandler(serverEntry.fetch);
-		await handler(req, res);
-	} catch (error) {
-		if (error instanceof Error) {
-			vite.ssrFixStacktrace(error);
-		}
-		next(error);
-	}
-});
+const app = await createExpressApp({ development: true, viteServer: vite });
 
-server.listen(0, "127.0.0.1", () => {
+const server = app.listen(0, "127.0.0.1", () => {
 	const address = server.address();
 	process.send({
 		type: "ready",

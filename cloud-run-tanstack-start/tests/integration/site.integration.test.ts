@@ -537,7 +537,8 @@ describe("site browser integration", () => {
 			await page.getByRole("button", { name: "Go back" }).click();
 			await page.waitForURL((url) => url.pathname === "/books/book-1");
 
-			// Missing book edit route and localized missing book also return HTTP 404.
+			// Missing book edit route and localized missing book also return
+			// HTTP 404.
 			const missingEdit = await page.goto("/books/does-not-exist/edit", {
 				waitUntil: "networkidle",
 			});
@@ -633,7 +634,8 @@ describe("site browser integration", () => {
 			);
 			await dialog.waitFor({ state: "hidden" });
 
-			// Reopen dialog, trigger a server error, verify alert, then reset on close.
+			// Reopen dialog, trigger a server error, verify alert, then reset
+			// on close.
 			await sendStoreCommand({
 				action: "failNext",
 				operation: "delete",
@@ -653,7 +655,8 @@ describe("site browser integration", () => {
 			await dialog.getByRole("button", { name: "Cancel" }).click();
 			await dialog.waitFor({ state: "hidden" });
 
-			// Reopening should have cleared the previous error; confirming deletes book.
+			// Reopening should have cleared the previous error; confirming
+			// deletes book.
 			await page.getByRole("link", { name: "Delete" }).click();
 			await dialog.waitFor({ state: "visible" });
 			expect(await dialog.getByRole("alert").count()).toBe(0);
@@ -680,7 +683,8 @@ describe("site browser integration", () => {
 		async () => {
 			await page.goto("/books/new", { waitUntil: "networkidle" });
 
-			// Remove the readable CSRF mirror cookie while keeping the session cookie.
+			// Remove the readable CSRF mirror cookie while keeping the session
+			// cookie.
 			await context!.clearCookies({ name: "__app_csrf" });
 
 			await page.getByLabel("Title").fill("Blocked Book");
