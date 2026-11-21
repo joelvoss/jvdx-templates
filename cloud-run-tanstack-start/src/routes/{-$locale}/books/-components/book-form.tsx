@@ -33,11 +33,13 @@ interface BookFormProps {
 	cancelTo: "/{-$locale}/books" | "/{-$locale}/books/$id";
 }
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 ////////////////////////////////////////////////////////////////////////////////
 
 export function BookForm(props: BookFormProps) {
 	const t = useTranslations("routes.books.form");
-	const currentYear = new Date().getFullYear();
+	const currentYear = CURRENT_YEAR;
 	const fieldIssues = props.issues?.nested;
 	const globalErrors = props.issues?.root;
 
