@@ -1,5 +1,5 @@
 import { isNotFound } from "@tanstack/react-router";
-import { Component, createElement, type ErrorInfo } from "react";
+import { Component, createElement } from "react";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -12,7 +12,6 @@ interface ErrorBoundaryProps {
 	children: React.ReactNode;
 	fallback: React.ReactNode | ((props: ErrorComponentProps) => React.ReactNode);
 	getResetKey?: () => number | string | undefined;
-	onCatch?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface ErrorBoundaryState {
@@ -45,12 +44,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps> {
 	): void {
 		if (prevState.error && prevState.resetKey !== this.state.resetKey) {
 			this.reset();
-		}
-	}
-
-	componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-		if (this.props.onCatch) {
-			this.props.onCatch(error, errorInfo);
 		}
 	}
 

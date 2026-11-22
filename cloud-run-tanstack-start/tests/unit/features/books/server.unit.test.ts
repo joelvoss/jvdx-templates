@@ -1,7 +1,12 @@
 import * as v from "valibot";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CreateBookSchema } from "~/features/books/schema";
+import { type Book, CreateBookSchema } from "~/features/books/schema";
+
+import {
+	InMemoryFirestore,
+	resetFirestore,
+} from "../../../fixtures/in-memory-firestore";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -30,247 +35,13 @@ vi.mock("@tanstack/react-start", async () => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-vi.mock("@google-cloud/firestore", () => {
-	const store = new Map<string, Map<string, Record<string, unknown>>>();
-
-	const ensureCollection = (name: string) => {
-		let col = store.get(name);
-		if (!col) {
-			col = new Map();
-			store.set(name, col);
-		}
-		return col;
-	};
-
-	class DocumentSnapshot {
-		id: string;
-		private _data?: Record<string, unknown>;
-
-		constructor(id: string, data?: Record<string, unknown>) {
-			this.id = id;
-			this._data = data;
-		}
-
-		get exists() {
-			return Boolean(this._data);
-		}
-
-		data() {
-			return this._data;
-		}
-	}
-
-	class QuerySnapshot {
-		docs: DocumentSnapshot[];
-
-		constructor(docs: DocumentSnapshot[]) {
-			this.docs = docs;
-		}
-
-		get empty() {
-			return this.docs.length === 0;
-		}
-	}
-
-	type Filter = { field: string; op: string; value: unknown };
-	type Order = { field: string; direction: "asc" | "desc" };
-
-	class Query {
-		protected _collection: string;
-		protected _filters: Filter[];
-		protected _orders: Order[];
-
-		constructor(
-			collection: string,
-			filters: Filter[] = [],
-			orders: Order[] = [],
-		) {
-			this._collection = collection;
-			this._filters = filters;
-			this._orders = orders;
-		}
-
-		where(field: string, op: string, value: unknown) {
-			return new Query(
-				this._collection,
-				[...this._filters, { field, op, value }],
-				this._orders,
-			);
-		}
-
-		orderBy(field: string, direction: "asc" | "desc" = "asc") {
-			return new Query(this._collection, this._filters, [
-				...this._orders,
-				{ field, direction },
-			]);
-		}
-
-		limit(count: number) {
-			const query = new Query(this._collection, this._filters, this._orders);
-			query._limit = count;
-			return query;
-		}
-
-		async get() {
-			const col = ensureCollection(this._collection);
-			let docs = Array.from(col.entries()).map(
-				([id, data]) => new DocumentSnapshot(id, data),
-			);
-
-			for (const filter of this._filters) {
-				docs = docs.filter((doc) => {
-					const data = doc.data() ?? {};
-					const value = filter.field === "id" ? doc.id : data[filter.field];
-					switch (filter.op) {
-						case "==":
-							return value === filter.value;
-						case "!=":
-							return value !== filter.value;
-						default:
-							return true;
-					}
-				});
-			}
-
-			for (const order of this._orders) {
-				docs = docs.sort((a, b) => {
-					const aData = a.data() ?? {};
-					const bData = b.data() ?? {};
-					const aValue = order.field === "id" ? a.id : aData[order.field];
-					const bValue = order.field === "id" ? b.id : bData[order.field];
-					const aComparable =
-						typeof aValue === "number" || typeof aValue === "string"
-							? aValue
-							: String(aValue);
-					const bComparable =
-						typeof bValue === "number" || typeof bValue === "string"
-							? bValue
-							: String(bValue);
-					if (aValue === bValue) return 0;
-					if (aValue === undefined) return order.direction === "asc" ? 1 : -1;
-					if (bValue === undefined) return order.direction === "asc" ? -1 : 1;
-					return order.direction === "asc"
-						? aComparable < bComparable
-							? -1
-							: 1
-						: aComparable < bComparable
-							? 1
-							: -1;
-				});
-			}
-
-			return new QuerySnapshot(docs.slice(0, this._limit));
-		}
-
-		_limit = Number.POSITIVE_INFINITY;
-	}
-
-	class DocumentReference {
-		private _collection: string;
-		private _id: string;
-
-		constructor(collection: string, id: string) {
-			this._collection = collection;
-			this._id = id;
-		}
-
-		get id() {
-			return this._id;
-		}
-
-		async get() {
-			const col = ensureCollection(this._collection);
-			const data = col.get(this._id);
-			return new DocumentSnapshot(this._id, data);
-		}
-
-		async set(data: Record<string, unknown>) {
-			const col = ensureCollection(this._collection);
-			col.set(this._id, data);
-		}
-
-		async update(data: Record<string, unknown>) {
-			const col = ensureCollection(this._collection);
-			const existing = col.get(this._id) ?? {};
-			col.set(this._id, { ...existing, ...data });
-		}
-
-		async delete() {
-			const col = ensureCollection(this._collection);
-			col.delete(this._id);
-		}
-	}
-
-	class CollectionReference extends Query {
-		doc(id: string) {
-			return new DocumentReference(this._collection, id);
-		}
-	}
-
-	class Transaction {
-		async get(ref: DocumentReference | Query) {
-			return ref.get();
-		}
-
-		set(ref: DocumentReference, data: Record<string, unknown>) {
-			return ref.set(data);
-		}
-
-		update(ref: DocumentReference, data: Record<string, unknown>) {
-			return ref.update(data);
-		}
-
-		delete(ref: DocumentReference) {
-			return ref.delete();
-		}
-	}
-
-	class Firestore {
-		collection(name: string) {
-			return new CollectionReference(name);
-		}
-
-		doc(path: string) {
-			const [collection, id] = path.split("/");
-			return new DocumentReference(collection, id);
-		}
-
-		async runTransaction<T>(fn: (t: Transaction) => Promise<T>) {
-			const transaction = new Transaction();
-			return await fn(transaction);
-		}
-	}
-
-	return {
-		Firestore,
-		__resetMockData() {
-			store.clear();
-		},
-		__seedMockData(
-			collection: string,
-			docs: Array<Record<string, unknown> & { id: string }>,
-		) {
-			const col = ensureCollection(collection);
-			for (const doc of docs) {
-				col.set(doc.id, { ...doc });
-			}
-		},
-	};
-});
-
-vi.mock("~/lib/uid", () => {
-	let counter = 3;
-	return {
-		uid: () => `book-${counter++}`,
-		__resetUid() {
-			counter = 3;
-		},
-	};
-});
+vi.mock("@google-cloud/firestore", () => ({
+	Firestore: InMemoryFirestore,
+}));
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const seededBooks = [
+const seededBooks: Book[] = [
 	{
 		id: "book-1",
 		title: "The Pragmatic Programmer",
@@ -295,31 +66,6 @@ const seededBooks = [
 	},
 ];
 
-async function seedBooks(books = seededBooks) {
-	const firestoreMock =
-		(await import("@google-cloud/firestore")) as unknown as {
-			__resetMockData: () => void;
-			__seedMockData: (
-				collection: string,
-				docs: Array<Record<string, unknown> & { id: string }>,
-			) => void;
-		};
-	firestoreMock.__resetMockData();
-	firestoreMock.__seedMockData("books", books);
-	firestoreMock.__seedMockData(
-		"book_isbns",
-		books.map((book) => ({
-			id: book.isbn.replace(/[-\s]/g, "").toUpperCase(),
-			bookId: book.id,
-		})),
-	);
-
-	const uidMock = (await import("~/lib/uid")) as unknown as {
-		__resetUid: () => void;
-	};
-	uidMock.__resetUid();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 async function importDb() {
@@ -328,9 +74,8 @@ async function importDb() {
 }
 
 async function setupDb(books = seededBooks) {
-	const db = await importDb();
-	await seedBooks(books);
-	return db;
+	resetFirestore(books);
+	return importDb();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

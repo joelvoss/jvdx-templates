@@ -9,10 +9,11 @@ import {
 } from "@tanstack/react-router";
 import { useContext } from "react";
 
-import { type AbstractIntlMessages, getDirFromLocale } from "~/lib/i18n";
+import { getDirFromLocale } from "~/lib/i18n";
 import { I18nContext, I18nScript, translations } from "~/shared/i18n";
 import { SvgSprite } from "~/shared/svg-sprite";
 import { ToastRegion } from "~/shared/toast";
+import type { AppMessages } from "~/translations";
 
 import globalCss from "~/global.css?url";
 
@@ -22,7 +23,7 @@ interface RouterContext {
 	queryClient: QueryClient;
 	i18n: {
 		locale: string;
-		messages: AbstractIntlMessages;
+		messages: AppMessages;
 	};
 }
 

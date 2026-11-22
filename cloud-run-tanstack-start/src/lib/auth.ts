@@ -1,6 +1,6 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
-import { setCookie, useSession } from "@tanstack/react-start/server";
+import { getCookie, setCookie } from "@tanstack/react-start/server";
 
 import { csrfCookieName, csrfHeaderName } from "~/lib/cookies";
 
@@ -12,7 +12,6 @@ import { csrfCookieName, csrfHeaderName } from "~/lib/cookies";
 // changed before deploying to production.
 const SESSION_SECRET_FALLBACK = "dev-only-session-secret-change-me-1234567890";
 const SESSION_COOKIE_NAME = "__app_session";
-const SERVER_FN_HEADER = "x-tsr-serverfn";
 const CSRF_BYTES = 24;
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
@@ -38,31 +37,47 @@ function getSessionPassword() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-type AppSessionData = {
-	csrfToken?: string;
+type AnonymousSession = {
+	csrfToken: string;
+	expiresAt: number;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Returns the signed anonymous browser session used by the app.
- * TanStack seals it with the server secret, so clients cannot forge or tamper
- * with its contents. We store the CSRF token inside that signed session, then
- * mirror the same token into a readable cookie for the app to reflect into a
- * mutation header.
- */
-export function useAppSession() {
-	return useSession<AppSessionData>({
-		name: SESSION_COOKIE_NAME,
-		password: getSessionPassword(),
-		maxAge: SESSION_MAX_AGE_SECONDS,
-		cookie: {
-			secure: process.env.NODE_ENV === "production",
-			sameSite: "lax",
-			httpOnly: true,
-			path: "/",
-		},
-	});
+function readSignedSession(secret: string): AnonymousSession | undefined {
+	const cookie = getCookie(SESSION_COOKIE_NAME);
+	if (!cookie) return;
+
+	const parts = cookie.split(".");
+	if (parts.length !== 2) return;
+	const [payload, signature] = parts;
+	if (!payload || !signature || !/^[\w-]+$/.test(payload)) return;
+
+	const expectedSignature = createHmac("sha256", secret)
+		.update(payload)
+		.digest("base64url");
+	if (!safeEqual(signature, expectedSignature)) return;
+
+	try {
+		const data: unknown = JSON.parse(
+			Buffer.from(payload, "base64url").toString("utf8"),
+		);
+		if (
+			typeof data === "object" &&
+			data !== null &&
+			"csrfToken" in data &&
+			typeof data.csrfToken === "string" &&
+			/^[\w-]{32}$/.test(data.csrfToken) &&
+			"expiresAt" in data &&
+			typeof data.expiresAt === "number" &&
+			Number.isSafeInteger(data.expiresAt) &&
+			data.expiresAt > Date.now()
+		) {
+			return { csrfToken: data.csrfToken, expiresAt: data.expiresAt };
+		}
+	} catch {
+		return;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,34 +87,37 @@ export function useAppSession() {
  * bound to that session. The readable CSRF cookie exists only as a mirror of
  * the signed session state so the browser app can echo it in `x-app-csrf`.
  */
-export async function ensureAnonymousSession() {
-	const session = await useAppSession();
-	let csrfToken = session.data.csrfToken;
+export function ensureAnonymousSession() {
+	const secret = getSessionPassword();
+	let session = readSignedSession(secret);
 
-	if (!csrfToken) {
-		csrfToken = randomBytes(CSRF_BYTES).toString("base64url");
-		await session.update({ csrfToken });
+	if (!session) {
+		session = {
+			csrfToken: randomBytes(CSRF_BYTES).toString("base64url"),
+			expiresAt: Date.now() + SESSION_MAX_AGE_SECONDS * 1000,
+		};
+		const payload = Buffer.from(JSON.stringify(session)).toString("base64url");
+		const signature = createHmac("sha256", secret)
+			.update(payload)
+			.digest("base64url");
+		setCookie(SESSION_COOKIE_NAME, `${payload}.${signature}`, {
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "lax",
+			httpOnly: true,
+			path: "/",
+			maxAge: SESSION_MAX_AGE_SECONDS,
+		});
 	}
 
-	setCookie(csrfCookieName, csrfToken, {
+	setCookie(csrfCookieName, session.csrfToken, {
 		secure: process.env.NODE_ENV === "production",
 		sameSite: "lax",
 		httpOnly: false,
 		path: "/",
-		maxAge: SESSION_MAX_AGE_SECONDS,
+		maxAge: Math.ceil((session.expiresAt - Date.now()) / 1000),
 	});
 
-	return { session, csrfToken };
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-export async function validateMutationRequestForServerFn(request: Request) {
-	if (request.headers.get(SERVER_FN_HEADER) !== "true") return null;
-	if (request.method === "GET") return null;
-
-	const { session } = await ensureAnonymousSession();
-	return validateMutationRequest(request, session.data.csrfToken);
+	return session;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +127,7 @@ export async function validateMutationRequestForServerFn(request: Request) {
  * the request's origin. Returns a string describing the violation if invalid,
  * or null if the request is valid.
  */
-function validateMutationRequest(request: Request, csrfToken?: string) {
+export function validateMutationRequest(request: Request, csrfToken?: string) {
 	if (!csrfToken) return "Missing session";
 
 	if (!isAllowedOrigin(request)) return "Invalid origin";

@@ -26,7 +26,7 @@ const shared = {
 	notfound: {
 		code: "404",
 		title: "Seite nicht gefunden",
-		goback: "Zurück gehen",
+		goBack: "Zurück gehen",
 	},
 	error: {
 		code: "500",
@@ -70,7 +70,6 @@ const routes = {
 				"Beim Laden der Bücher ist ein unerwarteter Fehler aufgetreten.",
 			errorSubtitle:
 				"Bitte versuche es später erneut oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-			errorMessageLabel: "Fehlermeldung:",
 		},
 		details: {
 			edit: "Bearbeiten",
@@ -87,11 +86,12 @@ const routes = {
 				"Beim Laden dieses Buchs ist ein unerwarteter Fehler aufgetreten.",
 			errorSubtitle:
 				"Bitte versuche es später erneut oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-			errorMessageLabel: "Fehlermeldung:",
 		},
 		deleteDialog: {
 			toastTitle: "Buch gelöscht",
 			toastDescription: 'Das Buch "{title}" wurde erfolgreich gelöscht.',
+			errorTitle:
+				"Das Löschen des Buchs ist fehlgeschlagen. Bitte versuche es erneut:",
 			title: "Buch löschen",
 			confirm:
 				'Möchtest du "<strong>{title}</strong>" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
@@ -106,8 +106,10 @@ const routes = {
 				updatedTitle: "Buch aktualisiert",
 				updatedDescription: "Das Buch wurde erfolgreich aktualisiert.",
 			},
-			globalErrorTitle:
+			createErrorTitle:
 				"Das Erstellen des Buchs ist fehlgeschlagen. Bitte korrigiere den folgenden Fehler:",
+			updateErrorTitle:
+				"Das Aktualisieren des Buchs ist fehlgeschlagen. Bitte korrigiere den folgenden Fehler:",
 			fields: {
 				title: "Titel",
 				author: "Autor",

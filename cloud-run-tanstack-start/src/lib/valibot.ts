@@ -21,13 +21,10 @@ export function validateFormData<
 
 export function toMutationError<
 	const TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
->(_schema: TSchema, error: unknown, opts?: { rootFallback?: boolean }) {
+>(_schema: TSchema, error: unknown): { issues: v.FlatErrors<TSchema> } {
 	const issues = parseSchemaIssues<TSchema>(error);
 	if (issues) return { issues };
-	if (opts?.rootFallback) {
-		return { issues: { root: [getErrorMessage(error)] } };
-	}
-	throw error;
+	return { issues: { root: [getErrorMessage(error)] } };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +56,23 @@ function parseSchemaIssues<
 	const TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
 >(error: unknown) {
 	try {
-		return v.flatten<TSchema>(JSON.parse(getErrorMessage(error)));
+		const parsed: unknown = JSON.parse(getErrorMessage(error));
+		if (
+			!Array.isArray(parsed) ||
+			parsed.length === 0 ||
+			!parsed.every(
+				(issue) =>
+					typeof issue === "object" &&
+					issue !== null &&
+					"message" in issue &&
+					typeof issue.message === "string",
+			)
+		) {
+			return null;
+		}
+		return v.flatten<TSchema>(
+			parsed as [v.BaseIssue<unknown>, ...v.BaseIssue<unknown>[]],
+		);
 	} catch {
 		return null;
 	}

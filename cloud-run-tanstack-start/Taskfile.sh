@@ -17,17 +17,19 @@ start() {
 		setup_env dev
 		export NODE_ENV="development"
 		node ./express-server.mjs
-	
+
 	elif [ "$1" = "docker" ]; then
 		echo "Starting production server (inside docker)..."
 		setup_env dev
 		build
 		LOCAL_TAG=$(jq -r ".name" package.json)
+		LOCAL_SESSION_SECRET="${SESSION_SECRET:-dev-only-session-secret-change-me-1234567890}"
 		docker build --tag "${LOCAL_TAG}" .
 		docker run -it --rm \
 			-v "${HOME}/.config/gcloud/application_default_credentials.json:/gcp/creds.json:ro" \
 			-e GOOGLE_APPLICATION_CREDENTIALS="/gcp/creds.json" \
 			-e GOOGLE_CLOUD_PROJECT="${GOOGLE_CLOUD_PROJECT}" \
+			-e SESSION_SECRET="${LOCAL_SESSION_SECRET}" \
 			-p 3000:3000 \
 			"${LOCAL_TAG}"
 
@@ -41,13 +43,13 @@ start() {
 build() {
 	echo "Building for production..."
 	DIST_DIR=dist
-	
+
 	rm -rf "${DIST_DIR}"
-	
+
 	vite build
-	
+
 	cp express-server.mjs "${DIST_DIR}/"
-	jq '{name, version, type, dependencies}' package.json > "${DIST_DIR}/package.json"
+	jq '{name, version, type, dependencies}' package.json >"${DIST_DIR}/package.json"
 	cp package-lock.json "${DIST_DIR}/package-lock.json"
 }
 
@@ -67,13 +69,36 @@ typecheck() {
 }
 
 test() {
-	if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+	MODE="run"
+	case "$1" in
+	unit)
+		shift
+		if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+			MODE="watch"
+			shift
+		fi
+		set -- --project unit-node --project unit-browser "$@"
+		;;
+	integration)
+		shift
+		if [ "$1" = "-w" ] || [ "$1" = "--watch" ]; then
+			MODE="watch"
+			shift
+		fi
+		set -- --project integration "$@"
+		;;
+	-w | --watch)
+		MODE="watch"
+		shift
+		;;
+	esac
+
+	if [ "${MODE}" = "watch" ]; then
 		echo "Running vitest in watch mode..."
-		vitest
-		return
+		vitest "$@"
 	else
 		echo "Running vitest..."
-		vitest run
+		vitest run "$@"
 	fi
 }
 
@@ -137,7 +162,7 @@ setup_env() {
 	fi
 
 	export ARTIFACT_REPO="${REGION}-docker.pkg.dev"
-	export IMAGE_TAG="${ARTIFACT_REPO}/${PROJECT}/docker/${NAME}:${VERSION}"
+	export IMAGE_TAG="${ARTIFACT_REPO}/${GOOGLE_CLOUD_PROJECT}/docker/${NAME}:${VERSION}"
 }
 
 help() {
@@ -150,7 +175,8 @@ help() {
 	echo "  format             Format code"
 	echo "  lint               Lint code"
 	echo "  typecheck          Run TypeScript type checking"
-	echo "  test               Run tests"
+	echo "  test [unit|integration] [-w|--watch]"
+	echo "                     Run tests"
 	echo "  validate           Validate code (typecheck + lint + test)"
 	echo "  clean              Clean temporary files/directories"
 	echo "  deploy             Deploy to Cloud Run"

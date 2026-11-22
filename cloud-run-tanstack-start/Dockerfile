@@ -1,4 +1,4 @@
-FROM node:24-trixie-slim AS build
+FROM node:26-trixie-slim AS build
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN npm ci --only=production
 
 ################################################################################
 
-FROM gcr.io/distroless/nodejs24-debian13
+FROM gcr.io/distroless/nodejs26-debian13
 
 WORKDIR /app
 

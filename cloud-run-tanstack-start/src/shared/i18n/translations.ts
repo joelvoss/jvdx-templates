@@ -20,6 +20,33 @@ type MarkupTranslationValues = Record<
 	((chunks: string) => string) | TranslationValue
 >;
 
+export type NamespacePaths<T> = {
+	[K in keyof T & string]: T[K] extends Record<string, unknown>
+		? K | `${K}.${NamespacePaths<T[K]>}`
+		: never;
+}[keyof T & string];
+
+type MessagePaths<T> = {
+	[K in keyof T & string]: T[K] extends string
+		? K
+		: T[K] extends Record<string, unknown>
+			? `${K}.${MessagePaths<T[K]>}`
+			: never;
+}[keyof T & string];
+
+type ValueAtPath<T, P extends string> = P extends `${infer Head}.${infer Rest}`
+	? Head extends keyof T
+		? ValueAtPath<T[Head], Rest>
+		: never
+	: P extends keyof T
+		? T[P]
+		: never;
+
+export type ScopedMessageKeys<
+	T,
+	N extends string | undefined = undefined,
+> = N extends string ? MessagePaths<ValueAtPath<T, N>> : MessagePaths<T>;
+
 /**
  * The `Translations` interface defines the shape of the translation function
  * returned by the `translations` factory function. It includes:
@@ -34,11 +61,11 @@ type MarkupTranslationValues = Record<
  * This interface allows for flexible translation handling, supporting both
  * simple string replacements and more complex rich text scenarios.
  */
-export interface Translations {
-	(key: string, values?: TranslationValues): string;
-	rich(key: string, values?: RichTranslationValues): ReactNode;
-	markup(key: string, values?: MarkupTranslationValues): string;
-	raw(key: string): any;
+export interface Translations<K extends string = string> {
+	(key: K, values?: TranslationValues): string;
+	rich(key: K, values?: RichTranslationValues): ReactNode;
+	markup(key: K, values?: MarkupTranslationValues): string;
+	raw(key: K): any;
 }
 
 /**
@@ -49,11 +76,15 @@ export interface Translations {
  * for different translation scenarios, allowing for flexible and efficient
  * internationalization in React applications.
  */
-export function translations(
-	messages: AbstractIntlMessages,
+export function translations<
+	M extends AbstractIntlMessages = AbstractIntlMessages,
+	N extends (string extends keyof M ? string : NamespacePaths<M>) | undefined =
+		undefined,
+>(
+	messages: M,
 	locale: string,
-	namespace?: string,
-) {
+	namespace?: N,
+): Translations<string extends keyof M ? string : ScopedMessageKeys<M, N>> {
 	const namespaceMessages = namespace
 		? getNestedMessage(messages, namespace)
 		: messages;

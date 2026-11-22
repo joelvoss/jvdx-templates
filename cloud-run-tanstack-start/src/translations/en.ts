@@ -26,7 +26,7 @@ const shared = {
 	notfound: {
 		code: "404",
 		title: "Page Not Found",
-		goback: "Go back",
+		goBack: "Go back",
 	},
 	error: {
 		code: "500",
@@ -68,7 +68,6 @@ const routes = {
 			errorTitle: "There was an unexpected error loading the books.",
 			errorSubtitle:
 				"Please try again later or contact support if the problem persists.",
-			errorMessageLabel: "Error message:",
 		},
 		details: {
 			edit: "Edit",
@@ -84,11 +83,11 @@ const routes = {
 			errorTitle: "There was an unexpected error loading this book.",
 			errorSubtitle:
 				"Please try again later or contact support if the problem persists.",
-			errorMessageLabel: "Error message:",
 		},
 		deleteDialog: {
 			toastTitle: "Book Deleted",
 			toastDescription: 'The book "{title}" has been successfully deleted.',
+			errorTitle: "Book deletion failed. Please try again:",
 			title: "Delete Book",
 			confirm:
 				'Are you sure you want to delete "<strong>{title}</strong>"? This action cannot be undone.',
@@ -103,8 +102,10 @@ const routes = {
 				updatedTitle: "Book Updated",
 				updatedDescription: "The book has been successfully updated.",
 			},
-			globalErrorTitle:
+			createErrorTitle:
 				"Book creation failed. Please correct the following error:",
+			updateErrorTitle:
+				"Book update failed. Please correct the following error:",
 			fields: {
 				title: "Title",
 				author: "Author",

@@ -1,7 +1,6 @@
-import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,11 +38,7 @@ export default defineConfig({
 			},
 		}),
 		// NOTE: React's vite plugin must come after Tanstack Start's vite plugin.
-		react(),
-		// Use @rolldown/plugin-babel for React Compiler support.
-		babel({
-			presets: [reactCompilerPreset()],
-		}),
+		react({ compiler: true }),
 		// Replaces unused locale data imports in React Aria packages with empty
 		// modules. Must run as "pre" so it intercepts before Vite's resolver.
 		optimizeLocalesPlugin(["en-US", "de-DE"]),

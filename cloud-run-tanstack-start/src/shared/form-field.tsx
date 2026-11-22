@@ -4,13 +4,46 @@ import { clsx } from "~/lib/clsx";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-export type FormFieldProps = React.InputHTMLAttributes<HTMLInputElement> &
-	React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
-		name: string;
-		label: string;
-		type?: string;
-		issue?: string;
+type InputType =
+	| "color"
+	| "date"
+	| "datetime-local"
+	| "email"
+	| "file"
+	| "hidden"
+	| "month"
+	| "number"
+	| "password"
+	| "range"
+	| "search"
+	| "tel"
+	| "text"
+	| "time"
+	| "url"
+	| "week";
+
+type BaseFormFieldProps = {
+	name: string;
+	label: string;
+	issue?: string;
+};
+
+type TextAreaFieldProps = BaseFormFieldProps &
+	Omit<
+		React.ComponentProps<typeof TextArea>,
+		"name" | "children" | "className" | "style"
+	> & {
+		type: "textarea";
+		className?: string;
+		style?: React.CSSProperties;
 	};
+
+type InputFieldProps = BaseFormFieldProps &
+	Omit<React.ComponentProps<"input">, "name" | "type"> & {
+		type?: InputType;
+	};
+
+export type FormFieldProps = InputFieldProps | TextAreaFieldProps;
 
 /**
  * Form Field Component.
@@ -19,60 +52,82 @@ export type FormFieldProps = React.InputHTMLAttributes<HTMLInputElement> &
 export function FormField(props: FormFieldProps) {
 	const id = props.id || props.name;
 	const required = props.required || false;
-	const type = props.type || "text";
 
 	return (
 		<div>
 			<label
-				htmlFor={props.name}
+				htmlFor={id}
 				className="mb-2 block text-sm font-medium text-gray-700"
 			>
 				{props.label}
 				{required ? <span className="text-red-500">*</span> : null}
 			</label>
 
-			{type === "textarea" ? (
-				<TextArea
-					name={props.name}
-					id={id}
-					required={required}
-					placeholder={props.placeholder}
-					defaultValue={props.defaultValue}
-					// NOTE(joel): field-sizing-content is required to make the textarea
-					// grow with content, but it also causes the rows prop to not work,
-					// so we have to set the minHeight manually based on the rows prop if
-					// it's provided. We have to use the style prop since tailwind
-					// doesn't support dynamic runtime values.
-					style={
-						props.rows
-							? { minHeight: `calc(${props.rows}lh + 1rem)` }
-							: undefined
-					}
-					className={clsx(
-						"field-sizing-content w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
-						props.issue ? "border-red-500" : null,
-					)}
-				></TextArea>
-			) : (
-				<input
-					type={type}
-					name={props.name}
-					id={id}
-					required={required}
-					placeholder={props.placeholder}
-					min={props.min}
-					max={props.max}
-					defaultValue={props.defaultValue}
-					className={clsx(
-						"w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
-						props.issue ? "border-red-500" : null,
-					)}
-				/>
-			)}
+			{renderControl(props, id, required)}
 
 			{props.issue ? (
 				<p className="mt-1 text-sm text-red-600">{props.issue}</p>
 			) : null}
 		</div>
+	);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+function renderControl(props: FormFieldProps, id: string, required: boolean) {
+	const controlClassName = clsx(
+		"w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-sky-500 focus:ring-2 focus:ring-sky-500",
+		props.issue ? "border-red-500" : null,
+		props.className,
+	);
+
+	if (props.type === "textarea") {
+		const {
+			label: _label,
+			issue: _issue,
+			id: _id,
+			type: _type,
+			required: _required,
+			rows,
+			style,
+			className: _className,
+			...rest
+		} = props;
+
+		return (
+			<TextArea
+				{...rest}
+				id={id}
+				required={required}
+				rows={rows}
+				// NOTE(joel): field-sizing-content is required to make the textarea
+				// grow with content, but it also causes the rows prop to not work,
+				// so we have to set the minHeight manually based on the rows prop if
+				// it's provided. We have to use the style prop since tailwind
+				// doesn't support dynamic runtime values.
+				style={rows ? { minHeight: `calc(${rows}lh + 1rem)`, ...style } : style}
+				className={clsx("field-sizing-content", controlClassName)}
+			/>
+		);
+	}
+
+	const {
+		label: _label,
+		issue: _issue,
+		id: _id,
+		type = "text",
+		required: _required,
+		className: _className,
+		...rest
+	} = props;
+
+	return (
+		<input
+			{...rest}
+			type={type}
+			id={id}
+			required={required}
+			className={controlClassName}
+		/>
 	);
 }

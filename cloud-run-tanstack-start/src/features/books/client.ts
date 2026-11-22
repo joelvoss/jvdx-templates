@@ -1,5 +1,5 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { notFound } from "@tanstack/react-router";
+import { isNotFound, notFound, rootRouteId } from "@tanstack/react-router";
 import * as v from "valibot";
 
 import {
@@ -41,9 +41,11 @@ export const bookQueryOptions = (data: v.InferInput<typeof GetBookSchema>) =>
 		queryKey: ["book", data.id],
 		queryFn: async () => {
 			const book = await getBook({ data });
-			if (!book) throw notFound();
+			if (!book) throw notFound({ routeId: rootRouteId });
 			return book;
 		},
+		retry: (failureCount, error) =>
+			typeof window !== "undefined" && !isNotFound(error) && failureCount < 3,
 	});
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ export const createBookMutationOpts = () =>
 			try {
 				return await createBook({ data, headers });
 			} catch (error: unknown) {
-				throw toMutationError(CreateBookSchema, error, { rootFallback: true });
+				throw toMutationError(CreateBookSchema, error);
 			}
 		},
 		meta: {
@@ -121,7 +123,7 @@ export const deleteBookMutationOpts = (
 			try {
 				return await deleteBook({ data, headers: getMutationHeaders() });
 			} catch (error: unknown) {
-				throw toMutationError(DeleteBookSchema, error, { rootFallback: true });
+				throw toMutationError(DeleteBookSchema, error);
 			}
 		},
 		meta: {

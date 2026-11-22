@@ -12,7 +12,6 @@ import {
 	UpdateBookSchema,
 } from "~/features/books/schema";
 import { firestore } from "~/lib/firestore";
-import { uid } from "~/lib/uid";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -78,8 +77,9 @@ export const createBook = createServerFn({ method: "POST" })
 	.validator(CreateBookSchema)
 	.handler(async ({ data }) => {
 		const now = Date.now();
+		const bookRef = firestore.collection(BOOKS_COLLECTION).doc();
 		const book: Book = {
-			id: uid(),
+			id: bookRef.id,
 			description: "",
 			coverImageUrl: "",
 			...data,
@@ -88,7 +88,6 @@ export const createBook = createServerFn({ method: "POST" })
 		};
 
 		await firestore.runTransaction(async (transaction) => {
-			const bookRef = firestore.collection(BOOKS_COLLECTION).doc(book.id);
 			const isbnRef = getBookIsbnRef(book.isbn);
 			const existingIsbn = await transaction.get(isbnRef);
 

@@ -1,22 +1,92 @@
 # cloud-run-tanstack-start
 
-This application is a TanStack Start server-rendered React app with:
+A Google Cloud Run service template built with TanStack Start and React.
 
-- Express as the outer HTTP server
-- Vite middleware in development
-- TanStack Start request handling and server functions
-- locale-aware routing
-- anonymous signed sessions plus CSRF protection for mutations
+## Requirements
 
-# Launch Flow
+- Node.js 26+
+- POSIX shell (`sh`) and `jq` for `Taskfile.sh`
+- Playwright Chromium (`npx playwright install --with-deps chromium`) for
+  browser unit tests
+- Docker for local container runs and image builds
+- Google Cloud CLI (`gcloud`)
 
-This section describes what runs when you start the app and then open
-`http://localhost:3000` in the browser.
+## Development
 
-## 1. Process Startup
+Validate the template (typecheck, lint, and tests):
 
-When you run the app in development, the main process starts in
-`express-server.mjs`.
+```shell
+./Taskfile.sh validate
+```
+
+Run the development server on `http://localhost:3000`:
+
+```shell
+./Taskfile.sh start dev
+```
+
+Run individual checks or test suites:
+
+```shell
+./Taskfile.sh typecheck
+./Taskfile.sh lint
+./Taskfile.sh format
+./Taskfile.sh test
+./Taskfile.sh test unit
+./Taskfile.sh test integration
+```
+
+Build the production bundle into `dist/` and run it locally in Docker:
+
+```shell
+./Taskfile.sh build
+./Taskfile.sh start docker
+```
+
+## Environment Variables
+
+- `SESSION_SECRET`: HMAC-SHA256 signing key for `__app_session`. Required in
+  production (`NODE_ENV=production`) with at least 32 characters; falls back to
+  a development-only secret outside production.
+- `PORT`: HTTP port listened on by `express-server.mjs` (defaults to `3000`).
+- `PROJECT`, `GOOGLE_CLOUD_PROJECT`, `GCLOUD_PROJECT`: Optional Firestore
+  project ID overrides, checked in that order by `src/lib/firestore.ts`.
+- `GOOGLE_APPLICATION_CREDENTIALS`: Path to a service account or ADC JSON file
+  (mounted automatically by `./Taskfile.sh start docker`).
+- `K_SERVICE`: Set automatically by Cloud Run. Enables `trustProxy` and
+  Cloud Run forwarded-header normalization in `express-server.mjs`.
+
+## Deployment
+
+Before deploying, replace the `<CHANGE_ME>` placeholders in `setup_env()` inside
+`Taskfile.sh` (`GOOGLE_CLOUD_PROJECT`, `SERVICE_ACCOUNT`, and `DEPLOY_FLAGS` if
+needed), then build, push, and deploy:
+
+```shell
+./Taskfile.sh deploy prod
+```
+
+Before deploying, ensure the following are in place:
+
+- `gcloud` and `jq` are installed, and the deployer account is authenticated.
+- The target GCP project exists with billing and the required APIs enabled
+  (`run.googleapis.com`, `artifactregistry.googleapis.com`,
+  `firestore.googleapis.com`).
+- The Artifact Registry Docker repository
+  (`${REGION}-docker.pkg.dev/<project>/docker`) exists.
+- `SESSION_SECRET` (at least 32 characters) is configured on the Cloud Run
+  service.
+
+## Request and Launch Flow
+
+This section describes what runs when the app starts and serves a request to
+`http://localhost:3000`.
+
+### 1. Process Startup
+
+Both development and production start in `express-server.mjs` (via `node
+./express-server.mjs` in dev, and `CMD ["express-server.mjs"]` inside `dist/`
+in Docker/production).
 
 Files involved:
 
@@ -25,53 +95,52 @@ Files involved:
 
 Execution flow:
 
-1. `express-server.mjs` creates the Express server.
-2. It installs a top-level middleware that adds security-related HTTP headers
-   such as:
-   - `Cross-Origin-Resource-Policy`
-   - `Cross-Origin-Opener-Policy`
-   - `Strict-Transport-Security`
-   - `X-Frame-Options`
-   - `X-Content-Type-Options`
-3. In development, it creates a Vite dev server in middleware mode.
-4. For each request, it loads `./src/server.ts` through
-   `viteDevServer.ssrLoadModule(...)`.
+1. `express-server.mjs` creates the Express server and installs a top-level
+   middleware that sets HTTP security headers and removes `X-Powered-By`.
+2. When `K_SERVICE` is set, it enables `trustProxy`, strips client-supplied
+   `x-forwarded-host` and `x-forwarded-for`, and sets `x-forwarded-proto` to
+   `https`.
+3. In development (`NODE_ENV=development`), it attaches Vite's middleware and
+   loads `./src/server.ts` per request via `viteDevServer.ssrLoadModule(...)`.
+4. In production, it serves immutable static assets from `./client` and imports
+   the built server bundle from `./server/server.js`.
 5. `src/server.ts` delegates request handling to TanStack Start via
    `@tanstack/react-start/server-entry`.
 
-In production, `express-server.mjs` instead imports the built server bundle
-from `./server/server.js`.
+### 2. Incoming Request to `/`
 
-## 2. Incoming Request To `/`
-
-When the browser opens `http://localhost:3000`, the first request reaches
-`src/server.ts`.
+When the browser opens `http://localhost:3000`, the request reaches
+`src/server.ts` and runs through TanStack Start's global request middleware in
+`src/start.ts`.
 
 Files involved:
 
 - `src/server.ts`
-- `src/lib/i18n.ts`
 - `src/start.ts`
+- `src/lib/i18n/runtime.ts`
 - `src/lib/auth.ts`
 
 Execution flow:
 
-1. `src/server.ts` runs `i18nMiddleware(request)` from `src/lib/i18n.ts`.
-2. The i18n middleware may:
-   - redirect locale-prefixed URLs like `/en/...` to canonical URLs
-   - persist a locale cookie when the URL locale changes
-3. If there is no redirect, TanStack Start takes over request handling.
-4. TanStack Start loads the global middleware from `src/start.ts`.
-5. `requestSessionMiddleware` runs first and calls `ensureAnonymousSession()`
-   from `src/lib/auth.ts`.
-6. `ensureAnonymousSession()` loads or creates the signed anonymous session and
-   ensures a CSRF token exists for that session.
-7. `ensureAnonymousSession()` also sets the readable `__app_csrf` cookie so
-   browser code can later echo it in mutation requests.
-8. `requestMutationGuard` also runs, but it does nothing for a normal page
-   request because the request is not a mutation server-function call.
+1. `src/server.ts` delegates the request to TanStack Start's server-entry
+   handler.
+2. `requestI18nMiddleware` runs `i18nMiddleware(request)` from
+   `src/lib/i18n/runtime.ts`. It may:
+   - return a `301` redirect for default-locale prefixed URLs (`/en`, `/en/...`)
+     or localized ignored paths (such as `/de/api/...`)
+   - set the `__app_locale` cookie when a non-default URL locale differs from
+     the cookie
+3. If there is no redirect, `requestSessionMiddleware` calls
+   `ensureAnonymousSession()` from `src/lib/auth.ts` and passes the session's
+   CSRF token in middleware context.
+4. `ensureAnonymousSession()` loads or creates the signed anonymous session and
+   sets the readable `__app_csrf` cookie so browser code can echo it in
+   mutation requests.
+5. `requestMutationGuard` checks only requests where
+   `handlerType === "serverFn"` and `request.method !== "GET"`; page/router
+   requests and `GET` server functions bypass it.
 
-## 3. Router Creation And SSR Render
+### 3. Router Creation and SSR Render
 
 After middleware passes, TanStack Start creates the router and renders the
 route tree.
@@ -82,208 +151,96 @@ Files involved:
 - `src/routes/__root.tsx`
 - `src/routes/{-$locale}/route.tsx`
 - `src/routes/{-$locale}/index.tsx`
-- `src/shared/i18n.tsx`
+- `src/shared/i18n/`
 
 Execution flow:
 
-1. `src/router.tsx` runs `getRouter()`.
-2. `getRouter()` creates a shared `QueryClient`.
-3. It reads the current locale and translation messages using helpers from
-   `src/lib/i18n.ts`.
-4. It creates the TanStack Router from `src/routeTree.gen.ts`.
-5. It configures:
-   - React Query SSR integration
+1. `src/router.tsx` runs `getRouter()`, creating a `QueryClient` for that router
+   instance.
+2. It reads the current locale and translation messages via helpers from
+   `src/lib/i18n/runtime.ts`.
+3. It creates the TanStack Router from `src/routeTree.gen.ts` with:
+   - locale-aware URL rewrite rules (`deLocalizeUrl` / `localizeUrl`)
+   - `I18nProvider` wrapping
    - React Aria router integration
-   - i18n provider wrapping
-   - locale-aware URL rewrite rules
-6. The root route in `src/routes/__root.tsx` renders the HTML shell:
-   - `<HeadContent />`
-   - `<Outlet />`
-   - `<I18nScript />`
-   - `<Scripts />`
-7. The locale layout route in `src/routes/{-$locale}/route.tsx` validates the
-   locale and renders the shared navigation/footer layout.
-8. The home route in `src/routes/{-$locale}/index.tsx` renders the landing page
-   content.
+   - React Query SSR integration
+4. The root route in `src/routes/__root.tsx` renders the HTML shell.
+5. The locale layout route in `src/routes/{-$locale}/route.tsx` validates the
+   locale parameter and renders the shared navigation and footer layout.
+6. The home route in `src/routes/{-$locale}/index.tsx` renders the landing page.
 
-## 4. What Happens After Hydration
+### 4. Client Hydration and Mutations
 
-Once the HTML is loaded and client scripts run:
+Once the HTML loads and client scripts run:
 
 Files involved:
 
 - `src/router.tsx`
-- `src/mutation/books.ts`
-- `src/query/books.ts`
+- `src/features/books/client.ts`
+- `src/features/books/server.ts`
 
 Behavior:
 
-- TanStack Router hydrates the route tree.
-- React Query hydrates query state.
+- TanStack Router hydrates the route tree and React Query hydrates query state.
 - `GET` server functions remain publicly callable from the app.
-- `POST` server functions used for mutations must satisfy the mutation guard
+- `POST` server functions used for mutations must satisfy `requestMutationGuard`
   in `src/start.ts`.
 
-# Session And CSRF Design
+## Session and CSRF Design
 
-## Session Cookie
+### Session Cookie (`__app_session`)
 
-The main session cookie is configured in `src/lib/auth.ts` via TanStack Start
-`useSession(...)`.
+The main session cookie is implemented in `src/lib/auth.ts` using custom
+HMAC-SHA256 signing and TanStack Start's `getCookie(...)` / `setCookie(...)`
+helpers.
 
-Current properties:
+Properties:
 
-- cookie name: `__app_session`
-- signed and sealed by TanStack Start using `SESSION_SECRET`
-- `HttpOnly`
-- `SameSite=Lax`
-- `Secure` in production
-
-Purpose:
-
-- identifies an anonymous browser session minted by this server
-- stores session state the client cannot forge or tamper with
-- currently stores the authoritative CSRF token in signed session data
-
-This is the trust anchor. The client cannot invent or modify the session
-payload because TanStack seals it cryptographically.
-
-## CSRF Cookie
-
-The readable CSRF cookie is configured in `src/lib/auth.ts` using
-`setCookie(...)`.
-
-Current properties:
-
-- cookie name: `__app_csrf`
-- readable by browser JavaScript
-- `SameSite=Lax`
-- `Secure` in production
-- not `HttpOnly`
+- Cookie name: `__app_session`
+- Base64url-encoded JSON payload signed with HMAC-SHA256 using `SESSION_SECRET`
+- Signed, not encrypted or sealed
+- `HttpOnly`, `SameSite=Lax`, `Path=/`, `Secure` in production
+- 7-day expiry in both the cookie and the signed payload
 
 Purpose:
 
-- mirrors the CSRF token already stored inside the signed session
-- lets the browser application read that token and send it in the `x-app-csrf`
-  header on mutation requests
+- Identifies an anonymous browser session minted by this server
+- Stores session state the client cannot forge or tamper with
+- Holds the authoritative CSRF token in signed session data
 
-The CSRF cookie is not the source of truth. The session is. The server
-validates the header value against the token stored inside the signed session.
+This is the trust anchor. The server verifies the signature, payload shape, and
+expiry before accepting session state. A client cannot forge valid state
+without `SESSION_SECRET`, though the signed payload itself is not confidential
+(it contains `csrfToken` and `expiresAt`).
 
-## Why Both Exist
+### CSRF Cookie (`__app_csrf`)
 
-They serve different purposes:
+The readable CSRF cookie is set in `src/lib/auth.ts` alongside `__app_session`.
 
-- `__app_session`
-  - proves the browser has a session issued by this server
-  - cannot be read or modified by page JavaScript
-- `__app_csrf`
-  - gives the browser app a token it can reflect into a custom header
-  - helps distinguish deliberate same-origin app requests from requests that
-    only carry cookies automatically
+Properties:
 
-In short:
+- Cookie name: `__app_csrf`
+- `HttpOnly: false` (readable by browser JavaScript)
+- `SameSite=Lax`, `Path=/`, `Secure` in production
+- `maxAge` matched to the remaining lifetime of the signed session
 
-- session cookie = signed anonymous session state
-- CSRF cookie/header = double-submit style mutation intent check bound to that
-  session
+Purpose:
 
-# Mutation Protection Flow
+- Mirrors the CSRF token stored inside the signed session
+- Lets the browser app read the token and echo it in the `x-app-csrf` header on
+  mutation requests
 
-Mutation protection currently lives in:
+The CSRF cookie is not the source of truth; the signed session is. The server
+compares the `x-app-csrf` header against the token stored in `__app_session`.
 
-- `src/start.ts`
-- `src/lib/auth.ts`
+### Why Both Exist
 
-When the browser sends a `POST` server-function request:
+- `__app_session` proves the browser holds a session issued by this server and
+  cannot be read or modified by page JavaScript.
+- `__app_csrf` gives the browser app a token it can reflect into a custom
+  header, helping distinguish deliberate same-origin app requests from requests
+  that only attach cookies automatically.
 
-1. The request reaches TanStack Start.
-2. `requestSessionMiddleware` ensures the anonymous signed session exists.
-3. `requestMutationGuard` calls `validateMutationRequestForServerFn(request)`.
-4. The validator rejects the request unless all of the following are true:
-   - the request is a TanStack server-function request (`x-tsr-serverfn: true`)
-   - the request method is not `GET`
-   - the session contains a CSRF token
-   - the `Origin` header matches the request origin
-   - `Sec-Fetch-Site` is either absent or `same-origin`
-   - the `x-app-csrf` header matches the token stored in the signed session
-5. If validation fails, middleware returns `403`.
-6. If validation succeeds, the mutation handler runs.
-
-Client-side mutation code sends the header from:
-
-- `src/mutation/books.ts`
-
-It reads `__app_csrf` from `document.cookie` and sends it as `x-app-csrf`.
-
-# Security Features Currently Implemented
-
-## At The Express Layer
-
-Implemented in `express-server.mjs`:
-
-- `X-Frame-Options: SAMEORIGIN`
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: no-referrer`
-- `Strict-Transport-Security`
-- `Cross-Origin-Resource-Policy: same-origin`
-- `Cross-Origin-Opener-Policy: same-origin`
-- removal of `X-Powered-By`
-
-## At The Routing / Request Layer
-
-Implemented in `src/server.ts`, `src/start.ts`, and `src/lib/i18n.ts`:
-
-- locale canonicalization and locale cookie management
-- anonymous signed session bootstrap on every request
-- mutation-only request blocking via request middleware
-- same-origin checks for mutation requests
-
-## At The Session / CSRF Layer
-
-Implemented in `src/lib/auth.ts`:
-
-- signed session cookie using TanStack Start sessions
-- CSRF token stored in signed session state
-- readable CSRF mirror cookie for browser mutation requests
-- timing-safe token comparison
-- `SameSite=Lax` cookies
-- `Secure` cookies in production
-
-## At The Data / API Layer
-
-Implemented across `src/mutation/books.ts`, `src/query/books.ts`, and `src/schemas/*.ts`:
-
-- schema validation using Valibot
-- read operations exposed as public `GET` server functions
-- write operations restricted to guarded `POST` server functions
-- client-side input normalization before mutation calls
-
-# Current Limitations
-
-This is best-effort browser-session protection, not strong identity.
-
-What it blocks well:
-
-- naive direct `curl` mutation requests
-- cross-site form posts
-- requests that do not have a valid signed session plus matching CSRF header
-
-What it does not fully prevent:
-
-- a determined client that first loads the app, keeps the issued cookies,
-  reads the CSRF cookie, and then replays the same mutation requests
-
-That limitation is fundamental for a public web app with no login.
-
-# Development Notes
-
-For production, set:
-
-- `SESSION_SECRET`
-
-It must be a strong secret with at least 32 characters.
-
-# License
+## License
 
 [MIT](./LICENSE)

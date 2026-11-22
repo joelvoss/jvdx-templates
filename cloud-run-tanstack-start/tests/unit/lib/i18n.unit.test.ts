@@ -17,6 +17,7 @@ import {
 	serializeMessagesForScript,
 	translations,
 } from "~/shared/i18n";
+import { messages as appMessages, supportedLocales } from "~/translations";
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -144,11 +145,94 @@ describe("lib/i18n", () => {
 			expect(formatMessage(msg, { n: 2 }, "en")).toBe("2 guests");
 		});
 
-		it("supports plural offset", () => {
+		it("supports plural offset with explicit matches before offset subtraction", () => {
 			const msg =
-				"{n, plural, offset:1 =0 {no guests} one {# guest} other {# guests}}";
-			expect(formatMessage(msg, { n: 1 }, "en")).toBe("no guests");
-			expect(formatMessage(msg, { n: 2 }, "en")).toBe("1 guest");
+				"{n, plural, offset:1 =0 {nobody} =1 {only you} one {you and # other} other {you and # others}}";
+			expect(formatMessage(msg, { n: 0 }, "en")).toBe("nobody");
+			expect(formatMessage(msg, { n: 1 }, "en")).toBe("only you");
+			expect(formatMessage(msg, { n: 2 }, "en")).toBe("you and 1 other");
+			expect(formatMessage(msg, { n: 3 }, "en")).toBe("you and 2 others");
+
+			expect(
+				formatMessage(
+					"{n, plural, other {# authors with {m, plural, one {# book} other {# books}}}}",
+					{ n: 2, m: 1 },
+					"en",
+				),
+			).toBe("2 authors with 1 book");
+			expect(
+				formatMessage(
+					"{n, plural, other {#{suffix}}}",
+					{ n: 2, suffix: "!" },
+					"en",
+				),
+			).toBe("2!");
+			expect(
+				formatMessage(
+					"{n, plural, other {Use offset: 2 for # items}}",
+					{ n: 3 },
+					"en",
+				),
+			).toBe("Use offset: 2 for 3 items");
+		});
+
+		it("supports rich tags inside ICU plural branches, nested tags, and unique keys", () => {
+			const pluralMsg =
+				"{n, plural, one {<strong>#</strong> book} other {<strong>#</strong> books}}";
+			const pluralOut = formatRichMessage(
+				pluralMsg,
+				{
+					n: 2,
+					strong: (chunks: any) =>
+						createElement("strong", { "data-testid": "strong" }, chunks),
+				},
+				"en",
+			);
+
+			expect(Array.isArray(pluralOut)).toBe(true);
+			if (!Array.isArray(pluralOut)) return;
+			expect(isValidElement(pluralOut[0])).toBe(true);
+			expect((pluralOut[0] as any).props.children).toBe("2");
+			expect(pluralOut[1]).toBe(" books");
+
+			const multiOut = formatRichMessage(
+				"{a, plural, other {<strong>#</strong>}} and {b, plural, other {<strong>#</strong>}}",
+				{
+					a: 1,
+					b: 2,
+					strong: (chunks: any) => createElement("strong", null, chunks),
+				},
+				"en",
+			);
+			expect(Array.isArray(multiOut)).toBe(true);
+			if (!Array.isArray(multiOut)) return;
+			const multiKeys = multiOut
+				.filter((seg) => isValidElement(seg))
+				.map((el) => el.key);
+			expect(multiKeys).toHaveLength(2);
+			expect(new Set(multiKeys).size).toBe(2);
+			expect(multiKeys.every((key) => key !== null)).toBe(true);
+
+			const nestedMsg = "<box>outer <box>inner</box></box>";
+			const nestedOut = formatRichMessage(
+				nestedMsg,
+				{
+					box: (chunks: any) =>
+						`[${Array.isArray(chunks) ? chunks.join("") : chunks}]`,
+				},
+				"en",
+			);
+			expect(nestedOut).toBe("[outer [inner]]");
+
+			const unbalancedOut = formatRichMessage(
+				"Hello <box>outer <box>inner</box>",
+				{
+					box: (chunks: any) =>
+						`[${Array.isArray(chunks) ? chunks.join("") : chunks}]`,
+				},
+				"en",
+			);
+			expect(unbalancedOut).toBe("Hello <box>outer [inner]");
 		});
 
 		it("supports rich tag rendering via formatRichMessage", () => {
@@ -195,7 +279,7 @@ describe("lib/i18n", () => {
 		it("falls back to key when missing", () => {
 			const messages = { ns: { greet: "hi" } };
 			const t = translations(messages, "en", "ns");
-			expect(t("missing")).toBe("ns.missing");
+			expect(t("missing" as never)).toBe("ns.missing");
 		});
 	});
 
@@ -268,6 +352,45 @@ describe("lib/i18n", () => {
 			});
 			const result = i18nMiddleware(request);
 			expect(result).toEqual({});
+		});
+	});
+
+	describe("translation catalogs", () => {
+		function collectLeafKeys(
+			obj: Record<string, unknown>,
+			prefix = "",
+		): string[] {
+			return Object.entries(obj)
+				.flatMap(([key, value]) => {
+					const path = prefix ? `${prefix}.${key}` : key;
+					if (typeof value === "string") return [path];
+					if (value && typeof value === "object") {
+						return collectLeafKeys(value as Record<string, unknown>, path);
+					}
+					return [];
+				})
+				.sort();
+		}
+
+		it("keeps identical non-empty leaf keys across all locale catalogs", () => {
+			const [baseLocale, ...otherLocales] = supportedLocales;
+			const baseKeys = collectLeafKeys(appMessages[baseLocale]);
+			expect(baseKeys).toContain("shared.notfound.goBack");
+
+			for (const locale of otherLocales) {
+				const localeKeys = collectLeafKeys(appMessages[locale]);
+				expect(localeKeys).toEqual(baseKeys);
+			}
+
+			for (const locale of supportedLocales) {
+				for (const key of baseKeys) {
+					const value = getNestedMessage(appMessages[locale], key);
+					expect(
+						String(value ?? "").trim().length,
+						`${locale}.${key}`,
+					).toBeGreaterThan(0);
+				}
+			}
 		});
 	});
 });

@@ -18,6 +18,6 @@
 		"noEmit": true,
 		"types": ["vite/client"]
 	},
-	"include": ["**/*.ts", "**/*.tsx", "public/script*.js"],
+	"include": ["**/*.ts", "**/*.tsx"],
 	"exclude": ["node_modules", "dist"]
 }

@@ -69,6 +69,7 @@ export async function getRouter() {
 		},
 		defaultPreload: "intent",
 		scrollRestoration: true,
+		notFoundMode: "root",
 		defaultErrorComponent: ErrorComponent,
 		defaultNotFoundComponent: NotFoundComponent,
 		// NOTE(joel): Configures how the router will rewrite the location between

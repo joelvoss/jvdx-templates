@@ -46,31 +46,16 @@ export function EditBook() {
 		mutate(data);
 	};
 
-	const fieldIssues = error?.issues?.nested;
-	const currentYear = new Date().getFullYear();
-
 	return (
 		<BookForm
 			id={id}
 			book={data}
 			onSubmit={handleSubmit}
 			isPending={isPending}
+			globalErrorTitle={t("updateErrorTitle")}
 			submitLabel={t("actions.save")}
 			cancelTo="/{-$locale}/books/$id"
-			issues={{
-				title: fieldIssues?.title ? t("validation.titleMin") : undefined,
-				author: fieldIssues?.author ? t("validation.authorMin") : undefined,
-				isbn: fieldIssues?.isbn ? t("validation.isbnInvalid") : undefined,
-				publishedYear: fieldIssues?.publishedYear
-					? t("validation.publishedYearRange", { year: currentYear })
-					: undefined,
-				description: fieldIssues?.description
-					? t("validation.descriptionMin")
-					: undefined,
-				coverImageUrl: fieldIssues?.coverImageUrl
-					? t("validation.coverImageUrlInvalid")
-					: undefined,
-			}}
+			issues={error?.issues}
 		/>
 	);
 }

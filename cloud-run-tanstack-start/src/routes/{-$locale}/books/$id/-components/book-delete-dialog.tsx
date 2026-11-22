@@ -29,14 +29,17 @@ export function BookDeleteDialog() {
 	const { modal } = Route.useSearch();
 	const showDelete = modal != null && modal === "delete";
 
+	const { mutate, isPending, error, reset } = useMutation(
+		deleteBookMutationOpts({ id }),
+	);
 	const navigate = Route.useNavigate();
 	const closeModal = () => {
+		reset();
 		void navigate({
 			search: (old: { modal?: "delete" }) => ({ ...old, modal: undefined }),
 		});
 	};
 
-	const { mutate, isPending } = useMutation(deleteBookMutationOpts({ id }));
 	const onDelete = () => {
 		mutate(undefined, {
 			onSuccess: () => {
@@ -52,6 +55,14 @@ export function BookDeleteDialog() {
 		});
 	};
 
+	const globalErrors = error?.issues
+		? [
+				...(error.issues.root ?? []),
+				...(error.issues.other ?? []),
+				...Object.values(error.issues.nested ?? {}).flat(),
+			]
+		: undefined;
+
 	return (
 		<Modal isDismissable isOpen={showDelete} onOpenChange={closeModal}>
 			<Dialog>
@@ -64,6 +75,20 @@ export function BookDeleteDialog() {
 						title: data.title,
 					})}
 				</p>
+
+				{globalErrors?.length ? (
+					<div
+						role="alert"
+						className="mb-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+					>
+						<p className="font-medium">{t("errorTitle")}</p>
+						<ul className="mt-2 list-disc space-y-1 pl-5">
+							{globalErrors.map((message, index) => (
+								<li key={index}>{message}</li>
+							))}
+						</ul>
+					</div>
+				) : null}
 
 				<div className="flex gap-4">
 					<button
