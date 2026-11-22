@@ -4,7 +4,7 @@
 	"author": "Joel Voß <mail@joelvoss.de>",
 	"type": "module",
 	"engines": {
-		"node": ">=24"
+		"node": ">=26"
 	},
 	"scripts": {
 		"build": "./Taskfile.sh build",
