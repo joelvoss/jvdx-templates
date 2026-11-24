@@ -48,13 +48,14 @@ Build the production bundle into `dist/` and run it locally in Docker:
 - `SESSION_SECRET`: HMAC-SHA256 signing key for `__app_session`. Required in
   production (`NODE_ENV=production`) with at least 32 characters; falls back to
   a development-only secret outside production.
-- `PORT`: HTTP port listened on by `express-server.mjs` (defaults to `3000`).
+- `PORT`: HTTP port listened on by `src/express-server.ts` (defaults to
+  `3000`).
 - `PROJECT`, `GOOGLE_CLOUD_PROJECT`, `GCLOUD_PROJECT`: Optional Firestore
   project ID overrides, checked in that order by `src/lib/firestore.ts`.
 - `GOOGLE_APPLICATION_CREDENTIALS`: Path to a service account or ADC JSON file
   (mounted automatically by `./Taskfile.sh start docker`).
 - `K_SERVICE`: Set automatically by Cloud Run. Enables `trustProxy` and
-  Cloud Run forwarded-header normalization in `express-server.mjs`.
+  Cloud Run forwarded-header normalization in `src/express-server.ts`.
 
 ## Deployment
 
@@ -84,18 +85,18 @@ This section describes what runs when the app starts and serves a request to
 
 ### 1. Process Startup
 
-Both development and production start in `express-server.mjs` (via `node
-./express-server.mjs` in dev, and `CMD ["express-server.mjs"]` inside `dist/`
-in Docker/production).
+Both development and production start from `src/express-server.ts` (run
+directly via `node ./src/express-server.ts` in dev, and built into
+`dist/express-server.js` for `CMD ["express-server.js"]` in Docker/production).
 
 Files involved:
 
-- `express-server.mjs`
+- `src/express-server.ts`
 - `src/server.ts`
 
 Execution flow:
 
-1. `express-server.mjs` creates the Express server and installs a top-level
+1. `src/express-server.ts` creates the Express server and installs a top-level
    middleware that sets HTTP security headers and removes `X-Powered-By`.
 2. When `K_SERVICE` is set, it enables `trustProxy`, strips client-supplied
    `x-forwarded-host` and `x-forwarded-for`, and sets `x-forwarded-proto` to

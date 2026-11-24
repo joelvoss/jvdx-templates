@@ -16,7 +16,7 @@ start() {
 		echo "Starting development server..."
 		setup_env dev
 		export NODE_ENV="development"
-		node ./express-server.mjs
+		node ./src/express-server.ts
 
 	elif [ "$1" = "docker" ]; then
 		echo "Starting production server (inside docker)..."
@@ -42,15 +42,10 @@ start() {
 
 build() {
 	echo "Building for production..."
-	DIST_DIR=dist
 
-	rm -rf "${DIST_DIR}"
+	rm -rf dist
 
 	vite build
-
-	cp express-server.mjs "${DIST_DIR}/"
-	jq '{name, version, type, dependencies}' package.json >"${DIST_DIR}/package.json"
-	cp package-lock.json "${DIST_DIR}/package-lock.json"
 }
 
 format() {

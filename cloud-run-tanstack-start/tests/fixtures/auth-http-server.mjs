@@ -1,3 +1,5 @@
+// NTOE: Spawned directly by `node` in `auth-http.integration.test.ts`; written
+// as `.mjs` so Node runs it as an ES module without a build step.
 import express from "express";
 import { toNodeHandler } from "srvx/node";
 import { createServer } from "vite";

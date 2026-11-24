@@ -1,16 +1,29 @@
-import { realpathSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
 import express from "express";
+import type {
+	NextFunction,
+	Request as ExpressRequest,
+	Response as ExpressResponse,
+} from "express";
+import type { NodeHttp1Handler } from "srvx";
 import { toNodeHandler } from "srvx/node";
+import type { ViteDevServer } from "vite";
+
+////////////////////////////////////////////////////////////////////////////////
+
+type ServerEntry = {
+	fetch: (request: Request) => Promise<Response>;
+};
+
+export type CreateExpressAppOptions = {
+	development?: boolean;
+	cloudRun?: boolean;
+	viteServer?: ViteDevServer;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Builds the default HTTP security headers map.
- *
- * @param {boolean} [development]
  */
 export function createSecurityHeaders(
 	development = process.env.NODE_ENV === "development",
@@ -39,14 +52,8 @@ export function createSecurityHeaders(
 /**
  * Creates the Express application wired with security headers, Cloud Run
  * proxy normalization, and either Vite dev middleware or production assets.
- *
- * @param {{
- *   development?: boolean;
- *   cloudRun?: boolean;
- *   viteServer?: import("vite").ViteDevServer;
- * }} [options]
  */
-export async function createExpressApp(options = {}) {
+export async function createExpressApp(options: CreateExpressAppOptions = {}) {
 	const development =
 		options.development ?? process.env.NODE_ENV === "development";
 	const cloudRun = options.cloudRun ?? Boolean(process.env.K_SERVICE);
@@ -76,17 +83,21 @@ export async function createExpressApp(options = {}) {
 		// handle SSR.
 		const viteDevServer =
 			options.viteServer ??
-			(await import("vite").then((vite) =>
-				vite.createServer({
-					server: { middlewareMode: true },
-				}),
-			));
+			(await (
+				await import("vite")
+			).createServer({
+				server: { middlewareMode: true },
+			}));
 		app.use(viteDevServer.middlewares);
 		app.use(async (req, res, next) => {
 			try {
-				const { default: serverEntry } =
-					await viteDevServer.ssrLoadModule("./src/server.ts");
-				const handler = toNodeHandler(serverEntry.fetch, nodeAdapterOptions);
+				const { default: serverEntry } = (await viteDevServer.ssrLoadModule(
+					"./src/server.ts",
+				)) as { default: ServerEntry };
+				const handler = toNodeHandler(
+					serverEntry.fetch,
+					nodeAdapterOptions,
+				) as NodeHttp1Handler;
 				await handler(req, res);
 			} catch (error) {
 				if (typeof error === "object" && error instanceof Error) {
@@ -98,8 +109,14 @@ export async function createExpressApp(options = {}) {
 	} else {
 		// NOTE(joel): In production, we can directly import the server entry since
 		// it's already built.
-		const { default: handler } = await import("./server/server.js");
-		const nodeHandler = toNodeHandler(handler.fetch, nodeAdapterOptions);
+		// @ts-expect-error Built server bundle exists only in dist/ after `vite build`.
+		const { default: handler } = (await import("./server/server.js")) as {
+			default: ServerEntry;
+		};
+		const nodeHandler = toNodeHandler(
+			handler.fetch,
+			nodeAdapterOptions,
+		) as NodeHttp1Handler;
 		app.use(
 			express.static("client", {
 				maxAge: "1y",
@@ -119,37 +136,40 @@ export async function createExpressApp(options = {}) {
 	// abort an SSR stream after rendering has started. Treat those disconnects as
 	// normal request lifecycle events, but leave unrelated errors for Express to
 	// report.
-	app.use((error, req, res, next) => {
-		const code = error?.code;
-		const message = error instanceof Error ? error.message : String(error);
-		const clientAborted =
-			code === "ECONNRESET" ||
-			code === "ABORT_ERR" ||
-			message === "aborted" ||
-			(req.destroyed && res.destroyed);
+	app.use(
+		(
+			error: unknown,
+			req: ExpressRequest,
+			res: ExpressResponse,
+			next: NextFunction,
+		) => {
+			const code =
+				typeof error === "object" && error !== null && "code" in error
+					? error.code
+					: undefined;
+			const message = error instanceof Error ? error.message : String(error);
+			const clientAborted =
+				code === "ECONNRESET" ||
+				code === "ABORT_ERR" ||
+				message === "aborted" ||
+				(req.destroyed && res.destroyed);
 
-		if (clientAborted) return;
-		next(error);
-	});
+			if (clientAborted) return;
+			next(error);
+		},
+	);
 
 	return app;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function isMainModule() {
-	if (!process.argv[1]) return false;
-	try {
-		return (
-			realpathSync(process.argv[1]) ===
-			realpathSync(fileURLToPath(import.meta.url))
-		);
-	} catch {
-		return path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-	}
-}
-
-if (isMainModule()) {
+/**
+ * Start the HTTP server only when executed as the entrypoint (Node 26+
+ * native `import.meta.main`), so tests and fixtures can import
+ * `createExpressApp` without binding a port or installing signal handlers.
+ */
+if (import.meta.main) {
 	const port = Number.parseInt(process.env.PORT || "3000");
 	const app = await createExpressApp();
 	const server = app.listen(port, () => {
@@ -161,7 +181,7 @@ if (isMainModule()) {
 	/**
 	 * Gracefully shuts down the server on termination signals.
 	 */
-	const shutdown = (signal) => {
+	const shutdown = (signal: NodeJS.Signals) => {
 		if (shuttingDown) return;
 		shuttingDown = true;
 		console.log(`\nReceived ${signal}. Shutting down...`);

@@ -1,3 +1,5 @@
+// NOTE: Server function fixtures loaded via `vite.ssrLoadModule` so TanStack
+// Start's Vite plugin transforms `createServerFn` and registers their routes.
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
 

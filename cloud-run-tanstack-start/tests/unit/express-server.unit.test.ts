@@ -2,9 +2,8 @@ import { createServer, request as httpRequest, type Server } from "node:http";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { createExpressApp } from "~/express-server";
 import { validateMutationRequest } from "~/lib/auth";
-
-import { createExpressApp } from "../../express-server.mjs";
 
 vi.mock("vite", () => ({
 	createServer: async () => ({

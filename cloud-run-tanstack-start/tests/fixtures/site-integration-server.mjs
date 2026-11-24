@@ -1,8 +1,10 @@
+// NOTE: Spawned directly by `node` in `site.integration.test.ts`; written as
+// `.mjs` so Node runs it as an ES module without a build step.
 import path from "node:path";
 
 import { createServer } from "vite";
 
-import { createExpressApp } from "../../express-server.mjs";
+import { createExpressApp } from "../../src/express-server.ts";
 
 const REAL_FIRESTORE_PATH = path.resolve("./src/lib/firestore.ts");
 const FAKE_FIRESTORE_PATH = path.resolve(

@@ -1,3 +1,5 @@
+// NOTE: In-memory Firestore stub substituted for `~/lib/firestore` by Vite's
+// `fakeFirestorePlugin` in `site-integration-server.mjs`.
 import type { Book } from "~/features/books/schema";
 
 ////////////////////////////////////////////////////////////////////////////////

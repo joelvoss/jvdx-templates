@@ -1,7 +1,13 @@
+import { copyFile, writeFile } from "node:fs/promises";
+import { builtinModules } from "node:module";
+import path from "node:path";
+
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, type Plugin } from "vite";
+import { build, defineConfig, type Plugin } from "vite";
+
+import packageJson from "./package.json" with { type: "json" };
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -39,9 +45,10 @@ export default defineConfig({
 		}),
 		// NOTE: React's vite plugin must come after Tanstack Start's vite plugin.
 		react({ compiler: true }),
-		// Replaces unused locale data imports in React Aria packages with empty
-		// modules. Must run as "pre" so it intercepts before Vite's resolver.
+		// NOTE: Replaces unused locale data imports in React Aria packages with 
+		// empty modules. Must run as "pre" so it intercepts before Vite's resolver.
 		optimizeLocalesPlugin(["en-US", "de-DE"]),
+		productionBundlePlugin(),
 	],
 });
 
@@ -106,4 +113,78 @@ function manualChunks(id: string): string | undefined {
 	) {
 		return "vendor-aria";
 	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+const EXPRESS_SERVER_EXTERNALS = [
+	...builtinModules,
+	...builtinModules.map((mod) => `node:${mod}`),
+	...Object.keys(packageJson.dependencies),
+	...Object.keys(packageJson.devDependencies),
+	"./server/server.js",
+];
+
+/**
+ * Builds the production Express server entry (`src/express-server.ts`) into
+ * `dist/express-server.js` and emits production `package.json` and
+ * `package-lock.json` after TanStack Start finishes building client and SSR
+ * bundles.
+ */
+function productionBundlePlugin(): Plugin {
+	return {
+		name: "production-bundle",
+		apply: "build",
+		buildApp: {
+			order: "post",
+			async handler(builder) {
+				const root = builder.config.root;
+				const distDir = path.resolve(root, "dist");
+
+				await build({
+					root,
+					configFile: false,
+					publicDir: false,
+					build: {
+						target: "node26",
+						outDir: distDir,
+						emptyOutDir: false,
+						minify: false,
+						ssr: true,
+						lib: {
+							entry: "src/express-server.ts",
+							formats: ["es"],
+							fileName: "express-server",
+						},
+						rolldownOptions: {
+							external: (id) =>
+								EXPRESS_SERVER_EXTERNALS.some(
+									(mod) => id === mod || id.startsWith(`${mod}/`),
+								),
+						},
+					},
+				});
+
+				await Promise.all([
+					writeFile(
+						path.join(distDir, "package.json"),
+						`${JSON.stringify(
+							{
+								name: packageJson.name,
+								version: packageJson.version,
+								type: packageJson.type,
+								dependencies: packageJson.dependencies,
+							},
+							null,
+							"\t",
+						)}\n`,
+					),
+					copyFile(
+						path.join(root, "package-lock.json"),
+						path.join(distDir, "package-lock.json"),
+					),
+				]);
+			},
+		},
+	};
 }
