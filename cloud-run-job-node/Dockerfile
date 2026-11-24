@@ -1,4 +1,4 @@
-FROM node:24-trixie-slim AS build
+FROM node:26-trixie-slim AS build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN ["./Taskfile.sh", "build"]
 
 ################################################################################
 
-FROM node:24-trixie-slim AS prod-dependencies
+FROM node:26-trixie-slim AS prod-dependencies
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ RUN ["npm", "ci", "--omit=dev"]
 
 ################################################################################
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot AS runner
+FROM gcr.io/distroless/nodejs26-debian13:nonroot AS runner
 
 WORKDIR /app
 

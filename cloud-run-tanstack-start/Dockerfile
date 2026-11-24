@@ -8,11 +8,11 @@ RUN npm ci --only=production
 
 ################################################################################
 
-FROM gcr.io/distroless/nodejs26-debian13
+FROM gcr.io/distroless/nodejs26-debian13:nonroot
 
 WORKDIR /app
 
-COPY --from=build /app ./
+COPY --chown=65532:65532 --from=build /app ./
 
 EXPOSE 3000
 ENV PORT=3000

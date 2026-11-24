@@ -5,7 +5,7 @@
   "author": "Joel Voss <mail@joelvoss.com>",
   "private": true,
   "engines": {
-    "node": ">=24"
+    "node": ">=26"
   },
   "type": "module",
   "source": "./src/index.ts",

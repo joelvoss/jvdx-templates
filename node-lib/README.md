@@ -16,7 +16,7 @@ Before publishing, update these template values:
 
 ## Requirements
 
-- Node.js 22+
+- Node.js 26+
 
 ## Installation
 

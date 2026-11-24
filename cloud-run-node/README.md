@@ -4,7 +4,7 @@ A Cloud Run service template written in Node.js.
 
 ## Requirements
 
-- Node.js 24+
+- Node.js 26+
 - Docker for local container runs
 - Bash and `jq` for `Taskfile.sh`
 - The Google Cloud CLI (`gcloud`) for deployment

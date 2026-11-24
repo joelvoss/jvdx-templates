@@ -1,4 +1,4 @@
-FROM gcr.io/distroless/nodejs24-debian12
+FROM gcr.io/distroless/nodejs26-debian13:nonroot
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # NOTE(joel): Copy pre-build standalone bundle and only allow runner to read 
 # write and execute it.
-COPY ./standalone .
+COPY --chown=65532:65532 ./standalone .
 
 EXPOSE 3000
 

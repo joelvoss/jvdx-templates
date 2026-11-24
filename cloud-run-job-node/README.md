@@ -4,7 +4,7 @@ A Cloud Run Job template written in Node.js.
 
 ## Requirements
 
-- Node.js 24+
+- Node.js 26+
 - Docker for local container smoke tests
 
 ## Development
