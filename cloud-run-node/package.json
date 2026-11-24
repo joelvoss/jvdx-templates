@@ -15,23 +15,25 @@
     "build": "./Taskfile.sh build"
   },
   "dependencies": {
-    "@google-cloud/firestore": "9.4.0",
-    "@hono/node-server": "2.1.5",
-    "@opentelemetry/api": "1.9.1",
-    "@opentelemetry/exporter-trace-otlp-http": "0.223.0",
-    "@opentelemetry/resources": "2.12.0",
-    "@opentelemetry/sdk-trace-node": "2.12.0",
-    "@opentelemetry/semantic-conventions": "1.43.0",
-    "hono": "4.13.14",
+    "@google-cloud/firestore": "9.4.1",
+    "@hono/node-server": "2.1.11",
+    "@opentelemetry/api": "1.10.0",
+    "@opentelemetry/context-async-hooks": "3.1.1",
+    "@opentelemetry/core": "3.1.1",
+    "@opentelemetry/exporter-trace-otlp-http": "0.301.2",
+    "@opentelemetry/resources": "3.1.1",
+    "@opentelemetry/sdk-trace": "3.1.1",
+    "@opentelemetry/semantic-conventions": "1.45.0",
+    "hono": "4.13.21",
     "valibot": "1.5.0"
   },
   "devDependencies": {
-    "@types/node": "26.6.5",
+    "@types/node": "26.6.7",
     "nodemon": "3.1.14",
-    "oxfmt": "0.74.0",
-    "oxlint": "1.89.0",
+    "oxfmt": "0.80.0",
+    "oxlint": "1.95.0",
     "typescript": "7.0.2",
-    "vite": "8.3.5",
-    "vitest": "5.0.5"
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
   }
 }

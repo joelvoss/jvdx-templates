@@ -15,17 +15,23 @@ import type {
 	Span,
 	SpanContext,
 } from '@opentelemetry/api';
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
+import {
+	CompositePropagator,
+	W3CBaggagePropagator,
+	W3CTraceContextPropagator,
+} from '@opentelemetry/core';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import {
 	BatchSpanProcessor,
 	ConsoleSpanExporter,
 	NoopSpanProcessor,
-	NodeTracerProvider,
 	ParentBasedSampler,
 	type SpanProcessor,
 	TraceIdRatioBasedSampler,
-} from '@opentelemetry/sdk-trace-node';
+	TracerProvider,
+} from '@opentelemetry/sdk-trace';
 import {
 	ATTR_SERVICE_NAME,
 	ATTR_SERVICE_VERSION,
@@ -110,16 +116,27 @@ switch (configuredExporter) {
 		spanProcessor = new NoopSpanProcessor();
 		break;
 	case 'console':
-		spanProcessor = new BatchSpanProcessor(new ConsoleSpanExporter());
+		spanProcessor = new BatchSpanProcessor({
+			exporter: new ConsoleSpanExporter(),
+		});
 		break;
 	case 'otlp':
 	default:
 		// NOTE(joel): OTLPTraceExporter exports to
 		// `http://localhost:4318/v1/traces` by default.
-		spanProcessor = new BatchSpanProcessor(new OTLPTraceExporter());
+		spanProcessor = new BatchSpanProcessor({
+			exporter: new OTLPTraceExporter(),
+		});
 }
 
-const tracerProvider = new NodeTracerProvider({
+context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+propagation.setGlobalPropagator(
+	new CompositePropagator({
+		propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
+	}),
+);
+
+const tracerProvider = new TracerProvider({
 	resource: resourceFromAttributes(traceAttributes),
 	sampler: new ParentBasedSampler({
 		root: new TraceIdRatioBasedSampler(1),
@@ -127,7 +144,7 @@ const tracerProvider = new NodeTracerProvider({
 	spanProcessors: [spanProcessor],
 });
 
-tracerProvider.register();
+trace.setGlobalTracerProvider(tracerProvider);
 
 export const tracer = trace.getTracer(traceAttributes[ATTR_SERVICE_NAME]);
 

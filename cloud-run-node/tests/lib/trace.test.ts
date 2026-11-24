@@ -1,4 +1,8 @@
-import { trace as otelTrace } from '@opentelemetry/api';
+import {
+	context as otelContext,
+	propagation as otelPropagation,
+	trace as otelTrace,
+} from '@opentelemetry/api';
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -434,15 +438,16 @@ describe('shutdownTracing', () => {
 	beforeEach(() => {
 		vi.unstubAllEnvs();
 		vi.resetModules();
-		// NOTE(joel): `tracerProvider.register()` in `~/lib/trace` registers a
-		// global tracer provider via the OTel API. That registration is a
-		// one-time, process-wide singleton: re-importing the module (e.g. via
-		// `vi.resetModules()`) creates a *new* provider instance internally,
-		// but the OTel API silently refuses to swap out the already-registered
-		// global one. Without explicitly disabling it first, `trace.getTracer`
-		// / `tracer.startSpan` calls below would keep operating against the
-		// previous test's provider (and its exporter), not the fresh one
-		// configured for this test.
+		// NOTE(joel): `trace.setGlobalTracerProvider()` in `~/lib/trace` registers
+		// global OTel singletons via the OTel API. Re-importing the module (e.g.
+		// via `vi.resetModules()`) creates a *new* provider instance internally,
+		// but the OTel API silently refuses to swap out already-registered
+		// globals. Without explicitly disabling them first, `trace.getTracer` /
+		// `tracer.startSpan` calls below would keep operating against the previous
+		// test's provider (and its exporter), not the fresh one configured for
+		// this test.
+		otelContext.disable();
+		otelPropagation.disable();
 		otelTrace.disable();
 	});
 
