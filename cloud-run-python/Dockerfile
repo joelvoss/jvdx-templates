@@ -36,12 +36,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 ################################################################################
 
-FROM gcr.io/distroless/python3-debian13
+FROM gcr.io/distroless/python3-debian13:nonroot AS runner
 
 WORKDIR /app
 
-COPY --from=build /app/.venv /app/.venv
-COPY --from=build /app/src /app/src
+COPY --chown=65532:65532 --from=build /app/.venv /app/.venv
+COPY --chown=65532:65532 --from=build /app/src /app/src
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app/.venv/lib/python3.13/site-packages:/app
